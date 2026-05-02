@@ -1,0 +1,35 @@
+import React, { useState } from 'react';
+import { useFinanceStore } from './store/useFinanceStore';
+import { WelcomeScreen } from './components/welcome/WelcomeScreen';
+import { Sidebar } from './components/layout/Sidebar';
+import { Dashboard } from './components/dashboard/Dashboard';
+import { IncomePage } from './components/income/IncomePage';
+import { AllocationPage } from './components/allocation/AllocationPage';
+import { GoalsPage } from './components/goals/GoalsPage';
+import { SimulationPage } from './components/simulation/SimulationPage';
+import './index.css';
+
+function App() {
+  const started = useFinanceStore(state => state.started);
+  const [page, setPage] = useState("dashboard");
+
+  if (!started) {
+    return <WelcomeScreen />;
+  }
+
+  return (
+    <div className="eb-app">
+      <Sidebar page={page} setPage={setPage} />
+      
+      <main className="eb-main">
+        {page === "dashboard" && <Dashboard />}
+        {page === "income" && <IncomePage />}
+        {page === "allocation" && <AllocationPage />}
+        {page === "goals" && <GoalsPage />}
+        {page === "simulation" && <SimulationPage />}
+      </main>
+    </div>
+  );
+}
+
+export default App;
