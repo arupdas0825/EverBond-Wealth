@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useFinanceStore } from '../../store/useFinanceStore';
+import { Logo } from '../common/Logo';
 import { CURRENCIES, REGIONS } from '../../constants/presets';
 export function WelcomeScreen() {
   const setProfile = useFinanceStore(s => s.setProfile);
@@ -14,18 +15,8 @@ export function WelcomeScreen() {
     <div className="welcome-wrap">
       <div className="wbg-orb wbg-1"/><div className="wbg-orb wbg-2"/>
       <div className={`welcome-card${err?' card-shake':''}`}>
-        <div className="wc-logo-row">
-          <div className="wc-icon">
-            <svg width="20" height="20" viewBox="0 0 40 40" fill="none">
-              <defs><linearGradient id="lg-wc" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#fff" stopOpacity=".9"/><stop offset="100%" stopColor="#F5E9C8"/>
-              </linearGradient></defs>
-              <circle cx="15" cy="20" r="8" stroke="url(#lg-wc)" strokeWidth="2.2" fill="none"/>
-              <circle cx="25" cy="20" r="8" stroke="url(#lg-wc)" strokeWidth="2.2" fill="none"/>
-              <path d="M20 23V17M17.5 19.5L20 17L22.5 19.5" stroke="url(#lg-wc)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </div>
-          <div className="wc-brand">EverBond <span>Wealth</span></div>
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '24px' }}>
+          <Logo size={120} showText={false} />
         </div>
         <h1 className="wc-headline">Build your <em>future</em>,<br/>together.</h1>
         <p className="wc-sub">Premium financial planning for modern couples.<br/>One elegant space for your shared dreams &amp; wealth.</p>
