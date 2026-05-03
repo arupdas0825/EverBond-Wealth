@@ -244,39 +244,6 @@ Add `vercel.json` to project root:
 }
 ```
 
----
-
-## ⚙️ CI/CD Pipeline Setup
-
-### What the pipeline does
-
-```
-Push to main
-      │
-      ▼
-┌─────────────┐     ┌──────────────────┐
-│ Quality Gate │────▶│  Deploy to Vercel│
-│ npm install  │     │  npx vercel --prod│
-│ npm run build│     └──────────────────┘
-└─────────────┘
-```
-
-### Setup (3 steps)
-
-**Step 1** — Get Vercel Token from [vercel.com/account/tokens](https://vercel.com/account/tokens)
-
-**Step 2** — Add to GitHub: **Settings → Secrets → Actions → New secret**
-
-| Secret | Value |
-|---|---|
-| `VERCEL_TOKEN` | Your Vercel token |
-
-**Step 3** — Push to `main`. Check the **Actions** tab for live logs.
-
-> Personal Vercel accounts do not require `VERCEL_ORG_ID` or `VERCEL_PROJECT_ID`.
-
----
-
 ## 📁 Project Structure
 
 ```
