@@ -1,61 +1,50 @@
 import React from 'react';
+import { T } from '../../theme/tokens';
 
-export function Logo({ size = 32, showText = true, className = "" }) {
+export function LogoMark({ size = 32 }) {
   return (
-    <div className={`flex items-center gap-3 ${className}`} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-      <svg 
-        width={size} 
-        height={size} 
-        viewBox="0 0 40 40" 
-        fill="none" 
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <defs>
-          <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#C9A84C" />
-            <stop offset="100%" stopColor="#E8C96A" />
-          </linearGradient>
-          <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-            <blur stdDeviation="2" />
-          </filter>
-        </defs>
-        
-        {/* Connected Bonds / Infinity Symbol */}
-        <path 
-          d="M12 20C12 15.5817 15.5817 12 20 12C24.4183 12 28 15.5817 28 20C28 24.4183 24.4183 28 20 28C15.5817 28 12 24.4183 12 20Z" 
-          stroke="url(#logoGradient)" 
-          strokeWidth="2.5" 
-          strokeLinecap="round"
-        />
-        <path 
-          d="M8 20C8 13.3726 13.3726 8 20 8C26.6274 8 32 13.3726 32 20C32 26.6274 26.6274 32 20 32C13.3726 32 8 26.6274 8 20Z" 
-          stroke="url(#logoGradient)" 
-          strokeWidth="1.5" 
-          strokeDasharray="4 4"
-          opacity="0.4"
-        />
-        
-        {/* Partnership Intersection */}
-        <circle cx="16" cy="20" r="4" fill="url(#logoGradient)" fillOpacity="0.2" />
-        <circle cx="24" cy="20" r="4" fill="url(#logoGradient)" fillOpacity="0.2" />
-        
-        {/* Center Growth Line */}
-        <path 
-          d="M20 16V24M17 19L20 16L23 19" 
-          stroke="url(#logoGradient)" 
-          strokeWidth="2" 
-          strokeLinecap="round" 
-          strokeLinejoin="round" 
-        />
-      </svg>
+    <svg width={size} height={size} viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="lgGold" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#C9A84C" />
+          <stop offset="100%" stopColor="#B8902A" />
+        </linearGradient>
+      </defs>
+      {/* Two rings — union */}
+      <circle cx="15" cy="20" r="8" stroke="url(#lgGold)" strokeWidth="2.2" fill="none" />
+      <circle cx="25" cy="20" r="8" stroke="url(#lgGold)" strokeWidth="2.2" fill="none" />
+      {/* Center upward growth */}
+      <path d="M20 23V17M17.5 19.5L20 17L22.5 19.5" stroke="url(#lgGold)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+export function Logo({ size = 30, showText = true }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+      <div style={{
+        width: size + 6,
+        height: size + 6,
+        borderRadius: '10px',
+        background: `linear-gradient(135deg, ${T.goldMid}, ${T.gold})`,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        boxShadow: T.shadowGold,
+        flexShrink: 0,
+      }}>
+        <LogoMark size={size - 4} />
+      </div>
       {showText && (
-        <span className="eb-logo-text" style={{ 
-          fontFamily: "'DM Serif Display', serif", 
-          fontSize: size * 0.6 + 'px',
-          color: 'var(--text)',
-          letterSpacing: '-0.5px'
+        <span style={{
+          fontFamily: T.fontDisplay,
+          fontSize: size * 0.62 + 'px',
+          fontWeight: 600,
+          color: T.text,
+          letterSpacing: '-0.3px',
+          lineHeight: 1,
         }}>
-          EverBond <span style={{ color: 'var(--gold)' }}>Wealth</span>
+          EverBond <span style={{ color: T.goldMid }}>Wealth</span>
         </span>
       )}
     </div>

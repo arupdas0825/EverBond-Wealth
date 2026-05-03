@@ -1,184 +1,249 @@
-import React, { useState } from 'react';
-import { 
-  XAxis, YAxis, Tooltip, ResponsiveContainer, AreaChart, Area, CartesianGrid 
+import React, { useState, useMemo } from 'react';
+import {
+  AreaChart, Area, XAxis, YAxis, Tooltip,
+  ResponsiveContainer, CartesianGrid
 } from 'recharts';
 import { useFinanceStore } from '../../store/useFinanceStore';
-import { 
-  calculateFinancialSnapshot, 
-  formatCurrency, 
-  formatCompact, 
-  simulateGrowth 
+import {
+  calculateFinancialSnapshot,
+  formatCurrency,
+  formatCompact,
+  simulateGrowth,
 } from '../../utils/finance';
 import { T } from '../../theme/tokens';
 import { Card } from '../common/Card';
 
+const YEARS = [1, 5, 10, 20, 30];
+const MILESTONES = [1, 3, 5, 10, 15, 20, 25, 30];
+
+const TOOLTIP_STYLE = {
+  borderRadius: '14px',
+  border: 'none',
+  boxShadow: '0 8px 32px rgba(0,0,0,0.10)',
+  fontFamily: T.fontBody,
+  fontSize: '13px',
+  padding: '14px 18px',
+};
+
 export function SimulationPage() {
-  const { 
-    mode, currency, simYears, simReturn, 
-    setSimYears, setSimReturn, getTotalSalary 
+  const {
+    mode, currency, simYears, simReturn,
+    setSimYears, setSimReturn, getTotalSalary,
   } = useFinanceStore();
-  
-  const [inflationAdjusted, setInflationAdjusted] = useState(false);
-  
-  const totalSalary = getTotalSalary();
-  const snapshot = calculateFinancialSnapshot(totalSalary, mode);
-  const fmt = a => formatCurrency(a, currency);
-  const cmpct = a => formatCompact(a, currency);
-  
+
+  const [inflAdj, setInflAdj] = useState(false);
+
+  const total    = getTotalSalary();
+  const snapshot = useMemo(() => calculateFinancialSnapshot(total, mode), [total, mode]);
+  const fmt      = a => formatCurrency(a, currency);
+  const cmpct    = a => formatCompact(a, currency);
+
   const blended = snapshot.blendedReturn;
-  const ret = simReturn !== null ? simReturn : Math.round(blended * 10) / 10;
-  
-  const result = simulateGrowth(snapshot.budget.investments, simYears, ret, inflationAdjusted);
+  const ret     = simReturn !== null ? simReturn : Math.round(blended * 10) / 10;
+
+  const result   = useMemo(() => simulateGrowth(snapshot.budget.investments, simYears, ret, inflAdj), [snapshot, simYears, ret, inflAdj]);
   const invested = snapshot.budget.investments * simYears * 12;
-  const gains = result.fv - invested;
+  const gains    = result.fv - invested;
+  const multi    = (result.fv / Math.max(invested, 1)).toFixed(2);
 
   const chartData = result.dataPoints.map(p => ({
-    name: `Yr ${p.year}`,
-    corpus: p.corpus,
-    invested: p.invested
+    name: p.year === 0 ? 'Now' : `Yr ${p.year}`,
+    Corpus: p.corpus,
+    Invested: p.invested,
   }));
 
   return (
     <div className="fade-in">
       <div className="page-header">
-        <div>
-          <div className="page-title">Wealth <em>Engine</em></div>
-          <div className="page-desc">High-fidelity shared wealth projection with inflation-adjustment support.</div>
-        </div>
+        <div className="page-eyebrow">Wealth Engine</div>
+        <h1 className="page-title">Future <em>Simulation</em></h1>
+        <p className="page-desc">
+          High-fidelity shared wealth projection with SIP compounding. Inflation-adjustment optional.
+        </p>
       </div>
 
+      {/* Config Card */}
       <Card className="mb-20">
-        <div className="card-title">Projection Configuration</div>
-        <div className="card-subtitle">Select shared future horizon & parameters</div>
-        
-        <div className="sim-btn-grid">
-          {[1, 5, 10, 20, 30].map(y => (
-            <button key={y} className={`sim-btn ${simYears === y ? "active" : ""}`} onClick={() => setSimYears(y)}>
-              <span className="sim-yr">{y}</span>
-              <span className="sim-label">Yr Horizon</span>
+        <div className="card-title">Projection Settings</div>
+        <div className="card-heading" style={{ marginBottom: 20 }}>Configure Horizon &amp; Return</div>
+
+        {/* Year selector */}
+        <div className="section-label" style={{ marginBottom: 12 }}>Time Horizon</div>
+        <div className="sim-year-grid mb-28">
+          {YEARS.map(y => (
+            <button
+              key={y}
+              className={`sim-yr-btn ${simYears === y ? 'active' : ''}`}
+              onClick={() => setSimYears(y)}
+            >
+              <span className="sim-yr-num">{y}</span>
+              <span className="sim-yr-label">{y === 1 ? 'Year' : 'Years'}</span>
             </button>
           ))}
         </div>
 
-        <div className="sim-config-footer">
-          <div style={{ flex: 1 }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-              <label className="form-label" style={{ marginBottom: 0 }}>Expected Shared Return (%)</label>
-              <div style={{ fontSize: '11px', fontWeight: 800, color: T.textFaint, textTransform: 'uppercase' }}>
-                Blended Index: <span style={{ color: T.emerald }}>{blended.toFixed(1)}%</span>
-              </div>
+        {/* Return slider + inflation toggle */}
+        <div style={{ display: 'flex', gap: 20, alignItems: 'flex-end', flexWrap: 'wrap' }}>
+          <div style={{ flex: 1, minWidth: 200 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <div className="section-label" style={{ marginBottom: 0 }}>Expected Annual Return</div>
+              <span style={{ fontSize: '0.78rem', color: T.textFaint, fontWeight: 600 }}>
+                Blended Index:&nbsp;
+                <span style={{ color: T.sage, fontWeight: 800 }}>{blended.toFixed(1)}%</span>
+              </span>
             </div>
-            <div className="slider-row">
-              <input 
-                type="range" className="eb-slider" min={1} max={40} step={0.5} 
-                value={ret} onChange={e => setSimReturn(parseFloat(e.target.value))} 
+            <div className="slider-wrapper">
+              <input
+                type="range"
+                className="eb-slider"
+                min={1} max={40} step={0.5}
+                value={ret}
+                onChange={e => setSimReturn(parseFloat(e.target.value))}
               />
               <span className="slider-val">{ret.toFixed(1)}%</span>
             </div>
           </div>
-          
-          <div className="inflation-toggle" onClick={() => setInflationAdjusted(!inflationAdjusted)} style={{ 
-            padding: '16px 24px', background: '#F9F9F7', borderRadius: '16px', border: '1.5px solid var(--border)', 
-            cursor: 'pointer', flexShrink: 0, transition: '0.3s'
-          }}>
-            <div className="form-label" style={{ marginBottom: 8 }}>Inflation Mode (6%)</div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <div className="eb-toggle" style={{ 
-                width: '36px', height: '20px', background: inflationAdjusted ? T.emerald : '#E0E0E0', 
-                borderRadius: '20px', position: 'relative', transition: '0.3s' 
-              }}>
-                <div style={{ 
-                  width: '14px', height: '14px', background: 'white', borderRadius: '50%', 
-                  position: 'absolute', top: '3px', left: inflationAdjusted ? '19px' : '3px', transition: '0.3s' 
-                }} />
+
+          <div
+            className="inflation-toggle"
+            onClick={() => setInflAdj(!inflAdj)}
+          >
+            <div className={`toggle-track ${inflAdj ? 'on' : ''}`}>
+              <div className="toggle-thumb" />
+            </div>
+            <div>
+              <div className="toggle-label">Inflation Adjust</div>
+              <div style={{ fontSize: '0.72rem', color: T.textFaint, fontWeight: 600 }}>
+                {inflAdj ? 'Real returns (−6%)' : 'Nominal returns'}
               </div>
-              <span style={{ fontSize: '15px', fontWeight: 700, color: T.text }}>{inflationAdjusted ? "Adjusted" : "Nominal"}</span>
             </div>
           </div>
         </div>
       </Card>
 
-      <div className="sim-results-grid">
-        <div className="sim-result-card card-gold">
+      {/* Result Cards */}
+      <div className="sim-results mb-20">
+        <div className="sim-result-card primary">
           <div className="sim-result-label">🏦 Final Shared Corpus</div>
-          <div className="sim-result-value" style={{ color: T.gold }}>{cmpct(result.fv)}</div>
+          <div className="sim-result-value" style={{ color: T.goldMid }}>{cmpct(result.fv)}</div>
         </div>
         <div className="sim-result-card">
-          <div className="sim-result-label">💰 Combined Contributions</div>
+          <div className="sim-result-label">💰 Total Contributions</div>
           <div className="sim-result-value">{cmpct(invested)}</div>
         </div>
         <div className="sim-result-card">
-          <div className="sim-result-label">✨ Shared Net Gains</div>
-          <div className="sim-result-value" style={{ color: T.emerald }}>{cmpct(Math.max(0, gains))}</div>
+          <div className="sim-result-label">✨ Net Wealth Gains</div>
+          <div className="sim-result-value" style={{ color: T.sage }}>{cmpct(Math.max(0, gains))}</div>
         </div>
         <div className="sim-result-card">
           <div className="sim-result-label">📈 Wealth Multiplier</div>
-          <div className="sim-result-value" style={{ color: T.gold }}>{(result.fv / Math.max(invested, 1)).toFixed(2)}x</div>
+          <div className="sim-result-value" style={{ color: T.goldMid }}>{multi}x</div>
         </div>
       </div>
 
+      {/* Chart */}
       <Card className="mb-20">
-        <div className="card-title">Shared Growth Trajectory</div>
-        <div className="card-subtitle">Compounding effect based on selected risk engine</div>
-        <div className="recharts-responsive-container" style={{ marginTop: '24px' }}>
+        <div className="card-title">Growth Trajectory</div>
+        <div className="card-heading" style={{ marginBottom: 4 }}>Shared Wealth Curve</div>
+        <p className="card-sub">
+          Compounding effect of {cmpct(snapshot.budget.investments)}/mo at {ret.toFixed(1)}% annual return.
+        </p>
+
+        <div className="chart-wrap-lg">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+            <AreaChart data={chartData} margin={{ top: 8, right: 4, left: 0, bottom: 0 }}>
               <defs>
-                <linearGradient id="colorCorpus" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor={T.gold} stopOpacity={0.25}/>
-                  <stop offset="95%" stopColor={T.gold} stopOpacity={0}/>
+                <linearGradient id="gradCorpus" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%"  stopColor={T.goldMid} stopOpacity={0.2} />
+                  <stop offset="95%" stopColor={T.goldMid} stopOpacity={0} />
+                </linearGradient>
+                <linearGradient id="gradInvest" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%"  stopColor={T.sky} stopOpacity={0.12} />
+                  <stop offset="95%" stopColor={T.sky} stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(0,0,0,0.03)" />
-              <XAxis 
-                dataKey="name" 
-                axisLine={false} 
-                tickLine={false} 
-                tick={{ fontSize: 11, fill: T.textFaint, fontWeight: 600 }} 
-                dy={12}
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={T.border} />
+              <XAxis
+                dataKey="name"
+                axisLine={false}
+                tickLine={false}
+                tick={{ fontSize: 11, fill: T.textFaint, fontWeight: 600 }}
+                dy={8}
               />
-              <YAxis hide domain={['auto', 'auto']} />
-              <Tooltip 
-                contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: T.shadow, padding: '16px' }}
-                formatter={(value) => [fmt(value), ""]}
-                labelStyle={{ fontWeight: 800, color: T.text, marginBottom: '8px', fontSize: '15px' }}
+              <YAxis
+                hide
+                domain={['auto', 'auto']}
               />
-              <Area 
-                name="Future Shared Corpus"
-                type="monotone" 
-                dataKey="corpus" 
-                stroke={T.gold} 
-                fillOpacity={1} 
-                fill="url(#colorCorpus)" 
-                strokeWidth={4} 
-                activeDot={{ r: 8, stroke: 'white', strokeWidth: 3, fill: T.gold }}
+              <Tooltip
+                contentStyle={TOOLTIP_STYLE}
+                formatter={v => [fmt(v), '']}
+                labelStyle={{ fontWeight: 700, color: T.text, marginBottom: 6 }}
               />
-              <Area 
-                name="Combined Invested"
-                type="monotone" 
-                dataKey="invested" 
-                stroke={T.sky} 
-                fill="transparent" 
-                strokeWidth={2.5} 
-                strokeDasharray="8 8" 
+              <Area
+                name="Growth Corpus"
+                type="monotone"
+                dataKey="Corpus"
+                stroke={T.goldMid}
+                strokeWidth={3}
+                fill="url(#gradCorpus)"
+                activeDot={{ r: 7, stroke: 'white', strokeWidth: 2.5, fill: T.goldMid }}
+              />
+              <Area
+                name="Total Invested"
+                type="monotone"
+                dataKey="Invested"
+                stroke={T.sky}
+                strokeWidth={2}
+                strokeDasharray="6 6"
+                fill="url(#gradInvest)"
+                activeDot={{ r: 5, stroke: 'white', strokeWidth: 2, fill: T.sky }}
               />
             </AreaChart>
           </ResponsiveContainer>
         </div>
-        <div className="chart-legend" style={{ justifyContent: 'center', marginTop: '32px', gap: '48px' }}>
+
+        <div className="chart-legend" style={{ marginTop: 20 }}>
           <div className="legend-item">
-            <div className="legend-dot" style={{ background: T.gold, width: '14px', height: '14px', borderRadius: '4px' }} />
-            <span style={{ fontWeight: 600, fontSize: '13px' }}>Shared Growth Corpus</span>
+            <div className="legend-dot" style={{ background: T.goldMid }} />
+            Growth Corpus
           </div>
           <div className="legend-item">
-            <div className="legend-dot" style={{ 
-              background: 'transparent', 
-              border: `2.5px dashed ${T.sky}`, 
-              width: '14px', height: '14px',
-              borderRadius: '4px'
-            }} />
-            <span style={{ fontWeight: 600, fontSize: '13px' }}>Total Shared Contributions</span>
+            <div className="legend-dot" style={{ background: T.sky, border: `2px dashed ${T.sky}`, background: 'transparent' }} />
+            Total Contributed
           </div>
+        </div>
+      </Card>
+
+      {/* Projection Table */}
+      <Card>
+        <div className="card-title">Projection Table</div>
+        <div className="card-heading" style={{ marginBottom: 16 }}>Wealth at Key Milestones</div>
+        <div className="table-scroll">
+          <table className="wealth-table">
+            <thead>
+              <tr>
+                <th>Period</th>
+                <th>Invested</th>
+                <th>Gains</th>
+                <th>Corpus</th>
+              </tr>
+            </thead>
+            <tbody>
+              {MILESTONES.map(y => {
+                const r = simulateGrowth(snapshot.budget.investments, y, ret, inflAdj);
+                const inv = snapshot.budget.investments * y * 12;
+                const g   = Math.max(0, r.fv - inv);
+                return (
+                  <tr key={y}>
+                    <td>{y} {y === 1 ? 'Year' : 'Years'}</td>
+                    <td>{cmpct(inv)}</td>
+                    <td style={{ color: T.sage }}>{cmpct(g)}</td>
+                    <td>{cmpct(r.fv)}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
       </Card>
     </div>

@@ -1,168 +1,241 @@
-import React from 'react';
-import { 
-  PieChart, Pie, Cell, ResponsiveContainer, 
-  BarChart, Bar, XAxis, YAxis, Tooltip 
+import React, { useMemo } from 'react';
+import {
+  PieChart, Pie, Cell, ResponsiveContainer,
+  AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid
 } from 'recharts';
 import { useFinanceStore } from '../../store/useFinanceStore';
-import { 
-  calculateFinancialSnapshot, 
+import {
+  calculateFinancialSnapshot,
   calculateHealthScore,
-  formatCurrency, 
-  formatCompact 
+  formatCurrency,
+  formatCompact,
 } from '../../utils/finance';
 import { T } from '../../theme/tokens';
 import { Card, StatCard } from '../common/Card';
 
+const TOOLTIP_STYLE = {
+  borderRadius: '14px',
+  border: 'none',
+  boxShadow: '0 8px 32px rgba(0,0,0,0.10)',
+  fontFamily: T.fontBody,
+  fontSize: '13px',
+  padding: '12px 16px',
+};
+
+function getGreeting() {
+  const h = new Date().getHours();
+  if (h < 5)  return ['Good Night',     '🌙'];
+  if (h < 12) return ['Good Morning',   '☀️'];
+  if (h < 17) return ['Good Afternoon', '✨'];
+  if (h < 21) return ['Good Evening',   '🌇'];
+  return ['Good Night', '🌙'];
+}
+
 export function Dashboard() {
-  const state = useFinanceStore();
+  const state       = useFinanceStore();
   const totalSalary = state.getTotalSalary();
-  const snapshot = calculateFinancialSnapshot(totalSalary, state.mode);
-  const health = calculateHealthScore(snapshot);
-  
-  const fmt = a => formatCurrency(a, state.currency);
+  const snapshot    = useMemo(() => calculateFinancialSnapshot(totalSalary, state.mode), [totalSalary, state.mode]);
+  const health      = useMemo(() => calculateHealthScore(snapshot), [snapshot]);
+
+  const fmt   = a => formatCurrency(a, state.currency);
   const cmpct = a => formatCompact(a, state.currency);
-  
-  const scoreColor = health.value >= 75 ? T.emerald : health.value >= 50 ? T.gold : T.rose;
 
-  const getGreeting = () => {
-    const hour = new Date().getHours();
-    let timeGreeting = "Welcome Back";
-    let emoji = "✨";
+  const [greeting, emoji] = getGreeting();
+  const scoreColor = health.value >= 75 ? T.sage : health.value >= 50 ? T.goldMid : T.rose;
+  const scoreDeg   = (health.value / 100) * 360;
 
-    if (hour >= 5 && hour < 12) {
-      timeGreeting = "Good Morning";
-      emoji = "❤️";
-    } else if (hour >= 12 && hour < 17) {
-      timeGreeting = "Good Afternoon";
-      emoji = "☀️";
-    } else if (hour >= 17 && hour < 21) {
-      timeGreeting = "Good Evening";
-      emoji = "🌙";
-    }
-
-    return (
-      <>
-        <div style={{ opacity: 0.7, fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '4px' }}>
-          {timeGreeting}
-        </div>
-        <div className="page-title" style={{ fontSize: 'var(--font-h2)' }}>
-          {state.partner1} & {state.partner2} {emoji}
-        </div>
-      </>
-    );
-  };
-
+  // Chart data
   const budgetData = [
-    { name: 'Essentials', value: snapshot.budget.needs, color: "rgba(91,155,213,0.75)" },
-    { name: 'Emergency', value: snapshot.budget.emergency, color: "rgba(232,110,122,0.75)" },
-    { name: 'Investments', value: snapshot.budget.investments, color: "rgba(201,168,76,0.85)" },
+    { name: 'Essentials',   value: snapshot.budget.needs,        color: T.sky },
+    { name: 'Emergency',    value: snapshot.budget.emergency,    color: T.rose },
+    { name: 'Investments',  value: snapshot.budget.investments,  color: T.goldMid },
   ];
 
   const assetData = [
-    { name: 'Equity', value: snapshot.investmentSplit.equity, color: "rgba(201,168,76,0.8)" },
-    { name: 'Debt', value: snapshot.investmentSplit.debt, color: "rgba(91,155,213,0.8)" },
-    { name: 'Commodities', value: snapshot.investmentSplit.commodities, color: "rgba(76,175,138,0.8)" },
-    { name: 'Crypto', value: snapshot.investmentSplit.crypto, color: "rgba(139,111,212,0.8)" },
+    { name: 'Equity',       value: snapshot.investmentSplit.equity,       color: T.goldMid },
+    { name: 'Debt',         value: snapshot.investmentSplit.debt,         color: T.sky },
+    { name: 'Commodities',  value: snapshot.investmentSplit.commodities,  color: T.sage },
+    { name: 'Crypto',       value: snapshot.investmentSplit.crypto,       color: T.violet },
   ];
 
   return (
     <div className="fade-in">
+
+      {/* Page Header */}
       <div className="page-header">
-        <div>
-          {getGreeting()}
-          <div className="page-desc">Your financial engine is running optimally for {state.region}.</div>
-        </div>
+        <div className="page-eyebrow">{greeting}</div>
+        <h1 className="page-title">
+          {state.partner1} &amp; {state.partner2} {emoji}
+        </h1>
+        <p className="page-desc">
+          Your wealth engine is calibrated for {state.region} · {state.mode} mode.
+        </p>
       </div>
 
-      <div className="stats-grid">
-        <StatCard cls="gold" icon="💰" label="Combined Salary" value={cmpct(totalSalary)} sub="Shared monthly income" />
-        <StatCard cls="green" icon="📈" label="Monthly Investment" value={cmpct(snapshot.budget.investments)} sub={`${Math.round(snapshot.presets.invest * 100)}% Savings Rate`} />
-        <StatCard cls="rose" icon="🛡️" label="Emergency Contribution" value={cmpct(snapshot.budget.emergency)} sub="Monthly safety split" />
-        <StatCard cls="sky" icon="⚡" label="Financial Score" value={`${health.value}/100`} sub={health.label} />
+      {/* Stat Cards */}
+      <div className="stats-grid mb-28">
+        <StatCard
+          cls="gold"
+          icon="💰"
+          label="Combined Income"
+          value={cmpct(totalSalary)}
+          sub="Shared monthly salary"
+        />
+        <StatCard
+          cls="sage"
+          icon="📈"
+          label="Monthly Investment"
+          value={cmpct(snapshot.budget.investments)}
+          sub={`${Math.round(snapshot.presets.invest * 100)}% savings rate`}
+        />
+        <StatCard
+          cls="rose"
+          icon="🛡️"
+          label="Emergency Fund"
+          value={cmpct(snapshot.budget.emergency)}
+          sub="Monthly safety reserve"
+        />
+        <StatCard
+          cls="sky"
+          icon="⚡"
+          label="Financial Score"
+          value={`${health.value}/100`}
+          sub={health.label}
+        />
       </div>
 
-      <div className="grid-2">
-        <Card title="Budget Allocation" subtitle="Real-time distribution of shared income">
-          <div className="recharts-responsive-container">
+      {/* Charts Row */}
+      <div className="grid-2 mb-20">
+        <Card>
+          <div className="card-title">Budget Allocation</div>
+          <div className="card-heading">Income Distribution</div>
+          <div className="card-sub">Real-time split of combined income</div>
+          <div className="chart-wrap">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
-                <Pie data={budgetData} innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value">
-                  {budgetData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
+                <Pie
+                  data={budgetData}
+                  innerRadius="55%"
+                  outerRadius="78%"
+                  paddingAngle={4}
+                  dataKey="value"
+                  strokeWidth={0}
+                >
+                  {budgetData.map((d, i) => <Cell key={i} fill={d.color} fillOpacity={0.82} />)}
                 </Pie>
-                <Tooltip 
-                  contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: T.shadow }}
-                  formatter={(value) => fmt(value)} 
+                <Tooltip
+                  contentStyle={TOOLTIP_STYLE}
+                  formatter={v => [fmt(v), '']}
                 />
               </PieChart>
             </ResponsiveContainer>
           </div>
           <div className="chart-legend">
-            {budgetData.map(item => (
-              <div key={item.name} className="legend-item"><div className="legend-dot" style={{ background: item.color }} />{item.name}</div>
+            {budgetData.map(d => (
+              <div key={d.name} className="legend-item">
+                <div className="legend-dot" style={{ background: d.color }} />
+                {d.name}
+              </div>
             ))}
           </div>
         </Card>
-        <Card title="Asset Portfolio" subtitle="Current risk-weighted distribution">
-          <div className="recharts-responsive-container">
+
+        <Card>
+          <div className="card-title">Asset Portfolio</div>
+          <div className="card-heading">Investment Split</div>
+          <div className="card-sub">Risk-weighted portfolio composition</div>
+          <div className="chart-wrap">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={assetData} layout="vertical">
-                <XAxis type="number" hide />
-                <YAxis dataKey="name" type="category" width={100} axisLine={false} tickLine={false} style={{ fontSize: '12px' }} />
-                <Tooltip 
-                  cursor={{ fill: 'transparent' }} 
-                  contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: T.shadow }}
-                  formatter={(value) => cmpct(value)} 
+              <PieChart>
+                <Pie
+                  data={assetData}
+                  innerRadius="42%"
+                  outerRadius="68%"
+                  paddingAngle={4}
+                  dataKey="value"
+                  strokeWidth={0}
+                >
+                  {assetData.map((d, i) => <Cell key={i} fill={d.color} fillOpacity={0.82} />)}
+                </Pie>
+                <Tooltip
+                  contentStyle={TOOLTIP_STYLE}
+                  formatter={v => [cmpct(v), '']}
                 />
-                <Bar dataKey="value" radius={[0, 4, 4, 0]}>
-                  {assetData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Bar>
-              </BarChart>
+              </PieChart>
             </ResponsiveContainer>
+          </div>
+          <div className="chart-legend">
+            {assetData.map(d => (
+              <div key={d.name} className="legend-item">
+                <div className="legend-dot" style={{ background: d.color }} />
+                {d.name}
+              </div>
+            ))}
           </div>
         </Card>
       </div>
 
+      {/* Health Score + Snapshot */}
       <div className="grid-2">
-        <Card gold className="text-center">
+        <Card gold>
           <div className="card-title">Shared Readiness Score</div>
-          <div className="card-subtitle">AI-calculated health indicator</div>
-          <div className="health-circle-wrap">
-            <div className="health-ring" style={{ background: `conic-gradient(${scoreColor} ${(health.value / 100) * 360}deg, rgba(0,0,0,0.06) 0deg)` }}>
+          <div className="card-heading">Financial Health</div>
+          <div className="health-ring-wrap">
+            <div
+              className="health-ring"
+              style={{
+                background: `conic-gradient(${scoreColor} ${scoreDeg}deg, ${T.bgMuted} ${scoreDeg}deg)`,
+              }}
+            >
               <div className="health-ring-inner">
-                <div className="health-score-num" style={{ color: scoreColor }}>{health.value}</div>
-                <div className="health-score-label">/ 100</div>
+                <div className="health-score-num" style={{ color: scoreColor }}>
+                  {health.value}
+                </div>
+                <div className="health-score-unit">/ 100</div>
               </div>
             </div>
-            <div className="health-tip" style={{ marginTop: '16px' }}>
-              {health.tips[0] || "Your shared financial plan is stable."}
+            <div className="health-label">{health.label}</div>
+            <div className="health-tip">
+              {health.tips[0] || 'Your shared financial plan is well-structured.'}
             </div>
           </div>
         </Card>
-        <Card title="Engine Breakdown" subtitle="Detailed monthly flow">
+
+        <Card>
+          <div className="card-title">Monthly Snapshot</div>
+          <div className="card-heading">Complete Flow</div>
+          <div className="card-sub">Detailed monthly money movement</div>
+
+          <div style={{ marginBottom: 4 }}>
+            {[
+              { dot: T.sky,     label: 'Shared Essentials',    val: fmt(snapshot.budget.needs) },
+              { dot: T.rose,    label: 'Safety Reserve',       val: fmt(snapshot.budget.emergency) },
+              { dot: T.goldMid, label: 'Investment Corpus',    val: fmt(snapshot.budget.investments) },
+            ].map(r => (
+              <div key={r.label} className="alloc-row">
+                <div className="alloc-name">
+                  <div className="alloc-dot" style={{ background: r.dot }} />
+                  {r.label}
+                </div>
+                <div className="alloc-amount">{r.val}</div>
+              </div>
+            ))}
+          </div>
+
+          <div className="divider" />
+
+          <div className="section-label">Portfolio Composition</div>
           {[
-            { color: T.sky, label: "Shared Essentials", val: fmt(snapshot.budget.needs) },
-            { color: T.rose, label: "Safety Fund", val: fmt(snapshot.budget.emergency) },
-            { color: T.gold, label: "Investment Corpus", val: fmt(snapshot.budget.investments) },
+            { dot: T.goldMid, label: `Equity · ${Math.round(snapshot.presets.equity * 100)}%`,       val: fmt(snapshot.investmentSplit.equity) },
+            { dot: T.sky,     label: `Debt · ${Math.round(snapshot.presets.debt * 100)}%`,           val: fmt(snapshot.investmentSplit.debt) },
+            { dot: T.sage,    label: `Commodities · ${Math.round(snapshot.presets.commodities * 100)}%`, val: fmt(snapshot.investmentSplit.commodities) },
+            { dot: T.violet,  label: `Crypto · ${Math.round(snapshot.presets.crypto * 100)}%`,       val: fmt(snapshot.investmentSplit.crypto) },
           ].map(r => (
             <div key={r.label} className="alloc-row">
-              <div className="alloc-name"><div className="alloc-dot" style={{ background: r.color }} />{r.label}</div>
-              <div className="alloc-amount">{r.val}</div>
-            </div>
-          ))}
-          <hr className="divider" />
-          <div style={{ fontSize: 11, fontWeight: 700, color: T.textFaint, textTransform: "uppercase", letterSpacing: "1px", marginBottom: 12 }}>Portfolio Composition</div>
-          {[
-            { color: T.gold, label: `Equity (${Math.round(snapshot.presets.equity * 100)}%)`, val: fmt(snapshot.investmentSplit.equity) },
-            { color: T.sky, label: `Debt (${Math.round(snapshot.presets.debt * 100)}%)`, val: fmt(snapshot.investmentSplit.debt) },
-            { color: T.emerald, label: `Commodities (${Math.round(snapshot.presets.commodities * 100)}%)`, val: fmt(snapshot.investmentSplit.commodities) },
-            { color: T.violet, label: `Crypto (${Math.round(snapshot.presets.crypto * 100)}%)`, val: fmt(snapshot.investmentSplit.crypto) },
-          ].map(r => (
-            <div key={r.label} className="alloc-row">
-              <div className="alloc-name"><div className="alloc-dot" style={{ background: r.color }} />{r.label}</div>
+              <div className="alloc-name">
+                <div className="alloc-dot" style={{ background: r.dot }} />
+                {r.label}
+              </div>
               <div className="alloc-amount">{r.val}</div>
             </div>
           ))}

@@ -1,167 +1,192 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useFinanceStore } from '../../store/useFinanceStore';
 import { calculateFinancialSnapshot, formatCurrency } from '../../utils/finance';
 import { CURRENCIES } from '../../constants/presets';
 import { T } from '../../theme/tokens';
 import { Card } from '../common/Card';
 
-export function IncomePage() {
-  const { 
-    partner1, partner2, p1Salary, p2Salary, mode, currency, 
-    setP1Salary, setP2Salary, setMode, setCurrency, getTotalSalary 
-  } = useFinanceStore();
-  
-  const totalSalary = getTotalSalary();
-  const snapshot = calculateFinancialSnapshot(totalSalary, mode);
-  const fmt = a => formatCurrency(a, currency);
-  const symbol = CURRENCIES[currency]?.symbol || "₹";
+const MODES = [
+  { key: 'Conservative', icon: '🛡️', desc: '60% Needs · 30% Invest' },
+  { key: 'Balanced',     icon: '⚖️', desc: '55% Needs · 35% Invest' },
+  { key: 'Aggressive',   icon: '🚀', desc: '50% Needs · 40% Invest' },
+];
 
-  const [rates, setRates] = useState(null);
-  const [loadingRates, setLoadingRates] = useState(true);
+export function IncomePage() {
+  const {
+    partner1, partner2,
+    p1Salary, p2Salary,
+    mode, currency,
+    setP1Salary, setP2Salary, setMode, setCurrency,
+    getTotalSalary,
+  } = useFinanceStore();
+
+  const totalSalary = getTotalSalary();
+  const snapshot = useMemo(() => calculateFinancialSnapshot(totalSalary, mode), [totalSalary, mode]);
+  const fmt    = a => formatCurrency(a, currency);
+  const symbol = CURRENCIES[currency]?.symbol || '₹';
+
+  // Live exchange rates
+  const [rates, setRates]         = useState(null);
+  const [loadingRates, setLoading] = useState(true);
 
   useEffect(() => {
+    setLoading(true);
     fetch(`https://open.er-api.com/v6/latest/${currency}`)
-      .then(res => res.json())
-      .then(data => {
-        if (data.result === "success") setRates(data.rates);
-        setLoadingRates(false);
-      })
-      .catch(() => setLoadingRates(false));
+      .then(r => r.json())
+      .then(d => { if (d.result === 'success') setRates(d.rates); })
+      .catch(() => {})
+      .finally(() => setLoading(false));
   }, [currency]);
 
-  const handleSalaryChange = (setter) => (e) => {
-    const val = e.target.value;
-    if (val === "") setter(0);
-    else {
-      const parsed = parseFloat(val);
-      if (!isNaN(parsed)) setter(parsed);
-    }
+  const handleSalary = setter => e => {
+    const v = parseFloat(e.target.value);
+    setter(isNaN(v) ? 0 : v);
   };
+
+  const budgetRows = [
+    { dot: T.sky,     label: 'Shared Essentials',          pct: snapshot.presets.needs,      val: snapshot.budget.needs },
+    { dot: T.rose,    label: 'Safety / Emergency Reserve',  pct: snapshot.presets.emergency,  val: snapshot.budget.emergency },
+    { dot: T.goldMid, label: 'Shared Investment Corpus',   pct: snapshot.presets.invest,     val: snapshot.budget.investments },
+  ];
+
+  const compareCurrencies = Object.keys(CURRENCIES).filter(c => c !== currency).slice(0, 4);
 
   return (
     <div className="fade-in">
       <div className="page-header">
-        <div>
-          <div className="page-title">Shared <em>Engine</em></div>
-          <div className="page-desc">The root configuration for your partnership wealth.</div>
-        </div>
+        <div className="page-eyebrow">Shared Engine</div>
+        <h1 className="page-title">Income & <em>Mode</em></h1>
+        <p className="page-desc">
+          Configure your combined income and risk profile. All allocations update in real-time.
+        </p>
       </div>
 
-      <div className="grid-2">
+      {/* Salary Inputs */}
+      <div className="grid-2 mb-20">
         <Card gold>
-          <div className="card-title">{partner1}'s Contribution</div>
-          <div className="card-subtitle">Monthly in-hand income</div>
-          <div className="salary-wrapper">
+          <div className="card-title">{partner1}'s Monthly Income</div>
+          <div className="card-heading" style={{ marginBottom: 20 }}>Primary Contribution</div>
+          <div className="salary-field">
             <span className="salary-prefix">{symbol}</span>
             <input
               className="salary-input"
               type="number"
-              value={p1Salary === 0 ? "" : p1Salary}
+              min={0}
               placeholder="0"
-              onChange={handleSalaryChange(setP1Salary)}
+              value={p1Salary || ''}
+              onChange={handleSalary(setP1Salary)}
             />
           </div>
+          <p style={{ fontSize: '0.8rem', color: T.textFaint, marginTop: 10 }}>
+            Monthly in-hand (after tax)
+          </p>
         </Card>
+
         <Card gold>
-          <div className="card-title">{partner2}'s Contribution</div>
-          <div className="card-subtitle">Monthly in-hand income</div>
-          <div className="salary-wrapper">
+          <div className="card-title">{partner2}'s Monthly Income</div>
+          <div className="card-heading" style={{ marginBottom: 20 }}>Secondary Contribution</div>
+          <div className="salary-field">
             <span className="salary-prefix">{symbol}</span>
             <input
               className="salary-input"
               type="number"
-              value={p2Salary === 0 ? "" : p2Salary}
+              min={0}
               placeholder="0"
-              onChange={handleSalaryChange(setP2Salary)}
+              value={p2Salary || ''}
+              onChange={handleSalary(setP2Salary)}
             />
           </div>
+          <p style={{ fontSize: '0.8rem', color: T.textFaint, marginTop: 10 }}>
+            Monthly in-hand (after tax)
+          </p>
         </Card>
       </div>
 
-      <Card className="mb-20 text-center" style={{ padding: '32px' }}>
-        <div className="card-title">Combined Monthly Engine Power</div>
-        <div className="card-value" style={{ 
-          fontFamily: "'DM Serif Display', serif", 
-          fontSize: '48px', 
-          color: T.gold,
-          margin: '16px 0',
-          letterSpacing: '-1.5px'
-        }}>
-          {fmt(totalSalary)}
-        </div>
-        <div className="card-subtitle" style={{ marginBottom: 0 }}>
-          Powering dynamic allocations and wealth projections.
+      {/* Combined Total */}
+      <Card className="mb-20">
+        <div className="combined-display">
+          <div className="combined-label">Combined Monthly Engine Power</div>
+          <div className="combined-value">{fmt(totalSalary)}</div>
+          <p className="combined-sub">
+            Powering dynamic allocations, projections &amp; goal timelines across your portfolio.
+          </p>
         </div>
       </Card>
 
-      <div className="grid-2-3">
-        <Card className="mb-20">
+      {/* Risk Mode + Currency */}
+      <div className="grid-2 mb-20">
+        <Card>
+          <div className="card-title">Risk Profile</div>
+          <div className="card-heading" style={{ marginBottom: 6 }}>Allocation Mode</div>
+          <p className="card-sub">
+            Dynamically adjusts needs, safety &amp; growth ratios.
+          </p>
+          <div className="mode-grid">
+            {MODES.map(m => (
+              <div
+                key={m.key}
+                className={`mode-card ${mode === m.key ? 'selected' : ''}`}
+                onClick={() => setMode(m.key)}
+              >
+                <span className="mode-icon">{m.icon}</span>
+                <div>
+                  <div className="mode-name">{m.key}</div>
+                  <div className="mode-desc">{m.desc}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </Card>
+
+        <Card>
           <div className="card-title">Accounting System</div>
-          <div className="card-subtitle">Primary currency for all formulas</div>
-          <select className="eb-select" value={currency} onChange={e => setCurrency(e.target.value)}>
+          <div className="card-heading" style={{ marginBottom: 6 }}>Currency</div>
+          <p className="card-sub">Primary display currency for all calculations.</p>
+          <select
+            className="eb-select"
+            value={currency}
+            onChange={e => setCurrency(e.target.value)}
+            style={{ marginBottom: 24 }}
+          >
             {Object.entries(CURRENCIES).map(([k, v]) => (
               <option key={k} value={k}>{v.flag} {v.name} ({v.symbol})</option>
             ))}
           </select>
 
-          <hr className="divider" />
-          
-          <div className="card-title">Live Global Benchmark</div>
-          <div className="card-subtitle">Display-only exchange references</div>
-          
+          <div className="section-label">Live Global Rates</div>
           {loadingRates ? (
-            <div style={{ fontSize: '13px', color: T.textFaint }}>Syncing with global markets...</div>
+            <p style={{ fontSize: '0.82rem', color: T.textFaint }}>Syncing with global markets…</p>
           ) : rates ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {[
-                { code: 'USD', name: 'US Dollar' },
-                { code: 'EUR', name: 'Euro' },
-                { code: 'CHF', name: 'Swiss Franc' },
-                { code: 'GBP', name: 'British Pound' }
-              ].filter(c => c.code !== currency).slice(0, 3).map(c => (
-                <div key={c.code} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', padding: '4px 0' }}>
-                  <span style={{ color: T.textMuted }}>1 {c.code}</span>
-                  <span style={{ fontWeight: 600 }}>{symbol}{(1 / rates[c.code]).toFixed(2)}</span>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div style={{ fontSize: '12px', color: T.rose }}>Market sync failed.</div>
-          )}
-        </Card>
-
-        <Card className="mb-20">
-          <div className="card-title">Engine Risk Profile</div>
-          <div className="card-subtitle">Dynamically adjusts needs, safety, and growth ratios</div>
-          <div className="mode-grid">
-            {[
-              { key: "Conservative", icon: "🛡️", desc: "Safety Focus\n60% Needs · 30% Invest" },
-              { key: "Balanced", icon: "⚖️", desc: "Balanced Growth\n55% Needs · 35% Invest" },
-              { key: "Aggressive", icon: "🚀", desc: "Growth Focus\n50% Needs · 40% Invest" },
-            ].map(m => (
-              <div key={m.key} className={`mode-card ${mode === m.key ? "selected" : ""}`} onClick={() => setMode(m.key)}>
-                <span className="mode-icon">{m.icon}</span>
-                <div className="mode-name">{m.key}</div>
-                <div className="mode-desc">{m.desc}</div>
+            compareCurrencies.map(c => (
+              <div key={c} className="rate-row">
+                <span className="rate-label">1 {c} in {currency}</span>
+                <span className="rate-value">
+                  {symbol}{(1 / rates[c]).toFixed(4)}
+                </span>
               </div>
-            ))}
-          </div>
+            ))
+          ) : (
+            <p style={{ fontSize: '0.82rem', color: T.rose }}>Market sync unavailable.</p>
+          )}
         </Card>
       </div>
 
+      {/* Budget Distribution */}
       <Card>
-        <div className="card-title">Engine Budget Distribution</div>
-        <div className="card-subtitle">Mathematically accurate split of shared income</div>
-        {[
-          { color: T.sky, label: "Shared Essentials", pct: Math.round(snapshot.presets.needs * 100) + "%", val: fmt(snapshot.budget.needs) },
-          { color: T.rose, label: "Safety / Emergency Fund", pct: Math.round(snapshot.presets.emergency * 100) + "%", val: fmt(snapshot.budget.emergency) },
-          { color: T.gold, label: "Shared Investment Corpus", pct: Math.round(snapshot.presets.invest * 100) + "%", val: fmt(snapshot.budget.investments) },
-        ].map(r => (
+        <div className="card-title">Live Budget Preview</div>
+        <div className="card-heading" style={{ marginBottom: 6 }}>Engine Distribution</div>
+        <p className="card-sub">
+          Mathematically exact split of combined income based on {mode} profile.
+        </p>
+        {budgetRows.map(r => (
           <div key={r.label} className="alloc-row">
-            <div className="alloc-name"><div className="alloc-dot" style={{ background: r.color }} />{r.label}</div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-              <span className="alloc-pct">{r.pct}</span>
-              <span className="alloc-amount">{r.val}</span>
+            <div className="alloc-name">
+              <div className="alloc-dot" style={{ background: r.dot }} />
+              {r.label}
+            </div>
+            <div className="alloc-right">
+              <span className="alloc-pct">{Math.round(r.pct * 100)}%</span>
+              <span className="alloc-amount">{fmt(r.val)}</span>
             </div>
           </div>
         ))}
