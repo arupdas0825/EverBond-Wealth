@@ -99,123 +99,25 @@ Every calculation is a mathematically faithful JavaScript translation of `Invest
 ## 📸 Screenshots
 
 > *ASCII representations — actual UI is fully rendered with charts, glassmorphism, and premium typography.*
+## Welcome Screen
+<img width="1831" height="802" alt="image" src="https://github.com/user-attachments/assets/87d0a073-c1db-43d2-b504-f4961a181e3e" />
 
-<details>
-<summary><b>🖥️ Desktop — Dashboard</b></summary>
+## Dashboard
+<img width="1883" height="794" alt="image" src="https://github.com/user-attachments/assets/bebd0c01-d41b-4b3e-aad3-9811ae1feb48" />
 
-```
-╔══════════════════════════════════════════════════════════════════════════════╗
-║  💑 EverBond  │  Good Morning ☀️  Arup & Shatarupa  ·  Balanced Mode       ║
-╠═══════════════╬══════════════════════════════════════════════════════════════╣
-║  ◉ Dashboard  ║  ┌───────────┐  ┌───────────┐  ┌──────────┐  ┌──────────┐ ║
-║  💰 Income    ║  │ 💰        │  │ 📈        │  │ 🛡️        │  │ ⚡        │ ║
-║  📊 Allocation║  │ ₹1,00,000 │  │ ₹35,000   │  │ ₹10,000  │  │ 82/100   │ ║
-║  🎯 Goals     ║  │ Combined  │  │ 35% rate  │  │ Safety   │  │ Strong   │ ║
-║  🚀 Simulate  ║  └───────────┘  └───────────┘  └──────────┘  └──────────┘ ║
-║               ║                                                              ║
-║  ──────────── ║  ┌─────────────────────────┐  ┌──────────────────────────┐ ║
-║  💑 Arup ❤   ║  │  🍩 Budget Allocation   │  │  📊 Asset Portfolio      │ ║
-║    Shatarupa  ║  │  [PIE CHART]            │  │  [HORIZONTAL BAR CHART]  │ ║
-║  ↺ Reset      ║  │  Essentials · Emergency │  │  Equity · Debt · Comm.   │ ║
-╚═══════════════╩══════════════════════════════════════════════════════════════╝
-```
-</details>
+## Investment Allocation  
+<img width="1758" height="728" alt="image" src="https://github.com/user-attachments/assets/013c764e-1d83-4d9c-81dc-cd79cb7343d7" />
 
-<details>
-<summary><b>🖥️ Desktop — Allocation Page (all 6 Excel sections)</b></summary>
+## Future Simulation 
+<img width="1660" height="796" alt="image" src="https://github.com/user-attachments/assets/929982e6-845e-4d98-aae7-6a3f47c05e04" />
 
-```
-╔══════════════════════════════════════════════════════════════════════════════╗
-║  Investment Allocation                                                        ║
-╠══════════════════════════════════════════════════════════════════════════════╣
-║  ┌──────────────────────────┐  ┌────────────────────────────────────────┐   ║
-║  │ Full Portfolio Donut     │  │ Goal Funding Bar Chart                 │   ║
-║  │ [9-slice donut chart]    │  │ 🎓 Child · 🌅 Retire · 🏡 Home · ✈️   │   ║
-║  └──────────────────────────┘  └────────────────────────────────────────┘   ║
-║                                                                               ║
-║  Section 1 · Budget Split        Section 2 · Investment Split                ║
-║  Essentials    55%  ₹55,000      Equity        60%   ₹21,000                ║
-║  Emergency     10%  ₹10,000      Debt          30%   ₹10,500                ║
-║  Investments   35%  ₹35,000      Commodities    8%    ₹2,800                ║
-║                                  Crypto          2%      ₹700                ║
-║  Section 3 · Equity              Section 4 · Debt                            ║
-║  Large Cap  60%  ₹12,600         Liquid         30%   ₹3,150                ║
-║  Mid Cap    30%   ₹6,300         Short TMF      45%   ₹4,725                ║
-║  Small Cap  10%   ₹2,100         Target Mat.    25%   ₹2,625                ║
-║                                                                               ║
-║  Section 5 · Commodities         Section 6 · Goal Funding                    ║
-║  Gold    80%  ₹2,240             🎓 Child Edu.  ₹10,526                     ║
-║  Silver  20%    ₹560             🌅 Retirement  ₹10,526                     ║
-║                                  🏡 Home        ₹3,947                      ║
-║                                  ✈️  Vacation    ₹10,000                     ║
-╚══════════════════════════════════════════════════════════════════════════════╝
-```
-</details>
+## Life Goals
+<img width="1709" height="805" alt="image" src="https://github.com/user-attachments/assets/dca526b7-8ddc-411b-b23e-8b49902debdc" />
 
-<details>
-<summary><b>🖥️ Desktop — Simulation Page</b></summary>
+## Mobile View
+<div align="center">
+<img width="824" height="1600" alt="WhatsApp Image 2026-05-03 at 10 54 35 PM" src="https://github.com/user-attachments/assets/959d6bee-1a4b-4691-bc2a-570c7748b108" />
 
-```
-╔══════════════════════════════════════════════════════════════════════════════╗
-║  Future Simulation                                                            ║
-║  FV = PMT × [((1+r)ⁿ − 1) / r] × (1+r)                                     ║
-╠══════════════════════════════════════════════════════════════════════════════╣
-║  Horizon   [1yr] [5yr] [●10yr] [20yr] [30yr]    Blended: 10.9%              ║
-║  Return    ──────────────●──────────────  12.0%                              ║
-║  Inflation [OFF ○──]                                                          ║
-║                                                                               ║
-║  ┌────────────┐  ┌──────────┐  ┌──────────┐  ┌─────────────┐               ║
-║  │🏦 ₹2.36Cr │  │ ₹42.0L  │  │ ₹1.94Cr │  │   5.61×    │               ║
-║  │Final Corpus│  │Contributed│  │Net Gains │  │ Multiplier  │               ║
-║  └────────────┘  └──────────┘  └──────────┘  └─────────────┘               ║
-║                                                                               ║
-║  Growth Trajectory — Shared Wealth Compounding Curve                         ║
-║  ₹2.4Cr ┤                                                    ╭──╮           ║
-║  ₹1.8Cr ┤                                              ╭─────╯  │           ║
-║  ₹1.2Cr ┤                                       ╭──────╯        │           ║
-║  ₹0.6Cr ┤                             ╭─────────╯               │           ║
-║  ₹42.0L ┤ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ╯  (invested)              │           ║
-║         └──────────────────────────────────────────────────────              ║
-║          Now  Yr1  Yr2  Yr3  Yr4  Yr5  Yr6  Yr7  Yr8  Yr9  Yr10            ║
-╚══════════════════════════════════════════════════════════════════════════════╝
-```
-</details>
-
-<details>
-<summary><b>📱 Mobile — Apple Glassmorphism Bottom Nav</b></summary>
-
-```
-┌─────────────────────────┐
-│  Good Morning ☀️        │
-│  Arup & Shatarupa       │  ← Personalized greeting
-│  Balanced Mode          │
-│                         │
-│ ┌──────────┬──────────┐ │
-│ │ 💰 ₹1L  │ 📈 ₹35K  │ │  ← Stat cards
-│ ├──────────┼──────────┤ │
-│ │ 🛡️ ₹10K │ ⚡ 82/100 │ │
-│ └──────────┴──────────┘ │
-│                         │
-│  ╭─ Budget Allocation ─╮│
-│  │     [🍩 DONUT]      ││  ← Recharts PieChart
-│  ╰─────────────────────╯│
-│                         │
-│  Monthly Snapshot       │
-│  ────────────────────   │
-│  Essentials   ₹55,000   │
-│  Emergency    ₹10,000   │
-│  Investments  ₹35,000   │
-│  Equity       ₹21,000   │
-│  Debt         ₹10,500   │
-│                         │
-│  ╔═══════════════════╗  │
-│  ║ ◉  💰  📊  🎯  🚀║  │  ← Glassmorphism Pill
-│  ╚═══════════════════╝  │     backdrop-filter: blur(24px)
-└─────────────────────────┘     border-radius: 28px
-```
-</details>
-
----
 
 ## ✨ Features
 
