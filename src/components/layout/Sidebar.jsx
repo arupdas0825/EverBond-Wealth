@@ -6,6 +6,7 @@ const NAV = [
   { key: 'income', icon: '💰', label: 'Income' },
   { key: 'allocation', icon: '📊', label: 'Allocation' },
   { key: 'goals', icon: '🎯', label: 'Goals' },
+  { key: 'milestones', icon: '📅', label: 'Milestones' },
   { key: 'simulation', icon: '🚀', label: 'Simulate' },
 ];
 

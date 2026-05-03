@@ -15,13 +15,16 @@ import { PRESETS, CURRENCIES } from '../constants/presets';
  *   LargeCap   = Equity × equityLarge%
  *   ...etc (exact chain)
  */
-export function calculateFinancialSnapshot(totalSalary, mode) {
+export function calculateFinancialSnapshot(totalSalary, mode, milestoneContribution = 0) {
   const p = PRESETS[mode];
 
   // 1. Budget split
   const needs       = totalSalary * p.needs;
   const emergency   = totalSalary * p.emergency;
-  const investments = totalSalary * p.invest;
+  let   investments = totalSalary * p.invest;
+
+  // Subtract milestone contributions from the investment pool
+  investments = Math.max(0, investments - milestoneContribution);
 
   // 2. Investment asset split
   const equity      = investments * p.equity;
@@ -177,4 +180,14 @@ export function formatCompact(amount, currencyCode) {
   if (abs >= 100_000)    return `${curr.symbol}${(amount / 100_000).toFixed(2)}L`;
   if (abs >= 1_000)      return `${curr.symbol}${(amount / 1_000).toFixed(1)}K`;
   return formatCurrency(amount, currencyCode);
+}
+
+export function formatDate(dateInput) {
+  if (!dateInput) return '';
+  const date = new Date(dateInput);
+  if (isNaN(date.getTime())) return '';
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
+  return `${day}-${month}-${year}`;
 }

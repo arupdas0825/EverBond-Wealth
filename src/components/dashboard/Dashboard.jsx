@@ -1,7 +1,8 @@
 import React, { useMemo } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from 'recharts';
 import { useFinanceStore } from '../../store/useFinanceStore';
-import { calculateFinancialSnapshot, calculateHealthScore, formatCurrency, formatCompact } from '../../utils/finance';
+import { useMilestoneStore } from '../../store/useMilestoneStore';
+import { calculateFinancialSnapshot, calculateHealthScore, formatCurrency, formatCompact, formatDate } from '../../utils/finance';
 import { T } from '../../theme/tokens';
 import { Card, StatCard } from '../common/Card';
 
@@ -22,8 +23,14 @@ function greeting() {
 
 export function Dashboard() {
   const state    = useFinanceStore();
+  const milestones = useMilestoneStore(s => s.milestones);
+  const totalContribution = useMemo(() => 
+    milestones.reduce((sum, m) => sum + (Number(m.monthlyContribution) || 0), 0), 
+    [milestones]
+  );
   const total    = state.getTotalSalary();
-  const snap     = useMemo(() => calculateFinancialSnapshot(total, state.mode), [total, state.mode]);
+  const snap     = useMemo(() => calculateFinancialSnapshot(total, state.mode, totalContribution), 
+    [total, state.mode, totalContribution]);
   const health   = useMemo(() => calculateHealthScore(snap), [snap]);
   const fmt      = a => formatCurrency(a, state.currency);
   const cmpct    = a => formatCompact(a, state.currency);
@@ -161,6 +168,37 @@ export function Dashboard() {
               <div className="alloc-amount">{r.val}</div>
             </div>
           ))}
+        </Card>
+
+        <Card>
+          <div className="card-title">Future Assets</div>
+          <div className="card-heading">Active Milestones</div>
+          <div className="card-sub">Next life events and monthly savings</div>
+          {milestones.length === 0 ? (
+            <div style={{ padding: '20px 0', textAlign: 'center', color: 'var(--text-faint)', fontSize: '.85rem' }}>
+              No active milestones. Start planning in the Milestone Planner.
+            </div>
+          ) : (
+            milestones.slice(0, 4).map(m => (
+              <div key={m.id} className="alloc-row">
+                <div className="alloc-name">
+                  <span style={{ fontSize: '1rem' }}>{m.category === 'Home' ? '🏡' : m.category === 'Car' ? '🚗' : m.category === 'Travel' ? '✈️' : '🎯'}</span>
+                  <div>
+                    <div>{m.name}</div>
+                    <div style={{ fontSize: '.65rem', color: 'var(--text-faint)', fontWeight: 600 }}>Target: {formatDate(m.targetDate)}</div>
+                  </div>
+                </div>
+                <div className="alloc-right">
+                   <div className="alloc-amount">{fmt(Number(m.monthlyContribution))}</div>
+                </div>
+              </div>
+            ))
+          )}
+          <div className="divider" />
+          <div className="alloc-row" style={{ border: 'none', background: 'var(--gold-pale)', borderRadius: 10, padding: '10px 12px' }}>
+            <div className="alloc-name" style={{ fontWeight: 700 }}>Total Milestone Saving</div>
+            <div className="alloc-amount" style={{ color: 'var(--gold-mid)' }}>{fmt(totalContribution)}</div>
+          </div>
         </Card>
       </div>
     </div>

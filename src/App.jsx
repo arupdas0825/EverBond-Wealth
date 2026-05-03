@@ -7,6 +7,7 @@ import { Dashboard }    from './components/dashboard/Dashboard';
 import { IncomePage }   from './components/income/IncomePage';
 import { AllocationPage } from './components/allocation/AllocationPage';
 import { GoalsPage }    from './components/goals/GoalsPage';
+import { MilestonePlanner } from './components/milestones/MilestonePlanner';
 import { SimulationPage } from './components/simulation/SimulationPage';
 import './index.css';
 export default function App() {
@@ -25,6 +26,7 @@ export default function App() {
           {page==='income'     && <IncomePage/>}
           {page==='allocation' && <AllocationPage/>}
           {page==='goals'      && <GoalsPage/>}
+          {page==='milestones' && <MilestonePlanner/>}
           {page==='simulation' && <SimulationPage/>}
         </div>
       </main>
