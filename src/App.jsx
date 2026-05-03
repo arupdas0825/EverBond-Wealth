@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useFinanceStore } from './store/useFinanceStore';
 import { WelcomeScreen } from './components/welcome/WelcomeScreen';
 import { Sidebar, MobileNav } from './components/layout/Sidebar';
+import { Logo } from './components/common/Logo';
 import { Dashboard }    from './components/dashboard/Dashboard';
 import { IncomePage }   from './components/income/IncomePage';
 import { AllocationPage } from './components/allocation/AllocationPage';
@@ -14,6 +15,9 @@ export default function App() {
   if (!started) return <WelcomeScreen/>;
   return (
     <div className="eb-app">
+      <div className="eb-mobile-header">
+        <Logo size={32} />
+      </div>
       <Sidebar page={page} setPage={setPage}/>
       <main className="eb-main">
         <div className="eb-page">

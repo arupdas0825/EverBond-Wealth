@@ -149,6 +149,25 @@ input,select{font-family:var(--fb)}
   padding:var(--page-y) var(--page-x);
 }
 
+/* ── MOBILE HEADER ───────────────────────────────────────── */
+.eb-mobile-header {
+  display: none;
+}
+@media(max-width:768px) {
+  .eb-mobile-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 64px;
+    background: var(--bg-sidebar);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    padding: 0 20px;
+  }
+}
+
 /* ═══════════════════════════════════════════════════════════
    MOBILE BOTTOM NAV — Apple Glassmorphism Style
 ═══════════════════════════════════════════════════════════ */
@@ -549,6 +568,7 @@ input,select{font-family:var(--fb)}
 ═══════════════════════════════════════════════════════════ */
 @media(max-width:768px){
   :root{--page-x:16px;--page-y:24px}
+  .eb-app{flex-direction:column}
   .eb-sidebar{display:none}
   .eb-page{
     padding-left:max(16px,env(safe-area-inset-left) + 16px);

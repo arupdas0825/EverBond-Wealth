@@ -4,7 +4,6 @@ import { useFinanceStore } from '../../store/useFinanceStore';
 import { calculateFinancialSnapshot, formatCurrency, formatCompact } from '../../utils/finance';
 import { T } from '../../theme/tokens';
 import { Card } from '../common/Card';
-import { BrandLogo } from '../common/Logo';
 
 const TT = {
   borderRadius:'14px',border:'none',
@@ -71,7 +70,6 @@ export function AllocationPage() {
             Granular asset-class distribution — every number sourced directly from the Excel brain.
           </p>
         </div>
-        <BrandLogo size={52} style={{marginTop:8, flexShrink:0}}/>
       </div>
 
       {/* Charts */}
