@@ -1,5 +1,11 @@
 <div align="center">
-<img width="1536" height="1024" alt="favicon" src="https://github.com/user-attachments/assets/ebd070b6-2b36-4ba3-a2ed-f10e27f4df3a" />
+<img 
+  src="https://github.com/user-attachments/assets/ebd070b6-2b36-4ba3-a2ed-f10e27f4df3a"
+  width="130"
+  height="90"
+  alt="favicon"
+  style="border-radius:18px; margin-bottom:16px;"
+/>
 
 <br />
 
