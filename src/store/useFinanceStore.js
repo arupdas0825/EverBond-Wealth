@@ -4,54 +4,60 @@ import { persist } from 'zustand/middleware';
 export const useFinanceStore = create(
   persist(
     (set, get) => ({
-      partner1: "",
-      partner2: "",
-      region: "India",
-      currency: "INR",
-      p1Salary: 50000,
-      p2Salary: 50000,
-      mode: "Balanced",
-      simYears: 10,
-      simReturn: null,
-      customGoals: [],
-      goalTargets: { child: 5000000, retirement: 20000000, house: 8000000, vacation: 500000 },
-      started: false,
+      // Onboarding
+      started:   false,
+      partner1:  '',
+      partner2:  '',
+      region:    'India',
+      currency:  'INR',
 
-      // Selectors
-      getTotalSalary: () => get().p1Salary + get().p2Salary,
+      // Income
+      p1Salary: 100000,
+      p2Salary: 0,
+
+      // Settings
+      mode:      'Balanced',
+      simYears:  10,
+      simReturn: null,
+
+      // Goals
+      goalTargets: {
+        child:      5000000,
+        retirement: 20000000,
+        house:      8000000,
+        vacation:   500000,
+      },
 
       // Actions
-      setProfile: (info) => set({ ...info, started: true }),
-      setP1Salary: (val) => set({ p1Salary: val }),
-      setP2Salary: (val) => set({ p2Salary: val }),
-      setMode: (mode) => set({ mode }),
-      setCurrency: (currency) => set({ currency }),
-      setRegion: (region) => set({ region }),
-      setSimYears: (simYears) => set({ simYears }),
-      setSimReturn: (simReturn) => set({ simReturn }),
-      setGoalTargets: (goalTargets) => set({ goalTargets }),
-      
-      addCustomGoal: (goal) => set((state) => ({ 
-        customGoals: [...state.customGoals, { ...goal, id: Date.now() }] 
-      })),
-      
-      removeCustomGoal: (id) => set((state) => ({
-        customGoals: state.customGoals.filter((g) => g.id !== id)
-      })),
+      setProfile: ({ partner1, partner2, region, currency }) =>
+        set({ started: true, partner1, partner2, region, currency }),
+
+      setP1Salary: v => set({ p1Salary: v }),
+      setP2Salary: v => set({ p2Salary: v }),
+      setMode:     v => set({ mode: v }),
+      setCurrency: v => set({ currency: v }),
+      setSimYears: v => set({ simYears: v }),
+      setSimReturn:v => set({ simReturn: v }),
+      setGoalTargets: t => set({ goalTargets: t }),
+
+      getTotalSalary: () => {
+        const { p1Salary, p2Salary } = get();
+        return (p1Salary || 0) + (p2Salary || 0);
+      },
 
       reset: () => {
-        localStorage.removeItem('eb_state_v3'); // Version bump for new schema
         set({
-          partner1: "", partner2: "", region: "India", currency: "INR", 
-          p1Salary: 50000, p2Salary: 50000, mode: "Balanced",
-          simYears: 10, simReturn: null, customGoals: [],
-          goalTargets: { child: 5000000, retirement: 20000000, house: 8000000, vacation: 500000 },
-          started: false
+          started: false, partner1: '', partner2: '',
+          region: 'India', currency: 'INR',
+          p1Salary: 100000, p2Salary: 0,
+          mode: 'Balanced', simYears: 10, simReturn: null,
+          goalTargets: {
+            child: 5000000, retirement: 20000000,
+            house: 8000000, vacation: 500000,
+          },
         });
-      }
+      },
     }),
-    {
-      name: 'eb_state_v3',
-    }
+    { name: 'everbond-wealth-v2' }
   )
 );

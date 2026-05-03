@@ -1,36 +1,32 @@
 import React, { useMemo } from 'react';
 import { useFinanceStore } from '../../store/useFinanceStore';
 import {
-  calculateFinancialSnapshot,
-  formatCurrency,
-  formatCompact,
-  calculateGoalTimeline,
-  simulateGrowth,
+  calculateFinancialSnapshot, formatCurrency, formatCompact,
+  calculateGoalTimeline, simulateGrowth,
 } from '../../utils/finance';
 import { T } from '../../theme/tokens';
 
 const GOAL_DEFS = [
-  { key: 'child',      icon: '🎓', name: 'Child Education',  color: T.goldMid,  accent: T.goldMid,  retPct: 10 },
-  { key: 'retirement', icon: '🌅', name: 'Retirement',       color: T.sage,     accent: T.sage,     retPct: 12 },
-  { key: 'house',      icon: '🏡', name: 'Home Purchase',    color: T.sky,      accent: T.sky,      retPct: 9  },
-  { key: 'vacation',   icon: '✈️', name: 'Vacation / Travel', color: T.rose,    accent: T.rose,     retPct: 6  },
+  { key:'child',      icon:'🎓', name:'Child Education',   color:T.goldMid, retPct:10, tag:'Education Fund'  },
+  { key:'retirement', icon:'🌅', name:'Retirement Corpus', color:T.sage,    retPct:12, tag:'Long-term Goal'  },
+  { key:'house',      icon:'🏡', name:'Home Purchase',     color:T.sky,     retPct:9,  tag:'Asset Goal'      },
+  { key:'vacation',   icon:'✈️',  name:'Vacation / Travel', color:T.rose,    retPct:6,  tag:'Lifestyle Goal'  },
 ];
 
-function fmtTimeline(months) {
-  if (!isFinite(months)) return '∞';
-  if (months <= 0)       return 'Achieved!';
-  if (months < 12)       return `${months}m`;
-  const y = Math.floor(months / 12);
-  const m = months % 12;
-  return m > 0 ? `${y}y ${m}m` : `${y}y`;
+function fmtEta(months) {
+  if (!isFinite(months)) return '∞ — Set a target';
+  if (months <= 0)        return '✓ Achieved!';
+  if (months < 12)        return `${months} month${months>1?'s':''}`;
+  const y = Math.floor(months/12), m = months%12;
+  return m > 0 ? `${y}y ${m}m` : `${y} years`;
 }
 
 export function GoalsPage() {
   const { mode, currency, goalTargets, setGoalTargets, getTotalSalary } = useFinanceStore();
-  const total    = getTotalSalary();
-  const snapshot = useMemo(() => calculateFinancialSnapshot(total, mode), [total, mode]);
-  const fmt      = a => formatCurrency(a, currency);
-  const cmpct    = a => formatCompact(a, currency);
+  const total = getTotalSalary();
+  const snap  = useMemo(()=>calculateFinancialSnapshot(total,mode),[total,mode]);
+  const fmt   = a => formatCurrency(a, currency);
+  const cmpct = a => formatCompact(a, currency);
 
   return (
     <div className="fade-in">
@@ -38,72 +34,90 @@ export function GoalsPage() {
         <div className="page-eyebrow">Dream Planner</div>
         <h1 className="page-title">Life <em>Goals</em></h1>
         <p className="page-desc">
-          Set your shared targets and track real-time progress toward every dream.
+          Set your shared targets. Monthly allocations are auto-calculated from the Excel engine.
         </p>
       </div>
 
       <div className="grid-2">
         {GOAL_DEFS.map(g => {
-          const monthly  = snapshot.goalSplit[g.key];
+          const monthly  = snap.goalSplit[g.key];
           const target   = goalTargets[g.key] || 0;
           const months   = target > 0 ? calculateGoalTimeline(monthly, target, g.retPct) : Infinity;
           const corpus20 = simulateGrowth(monthly, 20, g.retPct).fv;
-          const progress = target > 0 ? Math.min(((monthly * 240) / target) * 100, 100) : 0;
+          const progress = target > 0 ? Math.min((monthly * 240 / target) * 100, 100) : 0;
 
           return (
-            <div
-              key={g.key}
-              className="goal-card"
-              style={{
-                borderTop: `3px solid ${g.color}`,
-              }}
-            >
-              {/* Header */}
-              <div className="goal-card-header">
+            <div key={g.key} className="goal-card" style={{borderTop:`3px solid ${g.color}`}}>
+              {/* Header row */}
+              <div className="goal-header">
                 <div>
-                  <div className="goal-icon-wrap">{g.icon}</div>
+                  <div className="goal-icon">{g.icon}</div>
                   <div className="goal-name">{g.name}</div>
-                  <div className="goal-tag">Monthly Allocation</div>
+                  <div className="goal-tag">{g.tag}</div>
                 </div>
-                <div className="goal-monthly">
-                  <div className="goal-monthly-amount" style={{ color: g.color }}>
-                    {fmt(monthly)}
-                  </div>
-                  <div className="goal-eta">
-                    {isFinite(months) ? `ETA · ${fmtTimeline(months)}` : 'Set a target →'}
-                  </div>
+                <div style={{textAlign:'right',flexShrink:0}}>
+                  <div className="goal-monthly-amount" style={{color:g.color}}>{fmt(monthly)}</div>
+                  <div className="goal-eta">{fmtEta(months)}</div>
                 </div>
               </div>
 
-              {/* Target */}
-              <div className="goal-target-row" style={{ marginBottom: 8 }}>
+              {/* Rate badge */}
+              <div style={{
+                display:'inline-flex',alignItems:'center',gap:5,
+                padding:'3px 10px',borderRadius:100,
+                background:`${g.color}14`,border:`1px solid ${g.color}30`,
+                fontSize:'.68rem',fontWeight:700,color:g.color,marginBottom:14,
+              }}>
+                Expected Return · {g.retPct}% p.a.
+              </div>
+
+              {/* Target input */}
+              <div className="goal-target-row">
                 <span className="goal-target-label">Target Amount</span>
-                <span className="goal-target-value">{target > 0 ? fmt(target) : '—'}</span>
+                <span className="goal-target-val">{target > 0 ? fmt(target) : '—'}</span>
               </div>
-
               <input
                 className="goal-input"
-                type="number"
-                min={0}
-                placeholder="Set target amount…"
-                value={target || ''}
+                type="number" min={0}
+                placeholder={`Set ${g.name} target…`}
+                value={target||''}
                 onChange={e => {
                   const v = parseFloat(e.target.value);
                   setGoalTargets({ ...goalTargets, [g.key]: isNaN(v) ? 0 : v });
                 }}
               />
 
-              {/* Progress */}
+              {/* Progress bar */}
               <div className="progress-track">
-                <div
-                  className="progress-fill"
-                  style={{ width: `${progress.toFixed(1)}%`, background: g.color }}
-                />
+                <div className="progress-fill"
+                  style={{width:`${progress.toFixed(1)}%`, background:g.color}}/>
               </div>
 
+              {/* Projection row */}
               <div className="goal-projection">
-                <span>20-Year Projection (at {g.retPct}% p.a.)</span>
-                <span style={{ color: g.color, fontWeight: 700 }}>{cmpct(corpus20)}</span>
+                <span>20-yr corpus @ {g.retPct}% p.a.</span>
+                <span style={{color:g.color, fontWeight:700, fontFamily:'var(--fd)', fontSize:'1rem'}}>
+                  {cmpct(corpus20)}
+                </span>
+              </div>
+
+              {/* Monthly breakdown micro-table */}
+              <div className="divider" style={{margin:'12px 0 10px'}}/>
+              <div style={{display:'flex',justifyContent:'space-between',gap:8,flexWrap:'wrap'}}>
+                {[1,5,10].map(y => {
+                  const r = simulateGrowth(monthly, y, g.retPct);
+                  return (
+                    <div key={y} style={{textAlign:'center',flex:1,minWidth:60}}>
+                      <div style={{fontSize:'.65rem',fontWeight:700,textTransform:'uppercase',
+                        letterSpacing:'.07em',color:'var(--text-faint)',marginBottom:3}}>
+                        {y}Y Corpus
+                      </div>
+                      <div style={{fontFamily:'var(--fd)',fontSize:'.9rem',fontWeight:700,color:'var(--text)'}}>
+                        {cmpct(r.fv)}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           );

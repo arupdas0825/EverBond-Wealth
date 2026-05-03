@@ -8,30 +8,23 @@ import { AllocationPage } from './components/allocation/AllocationPage';
 import { GoalsPage }    from './components/goals/GoalsPage';
 import { SimulationPage } from './components/simulation/SimulationPage';
 import './index.css';
-
-function App() {
-  const started = useFinanceStore(s => s.started);
-  const [page, setPage] = useState('dashboard');
-
-  if (!started) return <WelcomeScreen />;
-
+export default function App() {
+  const started = useFinanceStore(s=>s.started);
+  const [page,setPage] = useState('dashboard');
+  if (!started) return <WelcomeScreen/>;
   return (
     <div className="eb-app">
-      <Sidebar page={page} setPage={setPage} />
-
+      <Sidebar page={page} setPage={setPage}/>
       <main className="eb-main">
         <div className="eb-page">
-          {page === 'dashboard'  && <Dashboard />}
-          {page === 'income'     && <IncomePage />}
-          {page === 'allocation' && <AllocationPage />}
-          {page === 'goals'      && <GoalsPage />}
-          {page === 'simulation' && <SimulationPage />}
+          {page==='dashboard'  && <Dashboard/>}
+          {page==='income'     && <IncomePage/>}
+          {page==='allocation' && <AllocationPage/>}
+          {page==='goals'      && <GoalsPage/>}
+          {page==='simulation' && <SimulationPage/>}
         </div>
       </main>
-
-      <MobileNav page={page} setPage={setPage} />
+      <MobileNav page={page} setPage={setPage}/>
     </div>
   );
 }
-
-export default App;
