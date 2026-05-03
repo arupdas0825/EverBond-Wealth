@@ -40,7 +40,16 @@ export function Dashboard() {
       emoji = "🌙";
     }
 
-    return `${timeGreeting}, ${state.partner1} & ${state.partner2} ${emoji}`;
+    return (
+      <>
+        <div style={{ opacity: 0.7, fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '4px' }}>
+          {timeGreeting}
+        </div>
+        <div className="page-title" style={{ fontSize: 'var(--font-h2)' }}>
+          {state.partner1} & {state.partner2} {emoji}
+        </div>
+      </>
+    );
   };
 
   const budgetData = [
@@ -60,12 +69,8 @@ export function Dashboard() {
     <div className="fade-in">
       <div className="page-header">
         <div>
-          <div className="page-title">{getGreeting()}</div>
+          {getGreeting()}
           <div className="page-desc">Your financial engine is running optimally for {state.region}.</div>
-        </div>
-        <div style={{ textAlign: 'right' }}>
-          <span className="badge badge-gold" style={{ marginBottom: '4px' }}>{state.mode}</span>
-          <div style={{ fontSize: '11px', color: T.textFaint }}>Risk: {state.mode}</div>
         </div>
       </div>
 
@@ -78,7 +83,7 @@ export function Dashboard() {
 
       <div className="grid-2">
         <Card title="Budget Allocation" subtitle="Real-time distribution of shared income">
-          <div style={{ height: 180 }}>
+          <div className="recharts-responsive-container">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie data={budgetData} innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value">
@@ -100,7 +105,7 @@ export function Dashboard() {
           </div>
         </Card>
         <Card title="Asset Portfolio" subtitle="Current risk-weighted distribution">
-          <div style={{ height: 180 }}>
+          <div className="recharts-responsive-container">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={assetData} layout="vertical">
                 <XAxis type="number" hide />

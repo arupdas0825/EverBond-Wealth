@@ -60,12 +60,12 @@ export function SimulationPage() {
           ))}
         </div>
 
-        <div style={{ marginTop: 24, display: 'flex', gap: '32px', alignItems: 'center' }}>
+        <div className="sim-config-footer">
           <div style={{ flex: 1 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
               <label className="form-label" style={{ marginBottom: 0 }}>Expected Shared Return (%)</label>
-              <div style={{ fontSize: '12px', color: T.textFaint }}>
-                Blended Index: <span style={{ color: T.emerald, fontWeight: 700 }}>{blended.toFixed(1)}%</span>
+              <div style={{ fontSize: '11px', fontWeight: 800, color: T.textFaint, textTransform: 'uppercase' }}>
+                Blended Index: <span style={{ color: T.emerald }}>{blended.toFixed(1)}%</span>
               </div>
             </div>
             <div className="slider-row">
@@ -73,17 +73,26 @@ export function SimulationPage() {
                 type="range" className="eb-slider" min={1} max={40} step={0.5} 
                 value={ret} onChange={e => setSimReturn(parseFloat(e.target.value))} 
               />
-              <span className="slider-val" style={{ fontSize: '20px', fontWeight: 700 }}>{ret.toFixed(1)}%</span>
+              <span className="slider-val">{ret.toFixed(1)}%</span>
             </div>
           </div>
           
-          <div style={{ padding: '12px 20px', background: '#F8F8F6', borderRadius: '12px', border: '1.5px solid #F0F0F0', cursor: 'pointer' }} onClick={() => setInflationAdjusted(!inflationAdjusted)}>
-            <div style={{ fontSize: '11px', fontWeight: 700, color: T.textFaint, textTransform: 'uppercase', marginBottom: '4px' }}>Inflation Mode (6%)</div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <div style={{ width: '32px', height: '18px', background: inflationAdjusted ? T.emerald : '#E0E0E0', borderRadius: '20px', position: 'relative', transition: '0.3s' }}>
-                <div style={{ width: '12px', height: '12px', background: 'white', borderRadius: '50%', position: 'absolute', top: '3px', left: inflationAdjusted ? '17px' : '3px', transition: '0.3s' }} />
+          <div className="inflation-toggle" onClick={() => setInflationAdjusted(!inflationAdjusted)} style={{ 
+            padding: '16px 24px', background: '#F9F9F7', borderRadius: '16px', border: '1.5px solid var(--border)', 
+            cursor: 'pointer', flexShrink: 0, transition: '0.3s'
+          }}>
+            <div className="form-label" style={{ marginBottom: 8 }}>Inflation Mode (6%)</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div className="eb-toggle" style={{ 
+                width: '36px', height: '20px', background: inflationAdjusted ? T.emerald : '#E0E0E0', 
+                borderRadius: '20px', position: 'relative', transition: '0.3s' 
+              }}>
+                <div style={{ 
+                  width: '14px', height: '14px', background: 'white', borderRadius: '50%', 
+                  position: 'absolute', top: '3px', left: inflationAdjusted ? '19px' : '3px', transition: '0.3s' 
+                }} />
               </div>
-              <span style={{ fontSize: '14px', fontWeight: 600, color: T.text }}>{inflationAdjusted ? "Adjusted" : "Nominal"}</span>
+              <span style={{ fontSize: '15px', fontWeight: 700, color: T.text }}>{inflationAdjusted ? "Adjusted" : "Nominal"}</span>
             </div>
           </div>
         </div>
@@ -111,7 +120,7 @@ export function SimulationPage() {
       <Card className="mb-20">
         <div className="card-title">Shared Growth Trajectory</div>
         <div className="card-subtitle">Compounding effect based on selected risk engine</div>
-        <div style={{ height: 320, marginTop: '24px' }}>
+        <div className="recharts-responsive-container" style={{ marginTop: '24px' }}>
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
               <defs>

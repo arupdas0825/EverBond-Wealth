@@ -58,7 +58,7 @@ export function AllocationPage() {
 
       <div className="grid-2">
         <Card gold title="Asset Allocation Engine" subtitle="Dynamic portfolio weighting">
-          <div style={{ height: 220 }}>
+          <div className="recharts-responsive-container">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie data={portfolioData} innerRadius={50} outerRadius={70} paddingAngle={2} dataKey="value">
@@ -75,7 +75,7 @@ export function AllocationPage() {
           </div>
         </Card>
         <Card title="Goal Funding Engine" subtitle="Shared life goal distribution">
-          <div style={{ height: 220 }}>
+          <div className="recharts-responsive-container">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie data={goalData} outerRadius={70} dataKey="value">

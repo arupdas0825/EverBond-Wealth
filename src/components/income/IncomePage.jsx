@@ -80,12 +80,12 @@ export function IncomePage() {
 
       <Card className="mb-20 text-center" style={{ padding: '32px' }}>
         <div className="card-title">Combined Monthly Engine Power</div>
-        <div style={{ 
+        <div className="card-value" style={{ 
           fontFamily: "'DM Serif Display', serif", 
-          fontSize: '42px', 
+          fontSize: '48px', 
           color: T.gold,
-          margin: '12px 0',
-          letterSpacing: '-1px'
+          margin: '16px 0',
+          letterSpacing: '-1.5px'
         }}>
           {fmt(totalSalary)}
         </div>
@@ -159,7 +159,7 @@ export function IncomePage() {
         ].map(r => (
           <div key={r.label} className="alloc-row">
             <div className="alloc-name"><div className="alloc-dot" style={{ background: r.color }} />{r.label}</div>
-            <div className="alloc-right">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
               <span className="alloc-pct">{r.pct}</span>
               <span className="alloc-amount">{r.val}</span>
             </div>
