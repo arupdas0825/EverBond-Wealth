@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useFinanceStore } from './store/useFinanceStore';
 import { WelcomeScreen } from './components/welcome/WelcomeScreen';
 import { Sidebar } from './components/layout/Sidebar';
+import { MobileNav } from './components/layout/MobileNav';
 import { Dashboard } from './components/dashboard/Dashboard';
 import { IncomePage } from './components/income/IncomePage';
 import { AllocationPage } from './components/allocation/AllocationPage';
@@ -22,12 +23,16 @@ function App() {
       <Sidebar page={page} setPage={setPage} />
       
       <main className="eb-main">
-        {page === "dashboard" && <Dashboard />}
-        {page === "income" && <IncomePage />}
-        {page === "allocation" && <AllocationPage />}
-        {page === "goals" && <GoalsPage />}
-        {page === "simulation" && <SimulationPage />}
+        <div className="eb-main-content">
+          {page === "dashboard" && <Dashboard />}
+          {page === "income" && <IncomePage />}
+          {page === "allocation" && <AllocationPage />}
+          {page === "goals" && <GoalsPage />}
+          {page === "simulation" && <SimulationPage />}
+        </div>
       </main>
+
+      <MobileNav page={page} setPage={setPage} />
     </div>
   );
 }
