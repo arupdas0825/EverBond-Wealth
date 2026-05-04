@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useFinanceStore } from '../../store/useFinanceStore';
 import { calculateFinancialSnapshot, formatCurrency } from '../../utils/finance';
+import { totalMilestoneContribution } from '../../utils/milestones';
 import { CURRENCIES } from '../../constants/presets';
 import { T } from '../../theme/tokens';
 import { Card } from '../common/Card';
@@ -12,10 +13,11 @@ const MODES=[
 ];
 
 export function IncomePage() {
-  const {partner1,partner2,p1Salary,p2Salary,mode,currency,
+  const {partner1,partner2,p1Salary,p2Salary,mode,currency,milestones,
     setP1Salary,setP2Salary,setMode,setCurrency,getTotalSalary} = useFinanceStore();
   const total = getTotalSalary();
   const snap  = useMemo(()=>calculateFinancialSnapshot(total,mode),[total,mode]);
+  const mContribution = useMemo(() => totalMilestoneContribution(milestones), [milestones]);
   const fmt   = a => formatCurrency(a, currency);
   const sym   = CURRENCIES[currency]?.symbol||'₹';
   const [rates,setRates]=useState(null); const [loading,setLoading]=useState(true);
@@ -113,6 +115,9 @@ export function IncomePage() {
             </div>
           </div>
         ))}
+        <div style={{ marginTop: 16, padding: '12px 14px', background: 'var(--gold-pale)', borderRadius: 12, border: '1px solid var(--gold-border)', fontSize: '.85rem', color: 'var(--text-muted)' }}>
+          Active milestones require <strong>{fmt(mContribution)}/month</strong> of your essentials budget.
+        </div>
       </Card>
     </div>
   );

@@ -1,8 +1,8 @@
 import React, { useMemo } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis } from 'recharts';
 import { useFinanceStore } from '../../store/useFinanceStore';
-import { useMilestoneStore } from '../../store/useMilestoneStore';
 import { calculateFinancialSnapshot, formatCurrency, formatCompact } from '../../utils/finance';
+import { totalMilestoneContribution } from '../../utils/milestones';
 import { T } from '../../theme/tokens';
 import { Card } from '../common/Card';
 
@@ -34,14 +34,12 @@ function AllocSection({ label, rows }) {
 }
 
 export function AllocationPage() {
-  const { mode, currency, getTotalSalary } = useFinanceStore();
-  const milestones = useMilestoneStore(s => s.milestones);
-  const totalContribution = useMemo(() => 
-    milestones.reduce((sum, m) => sum + (Number(m.monthlyContribution) || 0), 0), 
-    [milestones]
-  );
+  const { mode, currency, milestones, getTotalSalary } = useFinanceStore();
+  
   const total = getTotalSalary();
-  const snap  = useMemo(()=>calculateFinancialSnapshot(total,mode, totalContribution),[total,mode, totalContribution]);
+  const totalContribution = useMemo(() => totalMilestoneContribution(milestones), [milestones]);
+  
+  const snap  = useMemo(()=>calculateFinancialSnapshot(total,mode),[total,mode]);
   const fmt   = a => formatCurrency(a, currency);
   const cmpct = a => formatCompact(a, currency);
   const pct   = n => (n*100).toFixed(1)+'%';
@@ -133,7 +131,7 @@ export function AllocationPage() {
           {dot:T.sky,    label:'Essentials / Needs',           pct:pct(snap.presets.needs),     val:fmt(snap.budget.needs)},
           {dot:T.rose,   label:'Emergency / Safety Reserve',   pct:pct(snap.presets.emergency), val:fmt(snap.budget.emergency)},
           {dot:T.goldMid,label:'Investments (Core Pool)',      pct:pct(snap.presets.invest),    val:fmt(snap.budget.investments)},
-          {emoji:'📅',  label:'Milestone Savings (Deduction)', pct:((totalContribution / total) * 100).toFixed(1)+'%', val:fmt(totalContribution)},
+          {emoji:'📅',  label:'Milestone Earmark (Target)',    pct:((totalContribution / total) * 100).toFixed(1)+'%', val:fmt(totalContribution)},
         ]}/>
       </Card>
 

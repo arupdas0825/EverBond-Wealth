@@ -2,7 +2,7 @@
    EverBond Wealth — Premium Design System v2
    Luxury · Clean · Fully Responsive · Apple‑style Mobile
 ═══════════════════════════════════════════════════════════ */
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
 /* ── TOKENS ─────────────────────────────────────────────── */
 :root {
@@ -27,6 +27,12 @@
 
   --violet:      #7059B4;
   --violet-lt:   #F0EDFA;
+
+  --emerald:     #2D9C82;
+  --emerald-lt:  #EAF5EF;
+
+  --amber:       #D99C3B;
+  --amber-lt:    #FBF5E0;
 
   --bg:          #FDFCF9;
   --bg-warm:     #F9F7F2;
@@ -60,6 +66,7 @@
 
   --fd: 'Cormorant Garamond', Georgia, serif;
   --fb: 'DM Sans', system-ui, sans-serif;
+  --fn: 'Plus Jakarta Sans', var(--fb);
 
   --ease:   cubic-bezier(.4,0,.2,1);
   --spring: cubic-bezier(.34,1.56,.64,1);
@@ -307,8 +314,9 @@ input,select{font-family:var(--fb)}
 .stat-label{font-size:.65rem;font-weight:800;text-transform:uppercase;
   letter-spacing:.1em;color:var(--text-faint);margin-bottom:7px}
 .stat-value{
-  font-family:var(--fd);font-size:clamp(1.3rem,2.2vw,1.7rem);
+  font-family:var(--fn);font-size:clamp(1.15rem,2vw,1.45rem);
   font-weight:600;color:var(--text);line-height:1.1;margin-bottom:4px;
+  letter-spacing:-0.01em;
 }
 .stat-sub{font-size:.75rem;color:var(--text-faint);font-weight:500}
 
@@ -340,8 +348,9 @@ input,select{font-family:var(--fb)}
   background:var(--bg-muted);padding:2px 7px;border-radius:var(--r-pill);
 }
 .alloc-amount{
-  font-family:var(--fd);font-size:1rem;font-weight:600;
+  font-family:var(--fn);font-size:.88rem;font-weight:600;
   color:var(--text);min-width:78px;text-align:right;
+  letter-spacing:-0.01em;
 }
 
 .section-label{
@@ -364,14 +373,15 @@ input,select{font-family:var(--fb)}
 .salary-field{position:relative}
 .salary-prefix{
   position:absolute;left:14px;top:50%;transform:translateY(-50%);
-  font-family:var(--fd);font-size:1.35rem;font-weight:600;
+  font-family:var(--fn);font-size:1.15rem;font-weight:600;
   color:var(--gold-mid);pointer-events:none;line-height:1;
 }
 .salary-input{
   width:100%;padding:14px 14px 14px 42px;border-radius:var(--r-sm);
   border:2px solid var(--gold-border);background:var(--gold-pale);
-  font-family:var(--fd);font-size:1.7rem;font-weight:600;color:var(--text);
+  font-family:var(--fn);font-size:1.5rem;font-weight:600;color:var(--text);
   outline:none;transition:all var(--t2) var(--ease);-webkit-appearance:none;appearance:none;
+  letter-spacing:-0.02em;
 }
 .salary-input:focus{border-color:var(--gold-mid);background:#fff;box-shadow:0 0 0 3px var(--gold-glow)}
 .salary-input::placeholder{color:var(--text-faint);font-size:1.35rem}
@@ -393,8 +403,8 @@ input,select{font-family:var(--fb)}
 .combined-label{font-size:.68rem;font-weight:800;text-transform:uppercase;
   letter-spacing:.1em;color:var(--text-faint);margin-bottom:8px}
 .combined-value{
-  font-family:var(--fd);font-size:clamp(2.4rem,6vw,3.8rem);
-  font-weight:700;color:var(--gold);letter-spacing:-.03em;line-height:1.05;
+  font-family:var(--fn);font-size:clamp(2.1rem,6vw,3.2rem);
+  font-weight:700;color:var(--gold);letter-spacing:-.04em;line-height:1.05;
 }
 .combined-sub{font-size:.85rem;color:var(--text-muted);margin-top:8px}
 
@@ -421,12 +431,12 @@ input,select{font-family:var(--fb)}
 .goal-icon{font-size:2rem;line-height:1}
 .goal-name{font-family:var(--fd);font-size:1.2rem;font-weight:600;color:var(--text);margin-bottom:1px}
 .goal-tag{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-faint)}
-.goal-monthly-amount{font-family:var(--fd);font-size:1.4rem;font-weight:700;line-height:1.1;margin-bottom:2px}
+.goal-monthly-amount{font-family:var(--fn);font-size:1.25rem;font-weight:600;line-height:1.1;margin-bottom:2px;letter-spacing:-0.02em}
 .goal-eta{font-size:.75rem;color:var(--text-faint);font-weight:500}
 
 .goal-target-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
 .goal-target-label{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-faint)}
-.goal-target-val{font-family:var(--fd);font-size:1rem;font-weight:600;color:var(--text)}
+.goal-target-val{font-family:var(--fn);font-size:.88rem;font-weight:600;color:var(--text);letter-spacing:-0.01em}
 .goal-input{
   width:100%;padding:10px 13px;border-radius:var(--r-sm);
   border:1.5px solid var(--border-mid);background:var(--bg-warm);
@@ -493,8 +503,9 @@ input,select{font-family:var(--fb)}
 .sim-result-label{font-size:.65rem;font-weight:800;text-transform:uppercase;
   letter-spacing:.1em;color:var(--text-faint);margin-bottom:7px}
 .sim-result-value{
-  font-family:var(--fd);font-size:clamp(1.1rem,2vw,1.6rem);
-  font-weight:700;color:var(--text);line-height:1.1;
+  font-family:var(--fn);font-size:clamp(.95rem,2vw,1.35rem);
+  font-weight:600;color:var(--text);line-height:1.1;
+  letter-spacing:-0.01em;
 }
 
 .infl-toggle{
@@ -531,7 +542,7 @@ input,select{font-family:var(--fb)}
   border-bottom:1px solid var(--border);font-weight:500;
 }
 .wealth-table td:first-child{color:var(--text);font-weight:600}
-.wealth-table td:last-child{font-family:var(--fd);font-size:.97rem;font-weight:700;color:var(--gold)}
+.wealth-table td:last-child{font-family:var(--fn);font-size:.86rem;font-weight:700;color:var(--gold);letter-spacing:-0.01em}
 .wealth-table tr:last-child td{border-bottom:none}
 .wealth-table tr:hover td{background:var(--bg-warm)}
 .table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
@@ -542,7 +553,7 @@ input,select{font-family:var(--fb)}
 .health-ring-inner{width:110px;height:110px;border-radius:50%;background:#fff;
   display:flex;flex-direction:column;align-items:center;justify-content:center;
   box-shadow:inset 0 2px 8px rgba(0,0,0,.04)}
-.health-score-num{font-family:var(--fd);font-size:2.2rem;font-weight:700;line-height:1}
+.health-score-num{font-family:var(--fn);font-size:1.8rem;font-weight:700;line-height:1;letter-spacing:-0.03em}
 .health-score-unit{font-size:.68rem;font-weight:700;color:var(--text-faint);
   text-transform:uppercase;letter-spacing:.06em}
 .health-label{font-family:var(--fd);font-size:1.05rem;font-weight:600;color:var(--text);margin-bottom:6px}
@@ -781,10 +792,11 @@ input,select{font-family:var(--fb)}
 }
 
 .ms-stat-value {
-  font-family: var(--fd);
-  font-size: 1.15rem;
-  font-weight: 700;
+  font-family: var(--fn);
+  font-size: 1.05rem;
+  font-weight: 600;
   color: var(--text);
+  letter-spacing: -0.01em;
 }
 
 .ms-progress-area {
@@ -894,10 +906,11 @@ input,select{font-family:var(--fb)}
 }
 
 .ms-tl-year {
-  font-family: var(--fd);
-  font-size: 0.85rem;
+  font-family: var(--fn);
+  font-size: 0.8rem;
   font-weight: 600;
   color: var(--text-muted);
+  letter-spacing: 0.01em;
 }
 
 .ms-tl-line {
@@ -941,10 +954,11 @@ input,select{font-family:var(--fb)}
 }
 
 .ms-tl-price {
-  font-family: var(--fd);
-  font-size: 0.85rem;
+  font-family: var(--fn);
+  font-size: 0.8rem;
   font-weight: 600;
   color: var(--gold-mid);
+  letter-spacing: -0.01em;
 }
 
 /* Add Card */

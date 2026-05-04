@@ -15,16 +15,13 @@ import { PRESETS, CURRENCIES } from '../constants/presets';
  *   LargeCap   = Equity × equityLarge%
  *   ...etc (exact chain)
  */
-export function calculateFinancialSnapshot(totalSalary, mode, milestoneContribution = 0) {
+export function calculateFinancialSnapshot(totalSalary, mode) {
   const p = PRESETS[mode];
 
   // 1. Budget split
   const needs       = totalSalary * p.needs;
   const emergency   = totalSalary * p.emergency;
   let   investments = totalSalary * p.invest;
-
-  // Subtract milestone contributions from the investment pool
-  investments = Math.max(0, investments - milestoneContribution);
 
   // 2. Investment asset split
   const equity      = investments * p.equity;

@@ -1,8 +1,8 @@
 import React, { useMemo } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from 'recharts';
 import { useFinanceStore } from '../../store/useFinanceStore';
-import { useMilestoneStore } from '../../store/useMilestoneStore';
-import { calculateFinancialSnapshot, calculateHealthScore, formatCurrency, formatCompact, formatDate } from '../../utils/finance';
+import { calculateFinancialSnapshot, calculateHealthScore, formatCurrency, formatCompact } from '../../utils/finance';
+import { totalMilestoneContribution, requiredMonthlySaving, parseMilestoneDate } from '../../utils/milestones';
 import { T } from '../../theme/tokens';
 import { Card, StatCard } from '../common/Card';
 
@@ -22,18 +22,16 @@ function greeting() {
 }
 
 export function Dashboard() {
-  const state    = useFinanceStore();
-  const milestones = useMilestoneStore(s => s.milestones);
-  const totalContribution = useMemo(() => 
-    milestones.reduce((sum, m) => sum + (Number(m.monthlyContribution) || 0), 0), 
-    [milestones]
-  );
-  const total    = state.getTotalSalary();
-  const snap     = useMemo(() => calculateFinancialSnapshot(total, state.mode, totalContribution), 
-    [total, state.mode, totalContribution]);
-  const health   = useMemo(() => calculateHealthScore(snap), [snap]);
-  const fmt      = a => formatCurrency(a, state.currency);
-  const cmpct    = a => formatCompact(a, state.currency);
+  const { partner1, partner2, region, mode, currency, milestones, getTotalSalary } = useFinanceStore();
+  
+  const totalSalary = getTotalSalary();
+  const mContribution = useMemo(() => totalMilestoneContribution(milestones), [milestones]);
+  
+  const snap = useMemo(() => calculateFinancialSnapshot(totalSalary, mode), [totalSalary, mode]);
+  const health = useMemo(() => calculateHealthScore(snap), [snap]);
+  
+  const fmt   = a => formatCurrency(a, currency);
+  const cmpct = a => formatCompact(a, currency);
   const [greet, emoji] = greeting();
   const scoreColor = health.value >= 75 ? T.sage : health.value >= 50 ? T.goldMid : T.rose;
   const deg = (health.value / 100) * 360;
@@ -54,17 +52,18 @@ export function Dashboard() {
     <div className="fade-in">
       <div className="page-header">
         <div className="page-eyebrow">{greet}</div>
-        <h1 className="page-title">{state.partner1} &amp; {state.partner2} {emoji}</h1>
+        <h1 className="page-title">{partner1} &amp; {partner2} {emoji}</h1>
         <p className="page-desc">
-          Your wealth engine is calibrated for {state.region} · <strong>{state.mode}</strong> mode.
+          Your wealth engine is calibrated for {region} · <strong>{mode}</strong> mode.
         </p>
       </div>
 
-      <div className="stats-grid mb-24">
-        <StatCard cls="gold" icon="💰" label="Combined Income"     value={cmpct(total)}                                 sub="Shared monthly salary" />
+      <div className="stats-grid mb-24" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
+        <StatCard cls="gold" icon="💰" label="Combined Income"     value={cmpct(totalSalary)}                           sub="Shared monthly salary" />
         <StatCard cls="sage" icon="📈" label="Monthly Investment"  value={cmpct(snap.budget.investments)}               sub={`${Math.round(snap.presets.invest*100)}% savings rate`} />
         <StatCard cls="rose" icon="🛡️" label="Emergency Reserve"  value={cmpct(snap.budget.emergency)}                 sub="Monthly safety fund" />
         <StatCard cls="sky"  icon="⚡" label="Financial Score"     value={`${health.value}/100`}                        sub={health.label} />
+        <StatCard cls="gold" icon="🏁" label="Milestone Saving"    value={fmt(mContribution)}                           sub="Active goal monthly total" />
       </div>
 
       <div className="grid-2 mb-20">
@@ -179,25 +178,32 @@ export function Dashboard() {
               No active milestones. Start planning in the Milestone Planner.
             </div>
           ) : (
-            milestones.slice(0, 4).map(m => (
-              <div key={m.id} className="alloc-row">
-                <div className="alloc-name">
-                  <span style={{ fontSize: '1rem' }}>{m.category === 'Home' ? '🏡' : m.category === 'Car' ? '🚗' : m.category === 'Travel' ? '✈️' : '🎯'}</span>
-                  <div>
-                    <div>{m.name}</div>
-                    <div style={{ fontSize: '.65rem', color: 'var(--text-faint)', fontWeight: 600 }}>Target: {formatDate(m.targetDate)}</div>
+            [...milestones]
+              .sort((a,b) => parseMilestoneDate(a.targetDate) - parseMilestoneDate(b.targetDate))
+              .slice(0, 4)
+              .map(m => {
+                const req = requiredMonthlySaving(m.targetCost, m.monthlySaved, m.targetDate);
+                const icons = { car: '🚗', house: '🏠', travel: '✈️', gadget: '💻', furniture: '🛋️', wedding: '💍', education: '🎓', other: '🏁' };
+                return (
+                  <div key={m.id} className="alloc-row">
+                    <div className="alloc-name">
+                      <span style={{ fontSize: '1rem' }}>{icons[m.category] || '🏁'}</span>
+                      <div>
+                        <div>{m.name}</div>
+                        <div style={{ fontSize: '.65rem', color: 'var(--text-faint)', fontWeight: 600 }}>Target: {m.targetDate}</div>
+                      </div>
+                    </div>
+                    <div className="alloc-right">
+                       <div className="alloc-amount">{fmt(req)}</div>
+                    </div>
                   </div>
-                </div>
-                <div className="alloc-right">
-                   <div className="alloc-amount">{fmt(Number(m.monthlyContribution))}</div>
-                </div>
-              </div>
-            ))
+                );
+              })
           )}
           <div className="divider" />
           <div className="alloc-row" style={{ border: 'none', background: 'var(--gold-pale)', borderRadius: 10, padding: '10px 12px' }}>
             <div className="alloc-name" style={{ fontWeight: 700 }}>Total Milestone Saving</div>
-            <div className="alloc-amount" style={{ color: 'var(--gold-mid)' }}>{fmt(totalContribution)}</div>
+            <div className="alloc-amount" style={{ color: 'var(--gold-mid)' }}>{fmt(mContribution)}</div>
           </div>
         </Card>
       </div>
