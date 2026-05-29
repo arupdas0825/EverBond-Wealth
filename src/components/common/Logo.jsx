@@ -1,5 +1,6 @@
 import React from 'react';
 import { T } from '../../theme/tokens';
+import { useFinanceStore } from '../../store/useFinanceStore';
 
 export function LogoMark({ size = 32, width }) {
   return (
@@ -17,7 +18,10 @@ export function LogoMark({ size = 32, width }) {
 }
 
 export function Logo({ size = 40, width, showText = true, light = false }) {
-  const textColor = light ? 'white' : T.text;
+  const theme = useFinanceStore(s => s.theme);
+  // Default to white text if the theme is dark OR if explicitly marked as light mode text
+  const textColor = (theme === 'dark' || light) ? '#ffffff' : 'var(--text)';
+  const optimizedSize = size * 0.88; // 12% size reduction for better brand proportion and sharpness
   
   return (
     <div style={{ 
@@ -28,7 +32,7 @@ export function Logo({ size = 40, width, showText = true, light = false }) {
       userSelect: 'none',
       transition: 'opacity 0.2s ease'
     }}>
-      <LogoMark size={size} width={width} />
+      <LogoMark size={optimizedSize} width={width} />
       
       {showText && (
         <div style={{ 

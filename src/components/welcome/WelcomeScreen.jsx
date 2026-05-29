@@ -173,7 +173,7 @@ export function WelcomeScreen() {
         {/* Logo anchor - keeping current logo EXACTLY the same */}
         {step > 0 && (
           <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '24px' }}>
-            <Logo size={48} showText={true} light={true} />
+            <Logo size={42} showText={true} />
           </div>
         )}
 
@@ -188,10 +188,16 @@ export function WelcomeScreen() {
               exit={{ opacity: 0, y: -30 }}
               transition={{ duration: 0.6 }}
               className="liquid-glass text-center"
-              style={{ padding: '56px 40px' }}
+              style={{ 
+                padding: '56px 40px',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
             >
               <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '32px' }}>
-                <Logo size={90} showText={false} />
+                <Logo size={78} showText={false} />
               </div>
               <h1 style={{
                 fontFamily: T.fontDisplay,
@@ -199,17 +205,19 @@ export function WelcomeScreen() {
                 fontWeight: 700,
                 letterSpacing: '-0.02em',
                 lineHeight: 1.05,
-                color: '#fff',
-                marginBottom: '16px'
+                color: 'var(--onb-title)',
+                marginBottom: '16px',
+                textAlign: 'center'
               }}>
                 EverBond <em style={{ fontStyle: 'italic', color: T.goldMid }}>Wealth</em>
               </h1>
               <p style={{
                 fontSize: '1.05rem',
-                color: '#b0a898',
+                color: 'var(--onb-desc)',
                 lineHeight: 1.6,
                 maxWidth: '420px',
-                margin: '0 auto 40px'
+                margin: '0 auto 40px',
+                textAlign: 'center'
               }}>
                 Your financial journey through every stage of life. A futuristic financial companion that grows with your relationship.
               </p>
@@ -220,6 +228,8 @@ export function WelcomeScreen() {
                 onClick={() => setStep(1)}
                 className="btn-primary"
                 style={{
+                  display: 'block',
+                  margin: '0 auto',
                   maxWidth: '280px',
                   fontSize: '1rem',
                   padding: '16px 32px',
@@ -245,7 +255,7 @@ export function WelcomeScreen() {
             >
               <div className="text-center mb-32">
                 <span style={{ fontSize: '0.68rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.12em', color: T.gold }}>Stage selection</span>
-                <h2 style={{ fontFamily: T.fontDisplay, fontSize: '2.1rem', fontWeight: 600, color: '#fff', marginTop: '6px' }}>
+                <h2 style={{ fontFamily: T.fontDisplay, fontSize: '2.1rem', fontWeight: 600, color: 'var(--onb-title)', marginTop: '6px' }}>
                   Where are you in your life journey?
                 </h2>
               </div>
@@ -297,7 +307,7 @@ export function WelcomeScreen() {
               </div>
 
               <div style={{ display: 'flex', justifySelf: 'flex-end', justifyContent: 'space-between', alignItems: 'center' }}>
-                <button className="btn-reset" style={{ width: 'auto', background: 'transparent', border: 'none', color: '#888' }} onClick={() => setStep(0)}>Back</button>
+                <button className="btn-reset" style={{ width: 'auto', background: 'transparent', border: 'none', color: 'var(--onb-back)' }} onClick={() => setStep(0)}>Back</button>
                 <button 
                   className="btn-primary" 
                   style={{ width: 'auto', padding: '12px 28px' }}
@@ -322,7 +332,7 @@ export function WelcomeScreen() {
             >
               <div className="text-center mb-24">
                 <span style={{ fontSize: '0.68rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.12em', color: T.gold }}>Profile Calibration</span>
-                <h2 style={{ fontFamily: T.fontDisplay, fontSize: '2.1rem', fontWeight: 600, color: '#fff', marginTop: '6px' }}>
+                <h2 style={{ fontFamily: T.fontDisplay, fontSize: '2.1rem', fontWeight: 600, color: 'var(--onb-title)', marginTop: '6px' }}>
                   {stage === 'Single' ? 'Independent Builder' : stage === 'Committed' ? 'Committed Partners' : 'Family Dynasty'}
                 </h2>
               </div>
@@ -332,7 +342,7 @@ export function WelcomeScreen() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '24px' }}>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                     <div>
-                      <label className="form-label" style={{ color: 'rgba(255,255,255,0.5)', marginBottom: '4px' }}>Your Name</label>
+                      <label className="form-label" style={{ color: 'var(--onb-label)', marginBottom: '4px' }}>Your Name</label>
                       <input 
                         className="onb-input-glow" 
                         type="text" 
@@ -342,7 +352,7 @@ export function WelcomeScreen() {
                       />
                     </div>
                     <div>
-                      <label className="form-label" style={{ color: 'rgba(255,255,255,0.5)', marginBottom: '4px' }}>Age</label>
+                      <label className="form-label" style={{ color: 'var(--onb-label)', marginBottom: '4px' }}>Age</label>
                       <input 
                         className="onb-input-glow" 
                         type="number" 
@@ -354,22 +364,22 @@ export function WelcomeScreen() {
                   </div>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                     <div>
-                      <label className="form-label" style={{ color: 'rgba(255,255,255,0.5)', marginBottom: '4px' }}>Primary Region</label>
+                      <label className="form-label" style={{ color: 'var(--onb-label)', marginBottom: '4px' }}>Primary Region</label>
                       <select className="onb-select-glow" value={region} onChange={e => setLocalRegion(e.target.value)}>
-                        {REGIONS.map(r => <option key={r} value={r} style={{ background: '#0e0e15' }}>{r}</option>)}
+                        {REGIONS.map(r => <option key={r} value={r} style={{ background: 'var(--bg-card)', color: 'var(--text)' }}>{r}</option>)}
                       </select>
                     </div>
                     <div>
-                      <label className="form-label" style={{ color: 'rgba(255,255,255,0.5)', marginBottom: '4px' }}>Currency Mode</label>
+                      <label className="form-label" style={{ color: 'var(--onb-label)', marginBottom: '4px' }}>Currency Mode</label>
                       <select className="onb-select-glow" value={currency} onChange={e => setLocalCurrency(e.target.value)}>
                         {Object.entries(CURRENCIES).map(([k,v]) => (
-                          <option key={k} value={k} style={{ background: '#0e0e15' }}>{v.flag} {k}</option>
+                          <option key={k} value={k} style={{ background: 'var(--bg-card)', color: 'var(--text)' }}>{v.flag} {k}</option>
                         ))}
                       </select>
                     </div>
                   </div>
                   <div>
-                    <label className="form-label" style={{ color: 'rgba(255,255,255,0.5)', marginBottom: '4px' }}>Solo Monthly Income</label>
+                    <label className="form-label" style={{ color: 'var(--onb-label)', marginBottom: '4px' }}>Solo Monthly Income</label>
                     <input 
                       className="onb-input-glow" 
                       type="number" 
@@ -381,12 +391,12 @@ export function WelcomeScreen() {
 
                   {/* Future locked preview for Single stage */}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '16px' }}>
-                    <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '10px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.78rem' }}>
-                      <span style={{ color: '#b0a898' }}>🔒 Couple Wealth Planning</span>
+                    <div style={{ background: 'rgba(184,144,42,0.03)', border: '1px solid var(--onb-border)', borderRadius: '12px', padding: '10px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.78rem' }}>
+                      <span style={{ color: 'var(--onb-desc)' }}>🔒 Couple Wealth Planning</span>
                       <span style={{ color: T.rose, fontWeight: 700, fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Unlocks in Committed stage</span>
                     </div>
-                    <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '10px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.78rem' }}>
-                      <span style={{ color: '#b0a898' }}>🔒 Marriage Wealth Planning</span>
+                    <div style={{ background: 'rgba(184,144,42,0.03)', border: '1px solid var(--onb-border)', borderRadius: '12px', padding: '10px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.78rem' }}>
+                      <span style={{ color: 'var(--onb-desc)' }}>🔒 Marriage Wealth Planning</span>
                       <span style={{ color: T.goldMid, fontWeight: 700, fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Unlocks in Married stage</span>
                     </div>
                   </div>
@@ -398,7 +408,7 @@ export function WelcomeScreen() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '24px' }}>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                     <div>
-                      <label className="form-label" style={{ color: 'rgba(255,255,255,0.5)', marginBottom: '4px' }}>Your Legal Name</label>
+                      <label className="form-label" style={{ color: 'var(--onb-label)', marginBottom: '4px' }}>Your Legal Name</label>
                       <input 
                         className="onb-input-glow" 
                         type="text" 
@@ -408,7 +418,7 @@ export function WelcomeScreen() {
                       />
                     </div>
                     <div>
-                      <label className="form-label" style={{ color: 'rgba(255,255,255,0.5)', marginBottom: '4px' }}>Partner's Name</label>
+                      <label className="form-label" style={{ color: 'var(--onb-label)', marginBottom: '4px' }}>Partner's Name</label>
                       <input 
                         className="onb-input-glow" 
                         type="text" 
@@ -420,22 +430,22 @@ export function WelcomeScreen() {
                   </div>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                     <div>
-                      <label className="form-label" style={{ color: 'rgba(255,255,255,0.5)', marginBottom: '4px' }}>Primary Region</label>
+                      <label className="form-label" style={{ color: 'var(--onb-label)', marginBottom: '4px' }}>Primary Region</label>
                       <select className="onb-select-glow" value={region} onChange={e => setLocalRegion(e.target.value)}>
-                        {REGIONS.map(r => <option key={r} value={r} style={{ background: '#0e0e15' }}>{r}</option>)}
+                        {REGIONS.map(r => <option key={r} value={r} style={{ background: 'var(--bg-card)', color: 'var(--text)' }}>{r}</option>)}
                       </select>
                     </div>
                     <div>
-                      <label className="form-label" style={{ color: 'rgba(255,255,255,0.5)', marginBottom: '4px' }}>Accounting Currency</label>
+                      <label className="form-label" style={{ color: 'var(--onb-label)', marginBottom: '4px' }}>Accounting Currency</label>
                       <select className="onb-select-glow" value={currency} onChange={e => setLocalCurrency(e.target.value)}>
                         {Object.entries(CURRENCIES).map(([k,v]) => (
-                          <option key={k} value={k} style={{ background: '#0e0e15' }}>{v.flag} {k}</option>
+                          <option key={k} value={k} style={{ background: 'var(--bg-card)', color: 'var(--text)' }}>{v.flag} {k}</option>
                         ))}
                       </select>
                     </div>
                   </div>
                   <div>
-                    <label className="form-label" style={{ color: 'rgba(255,255,255,0.5)', marginBottom: '4px' }}>Special Anniversary Date</label>
+                    <label className="form-label" style={{ color: 'var(--onb-label)', marginBottom: '4px' }}>Special Anniversary Date</label>
                     <input 
                       className="onb-input-glow" 
                       type="date" 
@@ -445,8 +455,8 @@ export function WelcomeScreen() {
                   </div>
 
                   {/* Future locked preview for Committed stage */}
-                  <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '10px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.78rem', marginTop: '16px' }}>
-                    <span style={{ color: '#b0a898' }}>🔒 Family Dynasty Planning</span>
+                  <div style={{ background: 'rgba(184,144,42,0.03)', border: '1px solid var(--onb-border)', borderRadius: '12px', padding: '10px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.78rem', marginTop: '16px' }}>
+                    <span style={{ color: 'var(--onb-desc)' }}>🔒 Family Dynasty Planning</span>
                     <span style={{ color: T.goldMid, fontWeight: 700, fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Unlocks in Married stage</span>
                   </div>
                 </div>
@@ -457,7 +467,7 @@ export function WelcomeScreen() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '24px' }}>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                     <div>
-                      <label className="form-label" style={{ color: 'rgba(255,255,255,0.5)', marginBottom: '4px' }}>Your Legal Name</label>
+                      <label className="form-label" style={{ color: 'var(--onb-label)', marginBottom: '4px' }}>Your Legal Name</label>
                       <input 
                         className="onb-input-glow" 
                         type="text" 
@@ -467,7 +477,7 @@ export function WelcomeScreen() {
                       />
                     </div>
                     <div>
-                      <label className="form-label" style={{ color: 'rgba(255,255,255,0.5)', marginBottom: '4px' }}>Spouse's Name</label>
+                      <label className="form-label" style={{ color: 'var(--onb-label)', marginBottom: '4px' }}>Spouse's Name</label>
                       <input 
                         className="onb-input-glow" 
                         type="text" 
@@ -479,22 +489,22 @@ export function WelcomeScreen() {
                   </div>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                     <div>
-                      <label className="form-label" style={{ color: 'rgba(255,255,255,0.5)', marginBottom: '4px' }}>Primary Region</label>
+                      <label className="form-label" style={{ color: 'var(--onb-label)', marginBottom: '4px' }}>Primary Region</label>
                       <select className="onb-select-glow" value={region} onChange={e => setLocalRegion(e.target.value)}>
-                        {REGIONS.map(r => <option key={r} value={r} style={{ background: '#0e0e15' }}>{r}</option>)}
+                        {REGIONS.map(r => <option key={r} value={r} style={{ background: 'var(--bg-card)', color: 'var(--text)' }}>{r}</option>)}
                       </select>
                     </div>
                     <div>
-                      <label className="form-label" style={{ color: 'rgba(255,255,255,0.5)', marginBottom: '4px' }}>Dynasty Currency</label>
+                      <label className="form-label" style={{ color: 'var(--onb-label)', marginBottom: '4px' }}>Dynasty Currency</label>
                       <select className="onb-select-glow" value={currency} onChange={e => setLocalCurrency(e.target.value)}>
                         {Object.entries(CURRENCIES).map(([k,v]) => (
-                          <option key={k} value={k} style={{ background: '#0e0e15' }}>{v.flag} {k}</option>
+                          <option key={k} value={k} style={{ background: 'var(--bg-card)', color: 'var(--text)' }}>{v.flag} {k}</option>
                         ))}
                       </select>
                     </div>
                   </div>
                   <div>
-                    <label className="form-label" style={{ color: 'rgba(255,255,255,0.5)', marginBottom: '4px' }}>Dynasty Family Savings Goal</label>
+                    <label className="form-label" style={{ color: 'var(--onb-label)', marginBottom: '4px' }}>Dynasty Family Savings Goal</label>
                     <input 
                       className="onb-input-glow" 
                       type="number" 
@@ -507,7 +517,7 @@ export function WelcomeScreen() {
               )}
 
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <button className="btn-reset" style={{ width: 'auto', background: 'transparent', border: 'none', color: '#888' }} onClick={() => setStep(1)}>Back</button>
+                <button className="btn-reset" style={{ width: 'auto', background: 'transparent', border: 'none', color: 'var(--onb-back)' }} onClick={() => setStep(1)}>Back</button>
                 <button 
                   className="btn-primary" 
                   style={{ width: 'auto', padding: '12px 28px' }}
@@ -532,7 +542,7 @@ export function WelcomeScreen() {
             >
               <div className="text-center mb-32">
                 <span style={{ fontSize: '0.68rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.12em', color: T.gold }}>Wealth psychology</span>
-                <h2 style={{ fontFamily: T.fontDisplay, fontSize: '2.1rem', fontWeight: 600, color: '#fff', marginTop: '6px' }}>
+                <h2 style={{ fontFamily: T.fontDisplay, fontSize: '2.1rem', fontWeight: 600, color: 'var(--onb-title)', marginTop: '6px' }}>
                   How would you describe your financial mindset?
                 </h2>
               </div>
@@ -587,7 +597,7 @@ export function WelcomeScreen() {
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <button className="btn-reset" style={{ width: 'auto', background: 'transparent', border: 'none', color: '#888' }} onClick={() => setStep(2)}>Back</button>
+                <button className="btn-reset" style={{ width: 'auto', background: 'transparent', border: 'none', color: 'var(--onb-back)' }} onClick={() => setStep(2)}>Back</button>
                 <button 
                   className="btn-primary" 
                   style={{ width: 'auto', padding: '12px 28px' }}
@@ -612,7 +622,7 @@ export function WelcomeScreen() {
             >
               <div className="text-center mb-24">
                 <span style={{ fontSize: '0.68rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.12em', color: T.gold }}>Target Indexing</span>
-                <h2 style={{ fontFamily: T.fontDisplay, fontSize: '2.1rem', fontWeight: 600, color: '#fff', marginTop: '6px' }}>
+                <h2 style={{ fontFamily: T.fontDisplay, fontSize: '2.1rem', fontWeight: 600, color: 'var(--onb-title)', marginTop: '6px' }}>
                   What dreams are we securing?
                 </h2>
               </div>
@@ -626,14 +636,14 @@ export function WelcomeScreen() {
                     style={{ padding: '16px' }}
                   >
                     <div style={{ fontSize: '1.4rem', marginBottom: '8px' }}>{g.icon}</div>
-                    <div style={{ fontWeight: 600, fontSize: '0.9rem', color: '#fff', marginBottom: '4px' }}>{g.label}</div>
-                    <div style={{ fontSize: '0.72rem', color: '#b0a898', lineHeight: 1.3 }}>{g.desc}</div>
+                    <div style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--onb-title)', marginBottom: '4px' }}>{g.label}</div>
+                    <div style={{ fontSize: '0.72rem', color: 'var(--onb-desc)', lineHeight: 1.3 }}>{g.desc}</div>
                   </div>
                 ))}
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <button className="btn-reset" style={{ width: 'auto', background: 'transparent', border: 'none', color: '#888' }} onClick={() => setStep(3)}>Back</button>
+                <button className="btn-reset" style={{ width: 'auto', background: 'transparent', border: 'none', color: 'var(--onb-back)' }} onClick={() => setStep(3)}>Back</button>
                 <button 
                   className="btn-primary" 
                   style={{ width: 'auto', padding: '12px 28px' }}
@@ -658,7 +668,7 @@ export function WelcomeScreen() {
             >
               <div className="text-center mb-32">
                 <span style={{ fontSize: '0.68rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.12em', color: T.gold }}>Dynamic Foresight</span>
-                <h2 style={{ fontFamily: T.fontDisplay, fontSize: '2.1rem', fontWeight: 600, color: '#fff', marginTop: '6px' }}>
+                <h2 style={{ fontFamily: T.fontDisplay, fontSize: '2.1rem', fontWeight: 600, color: 'var(--onb-title)', marginTop: '6px' }}>
                   Your Life Journey Blueprint
                 </h2>
               </div>
@@ -667,7 +677,7 @@ export function WelcomeScreen() {
               <div style={{ position: 'relative', paddingLeft: '24px', display: 'flex', flexDirection: 'column', gap: '28px', marginBottom: '32px' }}>
                 
                 {/* Timeline vertical bar */}
-                <div style={{ position: 'absolute', left: '5px', top: '10px', bottom: '10px', width: '2px', background: 'linear-gradient(180deg, var(--gold-mid), rgba(255,255,255,0.06))' }} />
+                <div style={{ position: 'absolute', left: '5px', top: '10px', bottom: '10px', width: '2px', background: 'linear-gradient(180deg, var(--gold-mid), var(--onb-border))' }} />
 
                 {/* Node 1 */}
                 <div style={{ position: 'relative' }}>
@@ -676,51 +686,51 @@ export function WelcomeScreen() {
                   </div>
                   <div>
                     <span style={{ fontSize: '0.72rem', fontWeight: 700, color: T.sky, textTransform: 'uppercase', letterSpacing: '0.05em' }}>2026 · Launch</span>
-                    <h4 style={{ fontSize: '0.98rem', fontWeight: 600, color: '#fff', marginTop: '2px' }}>Core Wealth Engine Sparked</h4>
-                    <p style={{ fontSize: '0.78rem', color: '#b0a898', marginTop: '2px' }}>Personal assets indexed and calibrated for {mindset} growth parameters.</p>
+                    <h4 style={{ fontSize: '0.98rem', fontWeight: 600, color: 'var(--onb-title)', marginTop: '2px' }}>Core Wealth Engine Sparked</h4>
+                    <p style={{ fontSize: '0.78rem', color: 'var(--onb-desc)', marginTop: '2px' }}>Personal assets indexed and calibrated for {mindset} growth parameters.</p>
                   </div>
                 </div>
 
                 {/* Node 2 */}
-                <div style={{ relative: 'relative' }}>
+                <div style={{ position: 'relative' }}>
                   <div style={{ position: 'absolute', left: '-24px', top: '4px' }}>
                     <div className="timeline-pulse-node" style={{ background: T.rose, boxShadow: `0 0 10px ${T.rose}` }} />
                   </div>
                   <div>
                     <span style={{ fontSize: '0.72rem', fontWeight: 700, color: T.rose, textTransform: 'uppercase', letterSpacing: '0.05em' }}>2028 · Evolution</span>
-                    <h4 style={{ fontSize: '0.98rem', fontWeight: 600, color: '#fff', marginTop: '2px' }}>Cryptographic Partnership Sync</h4>
-                    <p style={{ fontSize: '0.78rem', color: '#b0a898', marginTop: '2px' }}>Lockers merged. Dynamic dual-engine compound system fully online.</p>
+                    <h4 style={{ fontSize: '0.98rem', fontWeight: 600, color: 'var(--onb-title)', marginTop: '2px' }}>Cryptographic Partnership Sync</h4>
+                    <p style={{ fontSize: '0.78rem', color: 'var(--onb-desc)', marginTop: '2px' }}>Lockers merged. Dynamic dual-engine compound system fully online.</p>
                   </div>
                 </div>
 
                 {/* Node 3 */}
-                <div style={{ relative: 'relative' }}>
+                <div style={{ position: 'relative' }}>
                   <div style={{ position: 'absolute', left: '-24px', top: '4px' }}>
                     <div className="timeline-pulse-node" style={{ background: T.goldMid, boxShadow: `0 0 10px ${T.goldMid}` }} />
                   </div>
                   <div>
                     <span style={{ fontSize: '0.72rem', fontWeight: 700, color: T.goldMid, textTransform: 'uppercase', letterSpacing: '0.05em' }}>2032 · Target Secured</span>
-                    <h4 style={{ fontSize: '0.98rem', fontWeight: 600, color: '#fff', marginTop: '2px' }}>First Major Family Asset Acquired</h4>
-                    <p style={{ fontSize: '0.78rem', color: '#b0a898', marginTop: '2px' }}>Dynamic SIP targets triggered, executing automated maturity distributions.</p>
+                    <h4 style={{ fontSize: '0.98rem', fontWeight: 600, color: 'var(--onb-title)', marginTop: '2px' }}>First Major Family Asset Acquired</h4>
+                    <p style={{ fontSize: '0.78rem', color: 'var(--onb-desc)', marginTop: '2px' }}>Dynamic SIP targets triggered, executing automated maturity distributions.</p>
                   </div>
                 </div>
 
                 {/* Node 4 */}
-                <div style={{ relative: 'relative' }}>
+                <div style={{ position: 'relative' }}>
                   <div style={{ position: 'absolute', left: '-24px', top: '4px' }}>
                     <div className="timeline-pulse-node" style={{ background: T.sage, boxShadow: `0 0 10px ${T.sage}` }} />
                   </div>
                   <div>
                     <span style={{ fontSize: '0.72rem', fontWeight: 700, color: T.sage, textTransform: 'uppercase', letterSpacing: '0.05em' }}>2045 · Sovereignty</span>
-                    <h4 style={{ fontSize: '0.98rem', fontWeight: 600, color: '#fff', marginTop: '2px' }}>Sovereign Financial Freedom</h4>
-                    <p style={{ fontSize: '0.78rem', color: '#b0a898', marginTop: '2px' }}>Compounding peak unlocked. Multi-generational dynasty safety buffer secured.</p>
+                    <h4 style={{ fontSize: '0.98rem', fontWeight: 600, color: 'var(--onb-title)', marginTop: '2px' }}>Sovereign Financial Freedom</h4>
+                    <p style={{ fontSize: '0.78rem', color: 'var(--onb-desc)', marginTop: '2px' }}>Compounding peak unlocked. Multi-generational dynasty safety buffer secured.</p>
                   </div>
                 </div>
 
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <button className="btn-reset" style={{ width: 'auto', background: 'transparent', border: 'none', color: '#888' }} onClick={() => setStep(4)}>Back</button>
+                <button className="btn-reset" style={{ width: 'auto', background: 'transparent', border: 'none', color: 'var(--onb-back)' }} onClick={() => setStep(4)}>Back</button>
                 <button 
                   className="btn-primary" 
                   style={{ width: 'auto', padding: '12px 28px', background: `linear-gradient(135deg, ${T.goldMid} 0%, ${T.gold} 100%)` }}
@@ -744,19 +754,19 @@ export function WelcomeScreen() {
               style={{ padding: '48px 40px', minHeight: '360px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}
             >
               <div style={{ textAlign: 'center', marginBottom: '28px' }}>
-                <div style={{ display: 'inline-flex', padding: '14px', borderRadius: '50%', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', marginBottom: '18px' }} className="animate-spin">
+                <div style={{ display: 'inline-flex', padding: '14px', borderRadius: '50%', background: 'var(--onb-border)', border: '1px solid var(--onb-border)', marginBottom: '18px' }} className="animate-spin">
                   ⏳
                 </div>
-                <h3 style={{ fontFamily: T.fontDisplay, fontSize: '1.65rem', fontWeight: 600, color: '#fff' }}>
+                <h3 style={{ fontFamily: T.fontDisplay, fontSize: '1.65rem', fontWeight: 600, color: 'var(--onb-title)' }}>
                   Calibrating Wealth Matrix
                 </h3>
-                <p style={{ fontSize: '0.8rem', color: '#b0a898', marginTop: '4px' }}>Please hold while assets are indexed to Excel precision standards...</p>
+                <p style={{ fontSize: '0.8rem', color: 'var(--onb-desc)', marginTop: '4px' }}>Please hold while assets are indexed to Excel precision standards...</p>
               </div>
 
               {/* CONSOLE OUTPUT LOGS */}
               <div style={{
-                background: 'rgba(0, 0, 0, 0.4)',
-                border: '1px solid rgba(255, 255, 255, 0.05)',
+                background: 'rgba(0, 0, 0, 0.72)',
+                border: '1px solid var(--onb-border)',
                 borderRadius: '12px',
                 padding: '16px 20px',
                 fontFamily: 'monospace',

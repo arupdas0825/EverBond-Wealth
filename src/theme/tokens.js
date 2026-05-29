@@ -38,6 +38,6 @@ export const T = {
   radiusSm:     "12px",
   radiusPill:   "100px",
 
-  fontDisplay:  "'Playfair Display', Georgia, serif",
-  fontBody:     "'DM Sans', system-ui, sans-serif",
+  fontDisplay:  "'Cormorant Garamond', Georgia, serif",
+  fontBody:     "'Inter', system-ui, sans-serif",
 };
