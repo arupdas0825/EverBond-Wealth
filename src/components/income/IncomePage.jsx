@@ -6,7 +6,6 @@ import { CURRENCIES } from '../../constants/presets';
 import { T } from '../../theme/tokens';
 import { Card } from '../common/Card';
 import { Heart, Lock } from 'lucide-react';
-import { RelationshipPortal } from '../welcome/RelationshipPortal';
 import { Logo } from '../common/Logo';
 
 const MODES=[
@@ -19,7 +18,6 @@ export function IncomePage() {
   const {partner1,partner2,p1Salary,p2Salary,mode,currency,milestones,stage,
     setP1Salary,setP2Salary,setMode,setCurrency,getTotalSalary} = useFinanceStore();
   
-  const [isPortalOpen, setIsPortalOpen] = useState(false);
   const total = getTotalSalary();
   const snap  = useMemo(()=>calculateFinancialSnapshot(total,mode),[total,mode]);
   const mContribution = useMemo(() => totalMilestoneContribution(milestones), [milestones]);
@@ -86,7 +84,7 @@ export function IncomePage() {
                 <button 
                   className="btn-primary" 
                   style={{ background: T.sky, fontSize: '0.74rem', padding: '6px 12px', width: 'auto' }}
-                  onClick={() => setIsPortalOpen(true)}
+                  onClick={() => alert("🔗 To activate the dual-wealth engine, go to the Dashboard and click 'Link Partner Ledger' to configure your stage and invite your partner!")}
                 >
                   Sync Partner Ledger
                 </button>
@@ -157,8 +155,6 @@ export function IncomePage() {
           Active milestones require <strong>{fmt(mContribution)}/month</strong> of your essentials budget.
         </div>
       </Card>
-
-      <RelationshipPortal isOpen={isPortalOpen} onClose={() => setIsPortalOpen(false)} />
     </div>
   );
 }

@@ -20,12 +20,20 @@ export const useFinanceStore = create(
       mindset:   'Balanced',
       theme:     'light',
 
-      // Verification states for Committed stage
+      // Verification states for Committed/Married stage (Standard Upgrade)
       invitationAccepted: false,
       selfieUploaded:     false,
       selfieUrl:          '',
       accountsConnected:  false,
       relationshipVerified: false,
+
+      // New Partner Linking System State
+      partnerLinked:      false,
+      partnerAccepted:    false,
+      verificationStatus: 'unverified', // 'unverified' | 'awaiting' | 'connected' | 'verified'
+      invitationCode:     '',
+      partnerId:          '',
+      relationshipId:     '',
 
       // Onboarding data splits
       onboardingSingle: {
@@ -83,7 +91,21 @@ export const useFinanceStore = create(
 
       setVerificationState: patch => set(patch),
 
-      setProfile: ({ partner1, partner2, region, currency, stage, p1Salary, p2Salary }) => {
+      setProfile: ({ 
+        partner1, 
+        partner2, 
+        region, 
+        currency, 
+        stage, 
+        p1Salary, 
+        p2Salary,
+        partnerLinked,
+        partnerAccepted,
+        verificationStatus,
+        invitationCode,
+        partnerId,
+        relationshipId
+      }) => {
         const update = { 
           started: true, 
           onboardingComplete: true, 
@@ -101,6 +123,15 @@ export const useFinanceStore = create(
         }
         if (p1Salary !== undefined) update.p1Salary = p1Salary;
         if (p2Salary !== undefined) update.p2Salary = p2Salary;
+        
+        // Add new partnership linking states to update if present
+        if (partnerLinked !== undefined) update.partnerLinked = partnerLinked;
+        if (partnerAccepted !== undefined) update.partnerAccepted = partnerAccepted;
+        if (verificationStatus !== undefined) update.verificationStatus = verificationStatus;
+        if (invitationCode !== undefined) update.invitationCode = invitationCode;
+        if (partnerId !== undefined) update.partnerId = partnerId;
+        if (relationshipId !== undefined) update.relationshipId = relationshipId;
+        
         set(update);
       },
 
@@ -153,6 +184,15 @@ export const useFinanceStore = create(
           selfieUrl: '',
           accountsConnected: false,
           relationshipVerified: false,
+          
+          // Reset partner linking state
+          partnerLinked: false,
+          partnerAccepted: false,
+          verificationStatus: 'unverified',
+          invitationCode: '',
+          partnerId: '',
+          relationshipId: '',
+
           onboardingSingle: {
             name: '',
             age: '',
