@@ -5,6 +5,7 @@ import { T } from '../../theme/tokens';
 import { Card } from '../common/Card';
 import { Heart, Sparkles, CheckSquare, ShieldCheck, Compass, Info } from 'lucide-react';
 import { formatCurrency } from '../../utils/finance';
+import { Logo } from '../common/Logo';
 
 export function CouplePlanningPage() {
   const { partner1, partner2, currency, getTotalSalary } = useFinanceStore();
@@ -27,15 +28,20 @@ export function CouplePlanningPage() {
 
   return (
     <div className="fade-in">
-      <div className="page-header">
-        <div className="page-eyebrow" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-          <span className="stage-badge committed">Committed Workspace</span>
-          <span>· Dynamic Shared Ledger</span>
+      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
+        <div>
+          <div className="page-eyebrow" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+            <span className="stage-badge committed">Committed Workspace</span>
+            <span>· Dynamic Shared Ledger</span>
+          </div>
+          <h1 className="page-title">Couple <em>Planning</em></h1>
+          <p className="page-desc">
+            Collaborative financial planner. Track consensus splits and joint lifestyle targets live.
+          </p>
         </div>
-        <h1 className="page-title">Couple <em>Planning</em></h1>
-        <p className="page-desc">
-          Collaborative financial planner. Track consensus splits and joint lifestyle targets live.
-        </p>
+        <div style={{ flexShrink: 0 }} className="desktop-only-logo">
+          <Logo size={36} />
+        </div>
       </div>
 
       <div className="grid-2 mb-20">

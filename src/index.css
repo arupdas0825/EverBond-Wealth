@@ -5,7 +5,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
 /* ── TOKENS ─────────────────────────────────────────────── */
-:root {
+:root, [data-theme='light'] {
   --gold:        #B8902A;
   --gold-mid:    #C9A84C;
   --gold-light:  #F5E9C8;
@@ -71,6 +71,67 @@
   --ease:   cubic-bezier(.4,0,.2,1);
   --spring: cubic-bezier(.34,1.56,.64,1);
   --t1: .14s; --t2: .24s; --t3: .38s;
+}
+
+[data-theme='dark'] {
+  --bg:          #0B0F19;
+  --bg-warm:     #111827;
+  --bg-muted:    #1F2937;
+  --bg-card:     #131B2E;
+  --bg-sidebar:  #0F172A;
+
+  --text:        #FDFCF9;
+  --text-muted:  #A1AEC4;
+  --text-faint:  #5D7293;
+  --text-inv:    #0B0F19;
+
+  --border:      rgba(255, 255, 255, 0.08);
+  --border-mid:  rgba(255, 255, 255, 0.14);
+  --border-str:  rgba(255, 255, 255, 0.22);
+
+  --gold-pale:   rgba(184, 144, 42, 0.08);
+  --gold-border: rgba(184, 144, 42, 0.35);
+
+  --sh-xs:   0 1px 4px rgba(0,0,0,.25);
+  --sh-sm:   0 2px 12px rgba(0,0,0,.35), 0 1px 3px rgba(0,0,0,.20);
+  --sh-md:   0 8px 32px rgba(0,0,0,.45), 0 2px 8px rgba(0,0,0,.20);
+  --sh-lg:   0 20px 56px rgba(0,0,0,.55), 0 6px 16px rgba(0,0,0,.25);
+  --sh-gold: 0 12px 40px rgba(184,144,42,0.25), 0 3px 10px rgba(184,144,42,0.12);
+}
+
+/* Smooth transitions for theme switcher */
+body, 
+.eb-app,
+.eb-sidebar, 
+.eb-main,
+.card, 
+.stat-card, 
+.btn-primary, 
+.btn-reset, 
+.eb-input, 
+.eb-select, 
+.onb-input-glow, 
+.onb-select-glow, 
+.alloc-row, 
+.wealth-table td, 
+.wealth-table th, 
+.legend-item, 
+.health-ring-inner, 
+.couple-chip, 
+.nav-item, 
+.page-title, 
+.page-desc, 
+.card-heading, 
+.card-sub, 
+.lock-title, 
+.lock-desc {
+  transition: 
+    background 0.4s cubic-bezier(0.16, 1, 0.3, 1), 
+    background-color 0.4s cubic-bezier(0.16, 1, 0.3, 1), 
+    border-color 0.4s cubic-bezier(0.16, 1, 0.3, 1), 
+    color 0.4s cubic-bezier(0.16, 1, 0.3, 1), 
+    box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1), 
+    backdrop-filter 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* ── RESET ─────────────────────────────────────────────── */

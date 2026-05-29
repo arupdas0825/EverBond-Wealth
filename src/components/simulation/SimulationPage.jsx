@@ -9,6 +9,7 @@ import {
 } from '../../utils/finance';
 import { T } from '../../theme/tokens';
 import { Card } from '../common/Card';
+import { Logo } from '../common/Logo';
 
 const YEARS     = [1, 5, 10, 20, 30];
 const MILESTONES= [1, 3, 5, 10, 15, 20, 25, 30];
@@ -43,13 +44,18 @@ export function SimulationPage() {
 
   return (
     <div className="fade-in">
-      <div className="page-header">
-        <div className="page-eyebrow">Wealth Engine</div>
-        <h1 className="page-title">Future <em>Simulation</em></h1>
-        <p className="page-desc">
-          High-fidelity SIP projection using the Excel formula:
-          <strong style={{color:T.goldMid}}> FV = PMT × [((1+r)ⁿ − 1) / r] × (1+r)</strong>
-        </p>
+      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
+        <div>
+          <div className="page-eyebrow">Wealth Engine</div>
+          <h1 className="page-title">Future <em>Simulation</em></h1>
+          <p className="page-desc">
+            High-fidelity SIP projection using the Excel formula:
+            <strong style={{color:T.goldMid}}> FV = PMT × [((1+r)ⁿ − 1) / r] × (1+r)</strong>
+          </p>
+        </div>
+        <div style={{ flexShrink: 0 }} className="desktop-only-logo">
+          <Logo size={36} />
+        </div>
       </div>
 
       {/* Config */}

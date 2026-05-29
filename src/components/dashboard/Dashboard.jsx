@@ -7,6 +7,7 @@ import { T } from '../../theme/tokens';
 import { Card, StatCard } from '../common/Card';
 import { RelationshipPortal } from '../welcome/RelationshipPortal';
 import { ShieldAlert, Heart, Users, Coins, Sparkles, Flame, UserCheck, Crown } from 'lucide-react';
+import { Logo } from '../common/Logo';
 
 const TT = {
   borderRadius:'14px',border:'none',
@@ -67,7 +68,8 @@ export function Dashboard() {
     <div className="fade-in">
       <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px' }}>
         <div>
-          <div className="page-eyebrow" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <div className="page-eyebrow" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Logo size={20} showText={false} />
             {stage === 'Single' ? (
               <span className="stage-badge single">Single Stage</span>
             ) : stage === 'Committed' ? (

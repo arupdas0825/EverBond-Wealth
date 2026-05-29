@@ -6,6 +6,8 @@ import { totalMilestoneContribution } from '../../utils/milestones';
 import { T } from '../../theme/tokens';
 import { Card } from '../common/Card';
 
+import { Logo } from '../common/Logo';
+
 const TT = {
   borderRadius:'14px',border:'none',
   boxShadow:'0 8px 32px rgba(0,0,0,.10)',
@@ -66,13 +68,16 @@ export function AllocationPage() {
 
   return (
     <div className="fade-in">
-      <div className="page-header" style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',gap:24}}>
+      <div className="page-header" style={{display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:16}}>
         <div>
           <div className="page-eyebrow">Portfolio Engine</div>
           <h1 className="page-title">Investment <em>Allocation</em></h1>
           <p className="page-desc">
             Granular asset-class distribution — every number sourced directly from the Excel brain.
           </p>
+        </div>
+        <div style={{ flexShrink: 0 }} className="desktop-only-logo">
+          <Logo size={36} />
         </div>
       </div>
 

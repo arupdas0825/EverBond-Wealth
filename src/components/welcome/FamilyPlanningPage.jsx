@@ -4,6 +4,7 @@ import { T } from '../../theme/tokens';
 import { Card } from '../common/Card';
 import { Crown, Sparkles, GraduationCap, Coins, Plus, Trash2, ArrowUpRight } from 'lucide-react';
 import { formatCurrency, formatCompact } from '../../utils/finance';
+import { Logo } from '../common/Logo';
 
 export function FamilyPlanningPage() {
   const { partner1, partner2, currency, getTotalSalary } = useFinanceStore();
@@ -34,15 +35,20 @@ export function FamilyPlanningPage() {
 
   return (
     <div className="fade-in">
-      <div className="page-header">
-        <div className="page-eyebrow" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-          <span className="stage-badge married">Family Dynasty</span>
-          <span>· Multi-Generational Locker</span>
+      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
+        <div>
+          <div className="page-eyebrow" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+            <span className="stage-badge married">Family Dynasty</span>
+            <span>· Multi-Generational Locker</span>
+          </div>
+          <h1 className="page-title">Dynasty <em>Vault</em></h1>
+          <p className="page-desc">
+            Long-term family security assets, college reserves, and multi-generation estate legacy planners.
+          </p>
         </div>
-        <h1 className="page-title">Dynasty <em>Vault</em></h1>
-        <p className="page-desc">
-          Long-term family security assets, college reserves, and multi-generation estate legacy planners.
-        </p>
+        <div style={{ flexShrink: 0 }} className="desktop-only-logo">
+          <Logo size={36} />
+        </div>
       </div>
 
       <div className="grid-2 mb-20">

@@ -6,6 +6,7 @@ import {
 } from '../../utils/finance';
 import { T } from '../../theme/tokens';
 import { Lock, Crown } from 'lucide-react';
+import { Logo } from '../common/Logo';
 
 const GOAL_DEFS = [
   { key:'child',      icon:'🎓', name:'Child Education',   color:T.goldMid, retPct:10, tag:'Education Fund', lockedAt: 'Committed' },
@@ -44,12 +45,17 @@ export function GoalsPage() {
 
   return (
     <div className="fade-in">
-      <div className="page-header">
-        <div className="page-eyebrow">Dream Planner</div>
-        <h1 className="page-title">Life <em>Goals</em></h1>
-        <p className="page-desc">
-          Set your targets. Monthly allocations are auto-calculated from the Excel engine based on your current life stage.
-        </p>
+      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
+        <div>
+          <div className="page-eyebrow">Dream Planner</div>
+          <h1 className="page-title">Life <em>Goals</em></h1>
+          <p className="page-desc">
+            Set your targets. Monthly allocations are auto-calculated from the Excel engine based on your current life stage.
+          </p>
+        </div>
+        <div style={{ flexShrink: 0 }} className="desktop-only-logo">
+          <Logo size={36} />
+        </div>
       </div>
 
       <div className="grid-2">

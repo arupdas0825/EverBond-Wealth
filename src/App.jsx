@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useFinanceStore } from './store/useFinanceStore';
 import { WelcomeScreen } from './components/welcome/WelcomeScreen';
 import { Sidebar, MobileNav } from './components/layout/Sidebar';
@@ -11,14 +11,29 @@ import { MilestonePage } from './components/milestones/MilestonePage';
 import { SimulationPage } from './components/simulation/SimulationPage';
 import { CouplePlanningPage } from './components/welcome/CouplePlanningPage';
 import { FamilyPlanningPage } from './components/welcome/FamilyPlanningPage';
+import { ThemeToggle } from './components/common/ThemeToggle';
 import './index.css';
 
 export default function App() {
   const started = useFinanceStore(s=>s.started);
+  const theme = useFinanceStore(s=>s.theme);
   const [page,setPage] = useState('dashboard');
-  if (!started) return <WelcomeScreen/>;
+
+  // Synchronize HTML data-theme attribute
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+  }, [theme]);
+
+  if (!started) return (
+    <>
+      <ThemeToggle />
+      <WelcomeScreen/>
+    </>
+  );
+
   return (
     <div className="eb-app">
+      <ThemeToggle />
       <div className="eb-mobile-header">
         <Logo size={32} />
       </div>

@@ -13,6 +13,7 @@ export const useFinanceStore = create(
       currency:  'INR',
       dreamGoals: [],
       mindset:   'Balanced',
+      theme:     'light',
 
       // Verification states for Committed stage
       invitationAccepted: false,
@@ -68,6 +69,7 @@ export const useFinanceStore = create(
       setStage: stage => set({ stage }),
       setMindset: mindset => set({ mindset, mode: mindset }),
       setDreamGoals: dreamGoals => set({ dreamGoals }),
+      setTheme: theme => set({ theme }),
       
       setOnboardingSingle: data => set(s => ({ onboardingSingle: { ...s.onboardingSingle, ...data } })),
       setOnboardingCommitted: data => set(s => ({ onboardingCommitted: { ...s.onboardingCommitted, ...data } })),
@@ -115,6 +117,7 @@ export const useFinanceStore = create(
         set({
           started: false,
           stage: 'Single',
+          theme: 'light',
           partner1: '',
           partner2: '',
           region: 'India',
