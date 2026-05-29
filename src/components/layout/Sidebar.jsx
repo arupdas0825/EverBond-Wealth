@@ -17,7 +17,7 @@ const NAV = [
 ];
 
 export function Sidebar({ page, setPage }) {
-  const { partner1, partner2, reset, stage, setStage, setProfile } = useFinanceStore();
+  const { partner1, partner2, reset, stage, setStage, setProfile, theme } = useFinanceStore();
   const [isPortalOpen, setIsPortalOpen] = useState(false);
 
   const handleReset = () => {
@@ -59,7 +59,13 @@ export function Sidebar({ page, setPage }) {
 
   return (
     <>
-      <aside className="eb-sidebar" style={{ background: stage === 'Committed' ? 'rgba(252,238,241,0.2)' : stage === 'Married' ? 'rgba(253,250,242,0.2)' : 'var(--bg-sidebar)' }}>
+      <aside className="eb-sidebar" style={{
+        background: stage === 'Committed'
+          ? (theme === 'dark' ? 'rgba(208, 92, 114, 0.05)' : 'rgba(252, 238, 241, 0.5)')
+          : stage === 'Married'
+            ? (theme === 'dark' ? 'rgba(184, 144, 42, 0.06)' : 'rgba(253, 250, 242, 0.5)')
+            : 'var(--bg-sidebar)'
+      }}>
         <div className="sb-brand" style={{ padding: '10px 6px', marginBottom: '40px' }}>
           <Logo size={36} showText={true} />
         </div>

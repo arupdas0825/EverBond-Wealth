@@ -18,9 +18,9 @@ export const T = {
   violet:       "#7C6BBE",
   violetLight:  "#F0EDFA",
 
-  bg:           "#FDFCF9",
-  bgWarm:       "#F9F7F2",
-  bgMuted:      "#F4F2EC",
+  bg:           "#FAF6EE",
+  bgWarm:       "#F4EFE3",
+  bgMuted:      "#ECE5D3",
   bgCard:       "#FFFFFF",
 
   text:         "#1C1A16",
