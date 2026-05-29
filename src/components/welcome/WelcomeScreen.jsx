@@ -30,15 +30,9 @@ export function WelcomeScreen() {
   const [step, setStep] = useState(0);
   const [particles, setParticles] = useState([]);
   const [validationErrors, setValidationErrors] = useState({});
-  
-  // Local state during welcome flow
   const [currency, setLocalCurrency] = useState('INR');
   const [region, setLocalRegion] = useState('India');
   
-  // Loading calibration sequence logs
-  const [calibrationLogs, setCalibrationLogs] = useState([]);
-  const [currentLogIndex, setCurrentLogIndex] = useState(0);
-
   // Generate cinematic floating particles on load
   useEffect(() => {
     const generated = Array.from({ length: 15 }).map((_, i) => ({
@@ -51,67 +45,37 @@ export function WelcomeScreen() {
     setParticles(generated);
   }, []);
 
-  // Step 6: Wealth engine calibration logs
-  const logSequence = [
-    { text: 'Initializing EverBond cryptographic ledger node...', type: 'info' },
-    { text: `Configuring primary region to ${region} · System Currency: ${currency}`, type: 'info' },
-    { text: `Aligning risk management profile with ${mindset} mindset...`, type: 'info' },
-    { text: 'Synthesizing dynamic asset allocation coefficients...', type: 'info' },
-    { text: 'Calibrating multi-horizon compound yield algorithms...', type: 'info' },
-    { text: 'Compiling timeline projections & active milestones...', type: 'info' },
-    { text: 'EVERBOND WEALTH MATRIX ENGAGED. Ready for liftoff.', type: 'success' }
-  ];
+  const handleCompleteOnboarding = () => {
+    let finalPartner1 = '';
+    let finalPartner2 = '';
+    let p1Salary = 100000;
+    let p2Salary = 0;
 
-  useEffect(() => {
-    if (step === 6) {
-      setCurrentLogIndex(0);
-      setCalibrationLogs([]);
+    if (stage === 'Single') {
+      finalPartner1 = onboardingSingle.name || 'Single Builder';
+      p1Salary = parseFloat(onboardingSingle.income) || 100000;
+    } else if (stage === 'Committed') {
+      finalPartner1 = onboardingCommitted.name || 'Partner 1';
+      finalPartner2 = onboardingCommitted.partnerName || 'Partner 2';
+      p1Salary = 100000;
+      p2Salary = 80000;
+    } else {
+      finalPartner1 = onboardingMarried.name || 'Dynasty Head';
+      finalPartner2 = onboardingMarried.spouseName || 'Spouse 2';
+      p1Salary = 150000;
+      p2Salary = 120000;
     }
-  }, [step]);
 
-  useEffect(() => {
-    if (step === 6 && currentLogIndex < logSequence.length) {
-      const timer = setTimeout(() => {
-        setCalibrationLogs(prev => [...prev, logSequence[currentLogIndex]]);
-        setCurrentLogIndex(prev => prev + 1);
-      }, currentLogIndex === logSequence.length - 1 ? 1200 : 700);
-      return () => clearTimeout(timer);
-    } else if (step === 6 && currentLogIndex === logSequence.length) {
-      const timer = setTimeout(() => {
-        // Complete Onboarding & Save
-        let finalPartner1 = '';
-        let finalPartner2 = '';
-        let p1Salary = 100000;
-        let p2Salary = 0;
-
-        if (stage === 'Single') {
-          finalPartner1 = onboardingSingle.name || 'Single Builder';
-          p1Salary = parseFloat(onboardingSingle.income) || 100000;
-        } else if (stage === 'Committed') {
-          finalPartner1 = onboardingCommitted.name || 'Partner 1';
-          finalPartner2 = onboardingCommitted.partnerName || 'Partner 2';
-          p1Salary = 100000;
-          p2Salary = 80000;
-        } else {
-          finalPartner1 = onboardingMarried.name || 'Dynasty Head';
-          finalPartner2 = onboardingMarried.spouseName || 'Spouse 2';
-          p1Salary = 150000;
-          p2Salary = 120000;
-        }
-
-        setProfile({
-          partner1: finalPartner1,
-          partner2: finalPartner2,
-          region,
-          currency,
-          stage,
-          p1Salary,
-          p2Salary
-        });
-      }, 1500);
-      return () => clearTimeout(timer);
-    }
-  }, [step, currentLogIndex]);
+    setProfile({
+      partner1: finalPartner1,
+      partner2: finalPartner2,
+      region,
+      currency,
+      stage,
+      p1Salary,
+      p2Salary
+    });
+  };
 
   // Determine stage glow background
   const getGlowColor = () => {
@@ -837,59 +801,10 @@ export function WelcomeScreen() {
                 <button 
                   className="btn-primary" 
                   style={{ width: 'auto', padding: '12px 28px', background: `linear-gradient(135deg, ${T.goldMid} 0%, ${T.gold} 100%)` }}
-                  onClick={() => setStep(6)}
+                  onClick={handleCompleteOnboarding}
                 >
-                  Confirm &amp; Calibrate Engine
+                  Confirm &amp; Complete Setup
                 </button>
-              </div>
-            </motion.div>
-          )}
-
-          {/* STEP 6: WEALTH ENGINE CALIBRATION LOADING */}
-          {step === 6 && (
-            <motion.div
-              key="calibration"
-              initial={{ opacity: 0, scale: 0.98 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.4 }}
-              className="liquid-glass"
-              style={{ padding: '48px 40px', minHeight: '360px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}
-            >
-              <div style={{ textAlign: 'center', marginBottom: '28px' }}>
-                <div style={{ display: 'inline-flex', padding: '14px', borderRadius: '50%', background: 'var(--onb-border)', border: '1px solid var(--onb-border)', marginBottom: '18px' }} className="animate-spin">
-                  ⏳
-                </div>
-                <h3 style={{ fontFamily: T.fontDisplay, fontSize: '1.65rem', fontWeight: 600, color: 'var(--onb-title)' }}>
-                  Calibrating Wealth Matrix
-                </h3>
-                <p style={{ fontSize: '0.8rem', color: 'var(--onb-desc)', marginTop: '4px' }}>Please hold while assets are indexed to Excel precision standards...</p>
-              </div>
-
-              {/* CONSOLE OUTPUT LOGS */}
-              <div style={{
-                background: 'rgba(0, 0, 0, 0.72)',
-                border: '1px solid var(--onb-border)',
-                borderRadius: '12px',
-                padding: '16px 20px',
-                fontFamily: 'monospace',
-                fontSize: '0.76rem',
-                color: '#62ca98',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '6px',
-                textAlign: 'left',
-                minHeight: '140px',
-                overflowY: 'auto'
-              }}>
-                {calibrationLogs.map((l, i) => (
-                  <div key={i} style={{ color: l.type === 'success' ? '#62ca98' : '#b0a898' }}>
-                    &gt; {l.text}
-                  </div>
-                ))}
-                {currentLogIndex < logSequence.length && (
-                  <div className="animate-pulse" style={{ color: T.gold }}>&gt; SYNCING PROTOCOLS...</div>
-                )}
               </div>
             </motion.div>
           )}
