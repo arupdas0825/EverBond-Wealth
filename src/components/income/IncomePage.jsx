@@ -5,6 +5,8 @@ import { totalMilestoneContribution } from '../../utils/milestones';
 import { CURRENCIES } from '../../constants/presets';
 import { T } from '../../theme/tokens';
 import { Card } from '../common/Card';
+import { Heart, Lock } from 'lucide-react';
+import { RelationshipPortal } from '../welcome/RelationshipPortal';
 
 const MODES=[
   {key:'Conservative',icon:'🛡️',desc:'60% Needs · 30% Invest\nSafety-first approach'},
@@ -13,21 +15,26 @@ const MODES=[
 ];
 
 export function IncomePage() {
-  const {partner1,partner2,p1Salary,p2Salary,mode,currency,milestones,
+  const {partner1,partner2,p1Salary,p2Salary,mode,currency,milestones,stage,
     setP1Salary,setP2Salary,setMode,setCurrency,getTotalSalary} = useFinanceStore();
+  
+  const [isPortalOpen, setIsPortalOpen] = useState(false);
   const total = getTotalSalary();
   const snap  = useMemo(()=>calculateFinancialSnapshot(total,mode),[total,mode]);
   const mContribution = useMemo(() => totalMilestoneContribution(milestones), [milestones]);
   const fmt   = a => formatCurrency(a, currency);
   const sym   = CURRENCIES[currency]?.symbol||'₹';
   const [rates,setRates]=useState(null); const [loading,setLoading]=useState(true);
+
   useEffect(()=>{
     setLoading(true);
     fetch(`https://open.er-api.com/v6/latest/${currency}`)
       .then(r=>r.json()).then(d=>{ if(d.result==='success') setRates(d.rates); })
       .catch(()=>{}).finally(()=>setLoading(false));
   },[currency]);
+
   const handleSalary = setter => e => { const v=parseFloat(e.target.value); setter(isNaN(v)?0:v); };
+
   return (
     <div className="fade-in">
       <div className="page-header">
@@ -37,7 +44,7 @@ export function IncomePage() {
       </div>
       <div className="grid-2 mb-20">
         <Card gold>
-          <div className="card-title">{partner1}&apos;s Contribution</div>
+          <div className="card-title">{partner1 || 'Your'}&apos;s Contribution</div>
           <div className="card-heading mb-16">Monthly Income</div>
           <div className="salary-field">
             <span className="salary-prefix">{sym}</span>
@@ -46,20 +53,45 @@ export function IncomePage() {
           </div>
           <p style={{fontSize:'.78rem',color:T.textFaint,marginTop:8}}>Monthly in-hand (after tax)</p>
         </Card>
-        <Card gold>
-          <div className="card-title">{partner2}&apos;s Contribution</div>
+        
+        <Card gold style={{ position: 'relative' }}>
+          <div className="card-title">{stage === 'Single' ? 'Partner' : partner2}&apos;s Contribution</div>
           <div className="card-heading mb-16">Monthly Income</div>
           <div className="salary-field">
             <span className="salary-prefix">{sym}</span>
             <input className="salary-input" type="number" min={0} placeholder="0"
-              value={p2Salary||''} onChange={handleSalary(setP2Salary)}/>
+              value={stage === 'Single' ? '' : p2Salary||''} 
+              disabled={stage === 'Single'}
+              onChange={handleSalary(setP2Salary)}/>
           </div>
           <p style={{fontSize:'.78rem',color:T.textFaint,marginTop:8}}>Monthly in-hand (after tax)</p>
+
+          {/* Single Stage lock for second income slot */}
+          {stage === 'Single' && (
+            <div className="glass-lock-screen" style={{ borderRadius: 'var(--r-lg)', padding: '16px' }}>
+              <div className="lock-screen-inner" style={{ padding: '0 8px' }}>
+                <div className="lock-icon-glow" style={{ width: '40px', height: '40px', fontSize: '1.1rem', marginBottom: '8px' }}>
+                  <Lock size={15} />
+                </div>
+                <h4 className="lock-title" style={{ fontSize: '1.05rem', marginBottom: '4px' }}>Dual Income Engine</h4>
+                <p className="lock-desc" style={{ fontSize: '0.74rem', marginBottom: '12px' }}>
+                  Sync your ledger with a partner to unlock the second active monthly income slot.
+                </p>
+                <button 
+                  className="btn-primary" 
+                  style={{ background: T.sky, fontSize: '0.74rem', padding: '6px 12px', width: 'auto' }}
+                  onClick={() => setIsPortalOpen(true)}
+                >
+                  Sync Partner Ledger
+                </button>
+              </div>
+            </div>
+          )}
         </Card>
       </div>
       <Card className="mb-20">
         <div className="combined-display">
-          <div className="combined-label">Combined Monthly Engine Power</div>
+          <div className="combined-label">{stage === 'Single' ? "Your Active Monthly Engine Power" : "Combined Monthly Engine Power"}</div>
           <div className="combined-value">{fmt(total)}</div>
           <p className="combined-sub">Driving all allocations, projections &amp; goal timelines.</p>
         </div>
@@ -119,6 +151,8 @@ export function IncomePage() {
           Active milestones require <strong>{fmt(mContribution)}/month</strong> of your essentials budget.
         </div>
       </Card>
+
+      <RelationshipPortal isOpen={isPortalOpen} onClose={() => setIsPortalOpen(false)} />
     </div>
   );
 }

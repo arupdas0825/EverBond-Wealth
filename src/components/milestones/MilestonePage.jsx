@@ -51,7 +51,7 @@ function StableNumericInput({ value, onCommit, placeholder, className, style }) 
 }
 
 export function MilestonePage() {
-  const { milestones, addMilestone, updateMilestone, removeMilestone, currency } = useFinanceStore();
+  const { milestones, addMilestone, updateMilestone, removeMilestone, currency, stage } = useFinanceStore();
   const [showAddForm, setShowAddForm] = useState(false);
   const formRef = useRef(null);
 
@@ -120,8 +120,8 @@ export function MilestonePage() {
       <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px' }}>
         <div>
           <div className="page-eyebrow">Milestone Planner</div>
-          <h1 className="page-title">Shared <em>Milestones</em></h1>
-          <p className="page-desc">Plan future purchases together. Linear savings for major dreams.</p>
+          <h1 className="page-title">{stage === 'Single' ? 'Solo' : 'Shared'} <em>Milestones</em></h1>
+          <p className="page-desc">{stage === 'Single' ? 'Plan future purchases. Linear savings for major dreams.' : 'Plan future purchases together. Linear savings for major dreams.'}</p>
         </div>
         <div style={{
           background: 'var(--gold-pale)', padding: '12px 20px', borderRadius: '18px',

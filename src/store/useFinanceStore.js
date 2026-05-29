@@ -4,12 +4,45 @@ import { persist } from 'zustand/middleware';
 export const useFinanceStore = create(
   persist(
     (set, get) => ({
-      // Onboarding
+      // Onboarding & Stage System
       started:   false,
+      stage:     'Single', // 'Single' | 'Committed' | 'Married'
       partner1:  '',
       partner2:  '',
       region:    'India',
       currency:  'INR',
+      dreamGoals: [],
+      mindset:   'Balanced',
+
+      // Verification states for Committed stage
+      invitationAccepted: false,
+      selfieUploaded:     false,
+      selfieUrl:          '',
+      accountsConnected:  false,
+      relationshipVerified: false,
+
+      // Onboarding data splits
+      onboardingSingle: {
+        name: '',
+        age: '',
+        country: 'India',
+        income: '',
+        careerStage: '',
+        financialGoals: '',
+      },
+      onboardingCommitted: {
+        name: '',
+        partnerName: '',
+        anniversaryDate: '',
+        combinedGoals: '',
+      },
+      onboardingMarried: {
+        spouseName: '',
+        familyGoals: '',
+        childPlans: '',
+        currentSavings: '',
+        futurePlanningGoals: '',
+      },
 
       // Income
       p1Salary: 100000,
@@ -32,8 +65,23 @@ export const useFinanceStore = create(
       milestones: [],
 
       // Actions
-      setProfile: ({ partner1, partner2, region, currency }) =>
-        set({ started: true, partner1, partner2, region, currency }),
+      setStage: stage => set({ stage }),
+      setMindset: mindset => set({ mindset, mode: mindset }),
+      setDreamGoals: dreamGoals => set({ dreamGoals }),
+      
+      setOnboardingSingle: data => set(s => ({ onboardingSingle: { ...s.onboardingSingle, ...data } })),
+      setOnboardingCommitted: data => set(s => ({ onboardingCommitted: { ...s.onboardingCommitted, ...data } })),
+      setOnboardingMarried: data => set(s => ({ onboardingMarried: { ...s.onboardingMarried, ...data } })),
+
+      setVerificationState: patch => set(patch),
+
+      setProfile: ({ partner1, partner2, region, currency, stage, p1Salary, p2Salary }) => {
+        const update = { started: true, partner1, partner2, region, currency };
+        if (stage) update.stage = stage;
+        if (p1Salary !== undefined) update.p1Salary = p1Salary;
+        if (p2Salary !== undefined) update.p2Salary = p2Salary;
+        set(update);
+      },
 
       setP1Salary: v => set({ p1Salary: v }),
       setP2Salary: v => set({ p2Salary: v }),
@@ -57,24 +105,63 @@ export const useFinanceStore = create(
       })),
 
       getTotalSalary: () => {
-        const { p1Salary, p2Salary } = get();
+        const { p1Salary, p2Salary, stage } = get();
+        // Single stage only has P1 Salary
+        if (stage === 'Single') return p1Salary || 0;
         return (p1Salary || 0) + (p2Salary || 0);
       },
 
       reset: () => {
         set({
-          started: false, partner1: '', partner2: '',
-          region: 'India', currency: 'INR',
-          p1Salary: 100000, p2Salary: 0,
-          mode: 'Balanced', simYears: 10, simReturn: null,
+          started: false,
+          stage: 'Single',
+          partner1: '',
+          partner2: '',
+          region: 'India',
+          currency: 'INR',
+          dreamGoals: [],
+          mindset: 'Balanced',
+          invitationAccepted: false,
+          selfieUploaded: false,
+          selfieUrl: '',
+          accountsConnected: false,
+          relationshipVerified: false,
+          onboardingSingle: {
+            name: '',
+            age: '',
+            country: 'India',
+            income: '',
+            careerStage: '',
+            financialGoals: '',
+          },
+          onboardingCommitted: {
+            name: '',
+            partnerName: '',
+            anniversaryDate: '',
+            combinedGoals: '',
+          },
+          onboardingMarried: {
+            spouseName: '',
+            familyGoals: '',
+            childPlans: '',
+            currentSavings: '',
+            futurePlanningGoals: '',
+          },
+          p1Salary: 100000,
+          p2Salary: 0,
+          mode: 'Balanced',
+          simYears: 10,
+          simReturn: null,
           milestones: [],
           goalTargets: {
-            child: 5000000, retirement: 20000000,
-            house: 8000000, vacation: 500000,
+            child: 5000000,
+            retirement: 20000000,
+            house: 8000000,
+            vacation: 500000,
           },
         });
       },
     }),
-    { name: 'eb_v5' }
+    { name: 'eb_v6' }
   )
 );

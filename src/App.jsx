@@ -9,7 +9,10 @@ import { AllocationPage } from './components/allocation/AllocationPage';
 import { GoalsPage }    from './components/goals/GoalsPage';
 import { MilestonePage } from './components/milestones/MilestonePage';
 import { SimulationPage } from './components/simulation/SimulationPage';
+import { CouplePlanningPage } from './components/welcome/CouplePlanningPage';
+import { FamilyPlanningPage } from './components/welcome/FamilyPlanningPage';
 import './index.css';
+
 export default function App() {
   const started = useFinanceStore(s=>s.started);
   const [page,setPage] = useState('dashboard');
@@ -28,6 +31,8 @@ export default function App() {
           {page==='goals'      && <GoalsPage/>}
           {page==='milestones' && <MilestonePage/>}
           {page==='simulation' && <SimulationPage/>}
+          {page==='couple-planning' && <CouplePlanningPage/>}
+          {page==='family-planning' && <FamilyPlanningPage/>}
         </div>
       </main>
       <MobileNav page={page} setPage={setPage}/>

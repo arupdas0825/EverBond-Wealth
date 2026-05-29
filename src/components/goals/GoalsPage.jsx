@@ -1,16 +1,17 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useFinanceStore } from '../../store/useFinanceStore';
 import {
   calculateFinancialSnapshot, formatCurrency, formatCompact,
   calculateGoalTimeline, simulateGrowth,
 } from '../../utils/finance';
 import { T } from '../../theme/tokens';
+import { Lock, Crown } from 'lucide-react';
 
 const GOAL_DEFS = [
-  { key:'child',      icon:'🎓', name:'Child Education',   color:T.goldMid, retPct:10, tag:'Education Fund'  },
-  { key:'retirement', icon:'🌅', name:'Retirement Corpus', color:T.sage,    retPct:12, tag:'Long-term Goal'  },
-  { key:'house',      icon:'🏡', name:'Home Purchase',     color:T.sky,     retPct:9,  tag:'Asset Goal'      },
-  { key:'vacation',   icon:'✈️',  name:'Vacation / Travel', color:T.rose,    retPct:6,  tag:'Lifestyle Goal'  },
+  { key:'child',      icon:'🎓', name:'Child Education',   color:T.goldMid, retPct:10, tag:'Education Fund', lockedAt: 'Committed' },
+  { key:'retirement', icon:'🌅', name:'Retirement Corpus', color:T.sage,    retPct:12, tag:'Long-term Goal' },
+  { key:'house',      icon:'🏡', name:'Home Purchase',     color:T.sky,     retPct:9,  tag:'Asset Goal' },
+  { key:'vacation',   icon:'✈️',  name:'Vacation / Travel', color:T.rose,    retPct:6,  tag:'Lifestyle Goal' },
 ];
 
 function fmtEta(months) {
@@ -22,11 +23,24 @@ function fmtEta(months) {
 }
 
 export function GoalsPage() {
-  const { mode, currency, goalTargets, setGoalTargets, getTotalSalary } = useFinanceStore();
+  const { mode, currency, goalTargets, setGoalTargets, getTotalSalary, stage, setStage, partner1, partner2, setProfile } = useFinanceStore();
   const total = getTotalSalary();
   const snap  = useMemo(()=>calculateFinancialSnapshot(total,mode),[total,mode]);
   const fmt   = a => formatCurrency(a, currency);
   const cmpct = a => formatCompact(a, currency);
+
+  const handleUpgradeMarried = () => {
+    if (window.confirm('💍 Upgrade to Married Stage? This will unlock Family Dynasty Planning, children education funds, and family estate reserves.')) {
+      setStage('Married');
+      setProfile({
+        partner1,
+        partner2: partner2 || 'Spouse',
+        stage: 'Married',
+        p1Salary: 150000,
+        p2Salary: 120000
+      });
+    }
+  };
 
   return (
     <div className="fade-in">
@@ -34,7 +48,7 @@ export function GoalsPage() {
         <div className="page-eyebrow">Dream Planner</div>
         <h1 className="page-title">Life <em>Goals</em></h1>
         <p className="page-desc">
-          Set your shared targets. Monthly allocations are auto-calculated from the Excel engine.
+          Set your targets. Monthly allocations are auto-calculated from the Excel engine based on your current life stage.
         </p>
       </div>
 
@@ -45,9 +59,11 @@ export function GoalsPage() {
           const months   = target > 0 ? calculateGoalTimeline(monthly, target, g.retPct) : Infinity;
           const corpus20 = simulateGrowth(monthly, 20, g.retPct).fv;
           const progress = target > 0 ? Math.min((monthly * 240 / target) * 100, 100) : 0;
+          
+          const isGoalLocked = g.lockedAt === 'Committed' && stage !== 'Married';
 
           return (
-            <div key={g.key} className="goal-card" style={{borderTop:`3px solid ${g.color}`}}>
+            <div key={g.key} className="goal-card" style={{ borderTop: `3px solid ${g.color}`, position: 'relative' }}>
               {/* Header row */}
               <div className="goal-header">
                 <div>
@@ -81,6 +97,7 @@ export function GoalsPage() {
                 type="number" min={0}
                 placeholder={`Set ${g.name} target…`}
                 value={target||''}
+                disabled={isGoalLocked}
                 onChange={e => {
                   const v = parseFloat(e.target.value);
                   setGoalTargets({ ...goalTargets, [g.key]: isNaN(v) ? 0 : v });
@@ -119,6 +136,27 @@ export function GoalsPage() {
                   );
                 })}
               </div>
+
+              {/* Dynamic Child Education Lock Overlay */}
+              {isGoalLocked && (
+                <div className="glass-lock-screen">
+                  <div className="lock-screen-inner">
+                    <div className="lock-icon-glow" style={{ color: T.gold, background: 'var(--gold-pale)' }}>
+                      <Crown size={20} />
+                    </div>
+                    <h4 className="lock-title">Family Dynasty Plan</h4>
+                    <p className="lock-desc">Child education indexes and family legacy building are unlocked in the Married Dynasty stage.</p>
+                    <button 
+                      className="btn-primary" 
+                      style={{ background: T.gold, fontSize: '0.78rem', padding: '8px 16px', width: 'auto' }}
+                      onClick={handleUpgradeMarried}
+                    >
+                      💍 Upgrade to Married Stage
+                    </button>
+                  </div>
+                </div>
+              )}
+
             </div>
           );
         })}

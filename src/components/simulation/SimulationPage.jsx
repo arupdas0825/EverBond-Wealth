@@ -19,7 +19,7 @@ const TT = {
 };
 
 export function SimulationPage() {
-  const { mode, currency, simYears=10, simReturn, setSimYears, setSimReturn, getTotalSalary } = useFinanceStore();
+  const { mode, currency, simYears=10, simReturn, setSimYears, setSimReturn, getTotalSalary, stage } = useFinanceStore();
   const [inflAdj, setInflAdj] = useState(false);
 
   const total  = getTotalSalary();
@@ -99,7 +99,7 @@ export function SimulationPage() {
       {/* Result cards */}
       <div className="sim-results mb-20">
         <div className="sim-result-card primary">
-          <div className="sim-result-label">🏦 Final Shared Corpus</div>
+          <div className="sim-result-label">🏦 {stage === 'Single' ? 'Final Solo Corpus' : 'Final Shared Corpus'}</div>
           <div className="sim-result-value" style={{color:T.goldMid}}>{cmpct(result.fv)}</div>
         </div>
         <div className="sim-result-card">
@@ -119,7 +119,7 @@ export function SimulationPage() {
       {/* Chart */}
       <Card className="mb-20">
         <div className="card-title">Growth Trajectory</div>
-        <div className="card-heading mb-4">Shared Wealth Compounding Curve</div>
+        <div className="card-heading mb-4">{stage === 'Single' ? 'Solo' : 'Shared'} Wealth Compounding Curve</div>
         <p className="card-sub">
           Monthly SIP of {cmpct(snap.budget.investments)} at {ret.toFixed(1)}% p.a. over {simYears} year{simYears>1?'s':''}.
           {inflAdj && ' Inflation-adjusted (real returns).'}
