@@ -6,10 +6,15 @@ export const useFinanceStore = create(
     (set, get) => ({
       // Onboarding & Stage System
       started:   false,
+      onboardingComplete: false,
       stage:     'Single', // 'Single' | 'Committed' | 'Married'
+      relationshipStage: 'Single',
       partner1:  '',
+      userName:  '',
       partner2:  '',
+      partnerName: '',
       region:    'India',
+      country:   'India',
       currency:  'INR',
       dreamGoals: [],
       mindset:   'Balanced',
@@ -38,6 +43,7 @@ export const useFinanceStore = create(
         combinedGoals: '',
       },
       onboardingMarried: {
+        name: '',
         spouseName: '',
         familyGoals: '',
         childPlans: '',
@@ -66,7 +72,7 @@ export const useFinanceStore = create(
       milestones: [],
 
       // Actions
-      setStage: stage => set({ stage }),
+      setStage: stage => set({ stage, relationshipStage: stage }),
       setMindset: mindset => set({ mindset, mode: mindset }),
       setDreamGoals: dreamGoals => set({ dreamGoals }),
       setTheme: theme => set({ theme }),
@@ -78,8 +84,21 @@ export const useFinanceStore = create(
       setVerificationState: patch => set(patch),
 
       setProfile: ({ partner1, partner2, region, currency, stage, p1Salary, p2Salary }) => {
-        const update = { started: true, partner1, partner2, region, currency };
-        if (stage) update.stage = stage;
+        const update = { 
+          started: true, 
+          onboardingComplete: true, 
+          partner1, 
+          userName: partner1,
+          partner2, 
+          partnerName: partner2,
+          region, 
+          country: region,
+          currency 
+        };
+        if (stage) {
+          update.stage = stage;
+          update.relationshipStage = stage;
+        }
         if (p1Salary !== undefined) update.p1Salary = p1Salary;
         if (p2Salary !== undefined) update.p2Salary = p2Salary;
         set(update);
@@ -116,11 +135,16 @@ export const useFinanceStore = create(
       reset: () => {
         set({
           started: false,
+          onboardingComplete: false,
           stage: 'Single',
+          relationshipStage: 'Single',
           theme: 'light',
           partner1: '',
+          userName: '',
           partner2: '',
+          partnerName: '',
           region: 'India',
+          country: 'India',
           currency: 'INR',
           dreamGoals: [],
           mindset: 'Balanced',

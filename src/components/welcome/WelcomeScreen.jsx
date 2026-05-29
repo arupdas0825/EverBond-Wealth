@@ -29,6 +29,7 @@ export function WelcomeScreen() {
 
   const [step, setStep] = useState(0);
   const [particles, setParticles] = useState([]);
+  const [validationErrors, setValidationErrors] = useState({});
   
   // Local state during welcome flow
   const [currency, setLocalCurrency] = useState('INR');
@@ -92,7 +93,7 @@ export function WelcomeScreen() {
           p1Salary = 100000;
           p2Salary = 80000;
         } else {
-          finalPartner1 = onboardingMarried.spouseName ? 'Dynasty Head' : 'Spouse 1';
+          finalPartner1 = onboardingMarried.name || 'Dynasty Head';
           finalPartner2 = onboardingMarried.spouseName || 'Spouse 2';
           p1Salary = 150000;
           p2Salary = 120000;
@@ -125,6 +126,55 @@ export function WelcomeScreen() {
       setDreamGoals(dreamGoals.filter(g => g !== key));
     } else {
       setDreamGoals([...dreamGoals, key]);
+    }
+  };
+
+  const getStepIndex = (s) => {
+    if (s === 1) return 1;
+    if (s === 2) return 2;
+    return 3;
+  };
+
+  const getStepText = (s) => {
+    if (s === 1) return "Choose Partnership Stage";
+    if (s === 2) return "Configure Identity & Ledger";
+    return "Align Wealth Psychology";
+  };
+
+  const handleStep2Continue = () => {
+    const errors = {};
+    if (stage === 'Single') {
+      if (!onboardingSingle.name || !onboardingSingle.name.trim()) {
+        errors.userName = 'Please enter your name.';
+      }
+    } else if (stage === 'Committed') {
+      if (!onboardingCommitted.name || !onboardingCommitted.name.trim()) {
+        errors.userName = 'Please enter your name.';
+      }
+      if (!onboardingCommitted.partnerName || !onboardingCommitted.partnerName.trim()) {
+        errors.partnerName = 'Please enter your partner\'s name.';
+      }
+    } else if (stage === 'Married') {
+      if (!onboardingMarried.name || !onboardingMarried.name.trim()) {
+        errors.userName = 'Please enter your name.';
+      }
+      if (!onboardingMarried.spouseName || !onboardingMarried.spouseName.trim()) {
+        errors.spouseName = 'Please enter your spouse\'s name.';
+      }
+    }
+
+    if (!region) {
+      errors.country = 'Please choose your country.';
+    }
+    if (!currency) {
+      errors.currency = 'Please select your accounting currency.';
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setValidationErrors(errors);
+    } else {
+      setValidationErrors({});
+      setStep(3);
     }
   };
 
@@ -174,6 +224,34 @@ export function WelcomeScreen() {
         {step > 0 && (
           <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '24px' }}>
             <Logo size={42} showText={true} />
+          </div>
+        )}
+
+        {/* Premium Onboarding Progress Bar */}
+        {step > 0 && step <= 5 && (
+          <div style={{
+            background: 'var(--bg-card)',
+            border: '1px solid var(--border-mid)',
+            borderRadius: '16px',
+            padding: '16px 20px',
+            marginBottom: '20px',
+            boxShadow: 'var(--sh-sm)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '8px'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.78rem', fontWeight: 700, color: 'var(--onb-desc)' }}>
+              <span>{getStepText(step)}</span>
+              <span style={{ color: T.goldMid }}>Step {getStepIndex(step)} of 3</span>
+            </div>
+            <div style={{ width: '100%', height: '4px', background: 'var(--onb-border)', borderRadius: '4px', overflow: 'hidden' }}>
+              <div style={{
+                width: `${(getStepIndex(step) / 3) * 100}%`,
+                height: '100%',
+                background: `linear-gradient(90deg, ${T.goldMid}, ${T.gold})`,
+                transition: 'width 0.4s ease'
+              }} />
+            </div>
           </div>
         )}
 
@@ -337,6 +415,31 @@ export function WelcomeScreen() {
                 </h2>
               </div>
 
+              {/* Premium Inline Error Block */}
+              {Object.keys(validationErrors).length > 0 && (
+                <div style={{
+                  background: 'var(--rose-lt)',
+                  border: '1px solid var(--rose-border)',
+                  borderRadius: '12px',
+                  padding: '12px 16px',
+                  marginBottom: '20px',
+                  color: T.rose,
+                  fontSize: '0.8rem',
+                  fontWeight: 600,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '4px',
+                  textAlign: 'left',
+                  animation: 'shake 0.4s ease'
+                }}>
+                  {Object.entries(validationErrors).map(([key, msg]) => (
+                    <div key={key} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span>⚠️</span> <span>{msg}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
               {/* SINGLE DETAILS */}
               {stage === 'Single' && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '24px' }}>
@@ -472,8 +575,8 @@ export function WelcomeScreen() {
                         className="onb-input-glow" 
                         type="text" 
                         placeholder="Arup"
-                        value={onboardingMarried.spouseName ? 'Arup' : ''}
-                        onChange={e => {}}
+                        value={onboardingMarried.name}
+                        onChange={e => setOnboardingMarried({ name: e.target.value })}
                       />
                     </div>
                     <div>
@@ -521,7 +624,7 @@ export function WelcomeScreen() {
                 <button 
                   className="btn-primary" 
                   style={{ width: 'auto', padding: '12px 28px' }}
-                  onClick={() => setStep(3)}
+                  onClick={handleStep2Continue}
                 >
                   Continue →
                 </button>
