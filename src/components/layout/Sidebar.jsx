@@ -36,9 +36,6 @@ export function Sidebar({ page, setPage }) {
     // Dashboard is never locked
     if (n.key === 'dashboard') return false;
 
-    // Enforce mandatory partnership linkage for Committed and Married
-    if (stage !== 'Single' && !partnerAccepted) return true;
-
     // Standard stage locks
     if (n.lockedAt === 'Single' && stage === 'Single') return true;
     if (n.lockedAt === 'Committed' && (stage === 'Single' || stage === 'Committed')) return true;
@@ -48,12 +45,6 @@ export function Sidebar({ page, setPage }) {
 
   const handleNavClick = (n) => {
     if (isLocked(n)) {
-      if (stage !== 'Single' && !partnerAccepted) {
-        alert(`🔒 Workspace Locked. Please establish your verified couple connection on the Dashboard to unlock the collaborative planning tools.`);
-        setPage('dashboard');
-        return;
-      }
-
       if (n.lockedAt === 'Single' && stage === 'Single') {
         alert('🔒 Unlocks in Committed stage. Link a partner node to unlock Couple Planning.');
         setPage('dashboard');
@@ -66,7 +57,7 @@ export function Sidebar({ page, setPage }) {
           setPage('dashboard');
         } else {
           // Committed user clicks family dynasty - trigger elegant marriage upgrade
-          if (window.confirm('💍 Upgrade to Married Stage? This will unlock Family Dynasty Planning, children education funds, and family estate reserves. Under the secure linking system, you must establish a verified spouse connection.')) {
+          if (window.confirm('💍 Upgrade to Married Stage? This will unlock Family Dynasty Planning, children education funds, and family estate reserves.')) {
             setStage('Married');
             setVerificationState({
               partnerAccepted: false,
@@ -185,9 +176,6 @@ export function MobileNav({ page, setPage }) {
   const isLocked = (n) => {
     if (n.key === 'dashboard') return false;
 
-    // Enforce mandatory partnership linkage for Committed and Married
-    if (stage !== 'Single' && !partnerAccepted) return true;
-
     if (n.lockedAt === 'Single' && stage === 'Single') return true;
     if (n.lockedAt === 'Committed' && (stage === 'Single' || stage === 'Committed')) return true;
 
@@ -196,12 +184,6 @@ export function MobileNav({ page, setPage }) {
 
   const handleNavClick = (n) => {
     if (isLocked(n)) {
-      if (stage !== 'Single' && !partnerAccepted) {
-        alert(`🔒 Workspace Locked. Please link your partner on the Dashboard first.`);
-        setPage('dashboard');
-        return;
-      }
-
       if (n.lockedAt === 'Single' && stage === 'Single') {
         alert('🔒 Unlocks in Committed stage. Link a partner on the Dashboard.');
         setPage('dashboard');
@@ -213,7 +195,7 @@ export function MobileNav({ page, setPage }) {
           alert('🔒 Unlocks in Married stage. Upgrade stage and link partner to unlock Family Dynasty.');
           setPage('dashboard');
         } else {
-          if (window.confirm('💍 Upgrade to Married Stage? This will unlock Family Dynasty Planning. Under the linking rules, you must link your spouse.')) {
+          if (window.confirm('💍 Upgrade to Married Stage? This will unlock Family Dynasty Planning.')) {
             setStage('Married');
             setVerificationState({
               partnerAccepted: false,

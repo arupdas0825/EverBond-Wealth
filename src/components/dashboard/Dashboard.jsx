@@ -111,8 +111,10 @@ export function Dashboard() {
     { name:'Crypto',      value:snap.investmentSplit.crypto,       color:T.violet  },
   ];
 
-  // Locked assessment: Committed and Married users must be connected
-  const isLocked = stage !== 'Single' && !partnerAccepted;
+  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
+
+  // Locked assessment: Dashboard is never locked globally
+  const isLocked = false;
 
   // Actions for the 7-Step Invitation Flow
   const handleGenerateCode = (e) => {
@@ -191,6 +193,7 @@ export function Dashboard() {
       relationshipId: `REL-${Math.floor(100000 + Math.random() * 900000)}`,
       partnerId: `USR-${Math.floor(100000 + Math.random() * 900000)}`
     });
+    setIsInviteModalOpen(false);
   };
 
   // Upgrades a Single user's stage to Committed or Married
@@ -207,31 +210,32 @@ export function Dashboard() {
     setIsUpgradingStage(false);
     setLocalStep(1);
     setPName('');
+    setIsInviteModalOpen(true);
   };
 
   return (
     <div className="fade-in" style={{ position: 'relative' }}>
       
-      {/* LOCKED DASHBOARD PREVIEW OVERLAY */}
-      {isLocked && (
+      {/* INVITATION & CONNECTION MODAL */}
+      {isInviteModalOpen && (
         <div style={{
-          position: 'absolute',
-          inset: '-20px',
-          zIndex: 1000,
-          background: 'rgba(5, 5, 8, 0.45)',
-          backdropFilter: 'blur(16px) saturate(130%)',
-          WebkitBackdropFilter: 'blur(16px) saturate(130%)',
+          position: 'fixed',
+          inset: 0,
+          zIndex: 3000,
+          background: 'rgba(5, 5, 8, 0.65)',
+          backdropFilter: 'blur(20px) saturate(140%)',
+          WebkitBackdropFilter: 'blur(20px) saturate(140%)',
           display: 'flex',
           justifyContent: 'center',
-          alignItems: 'flex-start',
-          padding: '40px 20px',
-          overflowY: 'auto',
-          minHeight: 'calc(100vh - 40px)'
+          alignItems: 'center',
+          padding: '20px',
+          overflowY: 'auto'
         }}>
           <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            transition={{ duration: 0.5, ease: 'easeOut' }}
+            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            transition={{ duration: 0.4 }}
             className="liquid-glass"
             style={{
               width: '100%',
@@ -244,6 +248,24 @@ export function Dashboard() {
               position: 'relative'
             }}
           >
+            {/* Close Button */}
+            <button
+              onClick={() => setIsInviteModalOpen(false)}
+              style={{
+                position: 'absolute',
+                top: '20px',
+                right: '20px',
+                background: 'none',
+                border: 'none',
+                color: 'var(--text-faint)',
+                fontSize: '1.2rem',
+                cursor: 'pointer',
+                zIndex: 10
+              }}
+            >
+              ✕
+            </button>
+
             {/* Status chip */}
             <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
               {localStep < 4 ? (
@@ -317,12 +339,12 @@ export function Dashboard() {
                 <Lock size={24} />
               </div>
               <h2 style={{ fontFamily: T.fontDisplay, fontSize: '1.95rem', fontWeight: 700, color: 'var(--text)', marginBottom: '8px' }}>
-                Workspace Enforced Lock
+                Secure Partnership Sync
               </h2>
               <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', lineHeight: 1.5, maxWidth: '400px', margin: '0 auto' }}>
                 {stage === 'Married' 
-                  ? "Connect with your spouse to unlock Family Wealth Planning." 
-                  : "Connect with your partner to unlock Couple Wealth Planning."}
+                  ? "Connect with your spouse to unlock Combined Family Planning." 
+                  : "Connect with your partner to unlock Couple Planning."}
               </p>
             </div>
 
@@ -876,6 +898,108 @@ export function Dashboard() {
           </div>
         )}
 
+        {/* Partner Connection Status Card */}
+        {stage !== 'Single' && (
+          <div style={{
+            background: 'var(--bg-card)',
+            border: '1.5px solid var(--border-mid)',
+            borderRadius: 'var(--r-lg)',
+            padding: '24px',
+            marginBottom: '24px',
+            boxShadow: 'var(--sh-xs)',
+            position: 'relative',
+            overflow: 'hidden'
+          }}>
+            <div style={{
+              position: 'absolute',
+              top: '-30%',
+              right: '-20%',
+              width: '200px',
+              height: '200px',
+              background: `radial-gradient(circle, ${stage === 'Married' ? 'rgba(184, 144, 42, 0.06)' : 'rgba(208, 92, 114, 0.06)'} 0%, transparent 70%)`,
+              zIndex: 0,
+              pointerEvents: 'none'
+            }} />
+            
+            <div style={{ position: 'relative', zIndex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '20px' }}>
+              <div>
+                <span style={{ fontSize: '0.68rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: stage === 'Married' ? T.gold : T.rose }}>
+                  Connection Management
+                </span>
+                <h3 style={{ fontFamily: T.fontDisplay, fontSize: '1.4rem', fontWeight: 700, color: 'var(--text)', marginTop: '4px', marginBottom: '12px' }}>
+                  Partner Connection Status
+                </h3>
+                
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
+                  <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Status:</span>
+                  <span style={{
+                    fontSize: '0.85rem',
+                    fontWeight: 700,
+                    color: partnerAccepted ? T.sage : invitationCode ? T.goldMid : T.rose,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px'
+                  }}>
+                    {partnerAccepted ? '🟢 Connected' : invitationCode ? '🟡 Awaiting Acceptance' : '🔴 Not Connected'}
+                  </span>
+                  {partnerAccepted && (
+                    <span style={{ fontSize: '0.82rem', color: 'var(--text-faint)', fontWeight: 600 }}>
+                      ({partner2 || 'Partner'})
+                    </span>
+                  )}
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-muted)' }}>Benefits of Connecting:</div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 16px', maxWidth: '440px' }}>
+                    {[
+                      'Shared Goals',
+                      'Joint Planning',
+                      'Couple Dashboard',
+                      'Wealth Tracking Together'
+                    ].map(benefit => (
+                      <div key={benefit} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                        <span style={{ color: T.sage, fontWeight: 700 }}>✓</span>
+                        <span>{benefit}</span>
+                        {partnerAccepted && <span style={{ fontSize: '0.7rem', color: T.sage, fontWeight: 700 }}> (Active)</span>}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%', maxWidth: '200px' }}>
+                <button
+                  className="btn-primary"
+                  style={{
+                    background: partnerAccepted 
+                      ? 'linear-gradient(135deg, #1c1a16 0%, #111 100%)' 
+                      : `linear-gradient(135deg, ${stage === 'Married' ? T.gold : T.rose} 0%, ${stage === 'Married' ? '#a47e24' : '#a33b52'} 100%)`,
+                    border: partnerAccepted ? '1px solid var(--border-mid)' : 'none',
+                    boxShadow: partnerAccepted ? 'none' : 'var(--sh-sm)',
+                    fontSize: '0.85rem',
+                    padding: '12px',
+                    width: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '6px'
+                  }}
+                  onClick={() => setIsInviteModalOpen(true)}
+                >
+                  <Users size={15} />
+                  {partnerAccepted ? 'Manage Connection' : 'Connect Partner'}
+                </button>
+                {!partnerAccepted && (
+                  <div style={{ fontSize: '0.68rem', color: 'var(--text-faint)', textAlign: 'center', lineHeight: 1.3 }}>
+                    Establish safe dual-wealth ledger mapping parameters.
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* STATS MATRIX */}
         <div className="stats-grid mb-24" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
           <StatCard cls="gold" icon="💰" label={stage === 'Single' ? "Solo Monthly Income" : "Combined Monthly Income"} value={cmpct(totalSalary)} sub={stage === 'Single' ? "Independent earnings" : "Shared dual-incomes"} />
@@ -1033,6 +1157,51 @@ export function Dashboard() {
             </div>
           </Card>
         </div>
+
+        {stage !== 'Single' && !partnerAccepted && (
+          <>
+            <div className="section-label" style={{ marginTop: '24px', marginBottom: '12px' }}>🔒 Shared Features Preview</div>
+            <div className="grid-2 mb-24">
+              <Card style={{ position: 'relative', overflow: 'hidden' }}>
+                <div style={{ padding: '24px 16px', textAlign: 'center' }}>
+                  <div style={{ fontSize: '2.5rem', marginBottom: '12px' }}>🔒</div>
+                  <h3 style={{ fontFamily: T.fontDisplay, fontSize: '1.25rem', fontWeight: 700, color: 'var(--text)', marginBottom: '8px' }}>
+                    {stage === 'Married' ? 'Shared Family Dashboard' : 'Shared Couple Dashboard'}
+                  </h3>
+                  <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', lineHeight: 1.45, marginBottom: '20px', maxWidth: '280px', margin: '0 auto 20px' }}>
+                    Connect your partner to unlock combined asset tracking, real-time budgeting compromises, and consensus weight sliders.
+                  </p>
+                  <button 
+                    className="btn-primary" 
+                    style={{ width: 'auto', padding: '8px 18px', background: stage === 'Married' ? T.gold : T.rose }}
+                    onClick={() => setIsInviteModalOpen(true)}
+                  >
+                    Invite Partner
+                  </button>
+                </div>
+              </Card>
+
+              <Card style={{ position: 'relative', overflow: 'hidden' }}>
+                <div style={{ padding: '24px 16px', textAlign: 'center' }}>
+                  <div style={{ fontSize: '2.5rem', marginBottom: '12px' }}>🔒</div>
+                  <h3 style={{ fontFamily: T.fontDisplay, fontSize: '1.25rem', fontWeight: 700, color: 'var(--text)', marginBottom: '8px' }}>
+                    Joint Financial Goals
+                  </h3>
+                  <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', lineHeight: 1.45, marginBottom: '20px', maxWidth: '280px', margin: '0 auto 20px' }}>
+                    Invite your partner to plan together for future romantic getaways, family safety vaults, and combined education indexes.
+                  </p>
+                  <button 
+                    className="btn-primary" 
+                    style={{ width: 'auto', padding: '8px 18px', background: stage === 'Married' ? T.gold : T.rose }}
+                    onClick={() => setIsInviteModalOpen(true)}
+                  >
+                    Connect Partner
+                  </button>
+                </div>
+              </Card>
+            </div>
+          </>
+        )}
 
       </div>
 

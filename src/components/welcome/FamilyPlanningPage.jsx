@@ -2,12 +2,12 @@ import React, { useState } from 'react';
 import { useFinanceStore } from '../../store/useFinanceStore';
 import { T } from '../../theme/tokens';
 import { Card } from '../common/Card';
-import { Crown, Sparkles, GraduationCap, Coins, Plus, Trash2, ArrowUpRight } from 'lucide-react';
+import { Crown, Sparkles, GraduationCap, Coins, Plus, Trash2, ArrowUpRight, Lock } from 'lucide-react';
 import { formatCurrency, formatCompact } from '../../utils/finance';
 import { Logo } from '../common/Logo';
 
 export function FamilyPlanningPage() {
-  const { partner1, partner2, currency, getTotalSalary } = useFinanceStore();
+  const { partner1, partner2, currency, getTotalSalary, partnerAccepted } = useFinanceStore();
   const total = getTotalSalary();
   
   const [children, setChildren] = useState([
@@ -18,6 +18,7 @@ export function FamilyPlanningPage() {
   const [newCost, setNewCost] = useState('6000000');
 
   const addChild = () => {
+    if (!partnerAccepted) return; // Disable interactive addition if locked
     if (!newName.trim()) return;
     setChildren([
       ...children,
@@ -27,6 +28,7 @@ export function FamilyPlanningPage() {
   };
 
   const removeChild = (id) => {
+    if (!partnerAccepted) return; // Disable interactive removal if locked
     setChildren(children.filter(c => c.id !== id));
   };
 
@@ -51,10 +53,36 @@ export function FamilyPlanningPage() {
         </div>
       </div>
 
+      {!partnerAccepted && (
+        <div style={{
+          background: 'rgba(184, 144, 42, 0.08)',
+          border: `1.5px solid ${T.gold}30`,
+          borderRadius: '16px',
+          padding: '16px 20px',
+          marginBottom: '24px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          boxShadow: 'var(--sh-xs)',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: T.gold, boxShadow: `0 0 10px ${T.gold}` }} />
+            <div>
+              <span style={{ fontSize: '0.68rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.gold }}>
+                Family Workspace Preview
+              </span>
+              <h4 style={{ fontSize: '0.88rem', fontWeight: 700, color: 'var(--text)', marginTop: '2px' }}>
+                🔒 Collaborative Family Features Locked · Connect your spouse to activate
+              </h4>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="grid-2 mb-20">
         
         {/* Generational Vault Trust */}
-        <Card gold>
+        <Card gold style={{ position: 'relative' }}>
           <div className="card-title">Dynastic Compounder</div>
           <div className="card-heading">40-Year Generational Vault</div>
           <div className="card-sub">Compounding projections of your investments dedicated to the family estate.</div>
@@ -71,10 +99,30 @@ export function FamilyPlanningPage() {
             <span style={{ color: 'var(--text-muted)' }}>Vault Contribution (Monthly)</span>
             <span style={{ fontWeight: 600 }}>{fmt(total * 0.15)}</span>
           </div>
+
+          {/* Glass Lock Screen Overlay */}
+          {!partnerAccepted && (
+            <div className="glass-lock-screen">
+              <div className="lock-screen-inner">
+                <div className="lock-icon-glow" style={{ color: T.gold, background: 'var(--gold-pale)' }}>
+                  <Lock size={20} />
+                </div>
+                <h4 className="lock-title">🔒 Shared Family Dashboard</h4>
+                <p className="lock-desc">Connect with your spouse to unlock multi-generational wealth calculations and asset reserves.</p>
+                <button 
+                  className="btn-primary" 
+                  style={{ background: T.gold, fontSize: '0.78rem', padding: '8px 16px', width: 'auto' }}
+                  onClick={() => alert("🔗 Go to the Dashboard and use the Spouse Connection status widget to invite your spouse!")}
+                >
+                  Connect Spouse
+                </button>
+              </div>
+            </div>
+          )}
         </Card>
 
         {/* Children University Calculator */}
-        <Card>
+        <Card style={{ position: 'relative' }}>
           <div className="card-title">Educational Index</div>
           <div className="card-heading">Child Launchpad &amp; College Index</div>
           <div className="card-sub">Target inflation-adjusted parameters for children college accounts.</div>
@@ -91,7 +139,7 @@ export function FamilyPlanningPage() {
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                   <span style={{ fontFamily: 'var(--fn)', fontSize: '0.88rem', fontWeight: 600 }}>{fmt(c.costTarget)}</span>
-                  <button onClick={() => removeChild(c.id)} style={{ background: 'none', border: 'none', color: 'var(--text-faint)', cursor: 'pointer' }}>
+                  <button onClick={() => removeChild(c.id)} style={{ background: 'none', border: 'none', color: 'var(--text-faint)', cursor: partnerAccepted ? 'pointer' : 'default' }}>
                     <Trash2 size={13} style={{ color: T.rose }} />
                   </button>
                 </div>
@@ -106,6 +154,7 @@ export function FamilyPlanningPage() {
               type="text" 
               placeholder="Name..." 
               value={newName} 
+              disabled={!partnerAccepted}
               onChange={e => setNewName(e.target.value)}
             />
             <input 
@@ -114,6 +163,7 @@ export function FamilyPlanningPage() {
               type="number" 
               placeholder="Year..." 
               value={newYear} 
+              disabled={!partnerAccepted}
               onChange={e => setNewYear(e.target.value)}
             />
             <input 
@@ -122,16 +172,38 @@ export function FamilyPlanningPage() {
               type="number" 
               placeholder="Cost..." 
               value={newCost} 
+              disabled={!partnerAccepted}
               onChange={e => setNewCost(e.target.value)}
             />
             <button 
               className="btn-primary" 
               style={{ width: 'auto', padding: '8px 12px', background: T.gold }}
               onClick={addChild}
+              disabled={!partnerAccepted}
             >
               <Plus size={15} />
             </button>
           </div>
+
+          {/* Glass Lock Screen Overlay */}
+          {!partnerAccepted && (
+            <div className="glass-lock-screen">
+              <div className="lock-screen-inner">
+                <div className="lock-icon-glow" style={{ color: T.gold, background: 'var(--gold-pale)' }}>
+                  <Lock size={20} />
+                </div>
+                <h4 className="lock-title">🔒 Combined Family Planning</h4>
+                <p className="lock-desc">Invite your spouse to calculate joint tuition targets, child plans, and family inflation models.</p>
+                <button 
+                  className="btn-primary" 
+                  style={{ background: T.gold, fontSize: '0.78rem', padding: '8px 16px', width: 'auto' }}
+                  onClick={() => alert("🔗 Go to the Dashboard and use the Spouse Connection status widget to invite your spouse!")}
+                >
+                  Connect Spouse
+                </button>
+              </div>
+            </div>
+          )}
         </Card>
 
       </div>

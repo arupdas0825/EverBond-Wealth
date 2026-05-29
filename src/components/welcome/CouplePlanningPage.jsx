@@ -3,12 +3,12 @@ import { motion } from 'framer-motion';
 import { useFinanceStore } from '../../store/useFinanceStore';
 import { T } from '../../theme/tokens';
 import { Card } from '../common/Card';
-import { Heart, Sparkles, CheckSquare, ShieldCheck, Compass, Info } from 'lucide-react';
+import { Heart, Sparkles, CheckSquare, ShieldCheck, Compass, Info, Lock } from 'lucide-react';
 import { formatCurrency } from '../../utils/finance';
 import { Logo } from '../common/Logo';
 
 export function CouplePlanningPage() {
-  const { partner1, partner2, currency, getTotalSalary } = useFinanceStore();
+  const { partner1, partner2, currency, getTotalSalary, partnerAccepted } = useFinanceStore();
   const total = getTotalSalary();
   
   // Consensus Compromise Indices
@@ -21,6 +21,7 @@ export function CouplePlanningPage() {
   ]);
 
   const toggleCheck = (id) => {
+    if (!partnerAccepted) return; // Disable checklist toggling if not connected
     setChecklist(checklist.map(item => item.id === id ? { ...item, done: !item.done } : item));
   };
 
@@ -44,9 +45,35 @@ export function CouplePlanningPage() {
         </div>
       </div>
 
+      {!partnerAccepted && (
+        <div style={{
+          background: 'rgba(208, 92, 114, 0.08)',
+          border: `1.5px solid ${T.rose}30`,
+          borderRadius: '16px',
+          padding: '16px 20px',
+          marginBottom: '24px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          boxShadow: 'var(--sh-xs)',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: T.rose, boxShadow: `0 0 10px ${T.rose}` }} />
+            <div>
+              <span style={{ fontSize: '0.68rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.rose }}>
+                Shared Workspace Preview
+              </span>
+              <h4 style={{ fontSize: '0.88rem', fontWeight: 700, color: 'var(--text)', marginTop: '2px' }}>
+                🔒 Collaborative Features Locked · Connect your partner to activate
+              </h4>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="grid-2 mb-20">
         {/* Consensus compromise index */}
-        <Card gold>
+        <Card gold style={{ position: 'relative' }}>
           <div className="card-title">Decision Matrix</div>
           <div className="card-heading">Allocation Consensus Index</div>
           <div className="card-sub">Balance financial control weight between partners dynamically.</div>
@@ -64,6 +91,7 @@ export function CouplePlanningPage() {
                 min="0"
                 max="100"
                 value={p1Weight}
+                disabled={!partnerAccepted}
                 onChange={e => setP1Weight(parseInt(e.target.value))}
               />
             </div>
@@ -85,10 +113,30 @@ export function CouplePlanningPage() {
               Consensus Index calculated at <strong>{(100 - Math.abs(50 - p1Weight) * 2)}% compatibility</strong>. Adjusting controls blends risk tolerances dynamically.
             </div>
           </div>
+
+          {/* Glass Lock Screen Overlay */}
+          {!partnerAccepted && (
+            <div className="glass-lock-screen">
+              <div className="lock-screen-inner">
+                <div className="lock-icon-glow" style={{ color: T.rose, background: 'var(--rose-lt)' }}>
+                  <Lock size={20} />
+                </div>
+                <h4 className="lock-title">🔒 Shared Couple Dashboard</h4>
+                <p className="lock-desc">Connect your partner to unlock consensus adjustments and combined budgeting features.</p>
+                <button 
+                  className="btn-primary" 
+                  style={{ background: T.rose, fontSize: '0.78rem', padding: '8px 16px', width: 'auto' }}
+                  onClick={() => alert("🔗 Go to the Dashboard and use the Partner Connection status widget to invite your partner!")}
+                >
+                  Invite Partner
+                </button>
+              </div>
+            </div>
+          )}
         </Card>
 
         {/* Shared holiday builder */}
-        <Card>
+        <Card style={{ position: 'relative' }}>
           <div className="card-title">Lifestyle Target</div>
           <div className="card-heading">Romantic Getaway Vault</div>
           <div className="card-sub">Automated monthly earmarks dedicated to lifestyle milestones.</div>
@@ -105,11 +153,31 @@ export function CouplePlanningPage() {
             <span style={{ fontSize: '0.85rem', fontWeight: 500 }}>Required Monthly SIP</span>
             <span style={{ fontFamily: 'var(--fn)', fontWeight: 700, color: T.sage }}>{fmt(18500)}</span>
           </div>
+
+          {/* Glass Lock Screen Overlay */}
+          {!partnerAccepted && (
+            <div className="glass-lock-screen">
+              <div className="lock-screen-inner">
+                <div className="lock-icon-glow" style={{ color: T.rose, background: 'var(--rose-lt)' }}>
+                  <Lock size={20} />
+                </div>
+                <h4 className="lock-title">🔒 Joint Financial Goals</h4>
+                <p className="lock-desc">Invite your partner to plan together for future romantic getaways and milestones.</p>
+                <button 
+                  className="btn-primary" 
+                  style={{ background: T.rose, fontSize: '0.78rem', padding: '8px 16px', width: 'auto' }}
+                  onClick={() => alert("🔗 Go to the Dashboard and use the Partner Connection status widget to invite your partner!")}
+                >
+                  Connect Partner
+                </button>
+              </div>
+            </div>
+          )}
         </Card>
       </div>
 
       {/* Collaborative Checklist */}
-      <Card>
+      <Card style={{ position: 'relative' }}>
         <div className="card-title">Shared Milestones</div>
         <div className="card-heading mb-4">Partnership Integration Tasks</div>
         <p className="card-sub">Tasks that must be completed to maintain absolute financial cohesion.</p>
@@ -127,7 +195,7 @@ export function CouplePlanningPage() {
                 borderRadius: '12px',
                 background: item.done ? 'var(--bg-muted)' : 'rgba(255,255,255,0.6)',
                 border: `1.5px solid ${item.done ? 'var(--border)' : 'var(--border-mid)'}`,
-                cursor: 'pointer',
+                cursor: partnerAccepted ? 'pointer' : 'default',
                 transition: 'all 0.2s ease',
               }}
             >
@@ -158,6 +226,26 @@ export function CouplePlanningPage() {
             </div>
           ))}
         </div>
+
+        {/* Glass Lock Screen Overlay */}
+        {!partnerAccepted && (
+          <div className="glass-lock-screen">
+            <div className="lock-screen-inner">
+              <div className="lock-icon-glow" style={{ color: T.rose, background: 'var(--rose-lt)' }}>
+                <Lock size={20} />
+              </div>
+              <h4 className="lock-title">🔒 Relationship Timeline</h4>
+              <p className="lock-desc">Decrypt shared milestones and verify partnership checklist tasks together.</p>
+              <button 
+                className="btn-primary" 
+                style={{ background: T.rose, fontSize: '0.78rem', padding: '8px 16px', width: 'auto' }}
+                onClick={() => alert("🔗 Go to the Dashboard and use the Partner Connection status widget to invite your partner!")}
+              >
+                Connect Partner
+              </button>
+            </div>
+          </div>
+        )}
       </Card>
     </div>
   );

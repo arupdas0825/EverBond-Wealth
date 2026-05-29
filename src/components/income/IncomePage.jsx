@@ -16,7 +16,7 @@ const MODES=[
 
 export function IncomePage() {
   const {partner1,partner2,p1Salary,p2Salary,mode,currency,milestones,stage,
-    setP1Salary,setP2Salary,setMode,setCurrency,getTotalSalary} = useFinanceStore();
+    partnerAccepted,setP1Salary,setP2Salary,setMode,setCurrency,getTotalSalary} = useFinanceStore();
   
   const total = getTotalSalary();
   const snap  = useMemo(()=>calculateFinancialSnapshot(total,mode),[total,mode]);
@@ -59,34 +59,36 @@ export function IncomePage() {
         </Card>
         
         <Card gold style={{ position: 'relative' }}>
-          <div className="card-title">{stage === 'Single' ? 'Partner' : partner2}&apos;s Contribution</div>
+          <div className="card-title">{stage === 'Single' ? 'Partner' : partner2 || 'Partner'}&apos;s Contribution</div>
           <div className="card-heading mb-16">Monthly Income</div>
           <div className="salary-field">
             <span className="salary-prefix">{sym}</span>
             <input className="salary-input" type="number" min={0} placeholder="0"
               value={stage === 'Single' ? '' : p2Salary||''} 
-              disabled={stage === 'Single'}
+              disabled={!partnerAccepted}
               onChange={handleSalary(setP2Salary)}/>
           </div>
           <p style={{fontSize:'.78rem',color:T.textFaint,marginTop:8}}>Monthly in-hand (after tax)</p>
 
-          {/* Single Stage lock for second income slot */}
-          {stage === 'Single' && (
+          {/* Partnership lock for second income slot */}
+          {!partnerAccepted && (
             <div className="glass-lock-screen" style={{ borderRadius: 'var(--r-lg)', padding: '16px' }}>
               <div className="lock-screen-inner" style={{ padding: '0 8px' }}>
                 <div className="lock-icon-glow" style={{ width: '40px', height: '40px', fontSize: '1.1rem', marginBottom: '8px' }}>
                   <Lock size={15} />
                 </div>
-                <h4 className="lock-title" style={{ fontSize: '1.05rem', marginBottom: '4px' }}>Dual Income Engine</h4>
+                <h4 className="lock-title" style={{ fontSize: '1.05rem', marginBottom: '4px' }}>Combined Income</h4>
                 <p className="lock-desc" style={{ fontSize: '0.74rem', marginBottom: '12px' }}>
-                  Sync your ledger with a partner to unlock the second active monthly income slot.
+                  {stage === 'Single' 
+                    ? "Sync your ledger with a partner to unlock the second active monthly income slot."
+                    : "Invite your partner to sync combined incomes and plan together."}
                 </p>
                 <button 
                   className="btn-primary" 
-                  style={{ background: T.sky, fontSize: '0.74rem', padding: '6px 12px', width: 'auto' }}
-                  onClick={() => alert("🔗 To activate the dual-wealth engine, go to the Dashboard and click 'Link Partner Ledger' to configure your stage and invite your partner!")}
+                  style={{ background: stage === 'Married' ? T.gold : stage === 'Committed' ? T.rose : T.sky, fontSize: '0.74rem', padding: '6px 12px', width: 'auto' }}
+                  onClick={() => alert("🔗 To sync incomes, go to the Dashboard and use the Partner Connection status widget to invite your partner!")}
                 >
-                  Sync Partner Ledger
+                  {stage === 'Single' ? "Sync Partner Ledger" : stage === 'Married' ? "Connect Spouse" : "Connect Partner"}
                 </button>
               </div>
             </div>

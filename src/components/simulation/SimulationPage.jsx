@@ -11,6 +11,8 @@ import { T } from '../../theme/tokens';
 import { Card } from '../common/Card';
 import { Logo } from '../common/Logo';
 
+import { Lock } from 'lucide-react';
+
 const YEARS     = [1, 5, 10, 20, 30];
 const MILESTONES= [1, 3, 5, 10, 15, 20, 25, 30];
 const TT = {
@@ -20,7 +22,7 @@ const TT = {
 };
 
 export function SimulationPage() {
-  const { mode, currency, simYears=10, simReturn, setSimYears, setSimReturn, getTotalSalary, stage } = useFinanceStore();
+  const { mode, currency, simYears=10, simReturn, setSimYears, setSimReturn, getTotalSalary, stage, partnerAccepted } = useFinanceStore();
   const [inflAdj, setInflAdj] = useState(false);
 
   const total  = getTotalSalary();
@@ -203,6 +205,36 @@ export function SimulationPage() {
           </table>
         </div>
       </Card>
+
+      {/* Joint Wealth Simulations locked preview */}
+      {stage !== 'Single' && !partnerAccepted && (
+        <Card style={{ position: 'relative', marginTop: '20px' }}>
+          <div className="card-title">Joint Compounding</div>
+          <div className="card-heading">🔒 Joint Wealth Simulations</div>
+          <div className="card-sub">Simulate combined dual-income compound trajectories over multiple risk parameters.</div>
+          
+          <div style={{ height: '140px', background: 'var(--bg-muted)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-faint)' }}>
+            Interactive joint trajectory curve visualization
+          </div>
+
+          <div className="glass-lock-screen">
+            <div className="lock-screen-inner">
+              <div className="lock-icon-glow" style={{ color: stage === 'Married' ? T.gold : T.rose, background: stage === 'Married' ? 'var(--gold-pale)' : 'var(--rose-lt)' }}>
+                <Lock size={20} />
+              </div>
+              <h4 className="lock-title">🔒 Joint Wealth Simulations</h4>
+              <p className="lock-desc">Invite your partner to sync combined projection parameters and plan together.</p>
+              <button 
+                className="btn-primary" 
+                style={{ background: stage === 'Married' ? T.gold : T.rose, fontSize: '0.78rem', padding: '8px 16px', width: 'auto' }} 
+                onClick={() => alert("🔗 Go to the Dashboard and use the Partner Connection status widget to invite your partner!")}
+              >
+                {stage === 'Married' ? "Connect Spouse" : "Connect Partner"}
+              </button>
+            </div>
+          </div>
+        </Card>
+      )}
     </div>
   );
 }
