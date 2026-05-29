@@ -110,7 +110,7 @@ export function RelationshipPortal({ isOpen, onClose }) {
       position: 'fixed',
       inset: 0,
       zIndex: 1000,
-      background: 'rgba(5, 5, 8, 0.85)',
+      background: 'rgba(5, 5, 8, 0.55)',
       backdropFilter: 'blur(20px)',
       display: 'flex',
       alignItems: 'center',
@@ -128,7 +128,7 @@ export function RelationshipPortal({ isOpen, onClose }) {
           maxWidth: '540px',
           padding: '36px',
           position: 'relative',
-          background: 'rgba(15, 15, 25, 0.75)',
+          background: 'var(--onb-bg-card)',
           overflow: 'hidden',
         }}
       >
@@ -152,14 +152,14 @@ export function RelationshipPortal({ isOpen, onClose }) {
                 width: '28px',
                 height: '28px',
                 borderRadius: '50%',
-                background: activeStep === s ? T.rose : activeStep > s ? 'rgba(62, 142, 104, 0.2)' : 'rgba(255,255,255,0.06)',
-                border: `1.5px solid ${activeStep === s ? T.rose : activeStep > s ? T.sage : 'rgba(255,255,255,0.12)'}`,
+                background: activeStep === s ? T.rose : activeStep > s ? 'var(--sage-lt)' : 'var(--onb-border)',
+                border: `1.5px solid ${activeStep === s ? T.rose : activeStep > s ? T.sage : 'var(--onb-border)'}`,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 fontSize: '0.8rem',
                 fontWeight: 700,
-                color: activeStep >= s ? '#fff' : 'rgba(255,255,255,0.4)',
+                color: activeStep === s ? '#fff' : activeStep > s ? T.sage : 'var(--onb-back)',
                 boxShadow: activeStep === s ? `0 0 12px ${T.rose}60` : 'none',
                 transition: 'all 0.3s ease',
               }}>
@@ -169,7 +169,7 @@ export function RelationshipPortal({ isOpen, onClose }) {
                 <div style={{
                   width: '40px',
                   height: '2px',
-                  background: activeStep > s ? T.sage : 'rgba(255,255,255,0.08)',
+                  background: activeStep > s ? T.sage : 'var(--onb-border)',
                   alignSelf: 'center',
                 }} />
               )}
@@ -193,13 +193,13 @@ export function RelationshipPortal({ isOpen, onClose }) {
               <h2 style={{ fontFamily: T.fontDisplay, fontSize: '1.7rem', fontWeight: 600, marginBottom: '8px' }}>
                 Secure Partnership Handshake
               </h2>
-              <p style={{ fontSize: '0.85rem', color: '#b0a898', marginBottom: '24px', lineHeight: 1.5 }}>
+              <p style={{ fontSize: '0.85rem', color: 'var(--onb-desc)', marginBottom: '24px', lineHeight: 1.5 }}>
                 Initiate the dual-wealth matrix. Send an encrypted cryptographic invitation link to your partner's ledger node.
               </p>
 
               <div style={{ textAlign: 'left', display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '24px' }}>
                 <div>
-                  <label style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(255,255,255,0.4)', display: 'block', marginBottom: '6px' }}>Partner's Legal Name</label>
+                  <label style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--onb-label)', display: 'block', marginBottom: '6px' }}>Partner's Legal Name</label>
                   <input
                     type="text"
                     className="onb-input-glow"
@@ -209,7 +209,7 @@ export function RelationshipPortal({ isOpen, onClose }) {
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(255,255,255,0.4)', display: 'block', marginBottom: '6px' }}>Special Anniversary (Optional)</label>
+                  <label style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--onb-label)', display: 'block', marginBottom: '6px' }}>Special Anniversary (Optional)</label>
                   <input
                     type="date"
                     className="onb-input-glow"
@@ -255,13 +255,13 @@ export function RelationshipPortal({ isOpen, onClose }) {
               <h2 style={{ fontFamily: T.fontDisplay, fontSize: '1.7rem', fontWeight: 600, marginBottom: '8px' }}>
                 Establish Ledger Link
               </h2>
-              <p style={{ fontSize: '0.85rem', color: '#b0a898', marginBottom: '24px', lineHeight: 1.5 }}>
+              <p style={{ fontSize: '0.85rem', color: 'var(--onb-desc)', marginBottom: '24px', lineHeight: 1.5 }}>
                 Syncing asset matrices. Connect both portfolios to compile combined engine capacity.
               </p>
 
               <div style={{
-                background: 'rgba(0,0,0,0.3)',
-                border: '1px solid rgba(255,255,255,0.06)',
+                background: 'rgba(0, 0, 0, 0.72)',
+                border: '1px solid var(--onb-border)',
                 borderRadius: '12px',
                 padding: '20px',
                 fontSize: '0.78rem',
@@ -274,7 +274,7 @@ export function RelationshipPortal({ isOpen, onClose }) {
                 alignItems: 'center'
               }}>
                 <div>
-                  <div style={{ color: '#aaa', marginBottom: '4px' }}>&gt; INITIATING SYNC PROTOCOL</div>
+                  <div style={{ color: 'var(--onb-desc)', marginBottom: '4px' }}>&gt; INITIATING SYNC PROTOCOL</div>
                   <div>&gt; PARTNER HANDSHAKE COMPLETE: verified via {partnerName} terminal</div>
                   {isProcessing && <div style={{ color: T.rose }} className="animate-pulse">&gt; {loadingText}</div>}
                   {!isProcessing && <div style={{ color: '#62ca98' }}>&gt; READY TO MERGE ACCOUNTS</div>}
@@ -307,12 +307,12 @@ export function RelationshipPortal({ isOpen, onClose }) {
               <h2 style={{ fontFamily: T.fontDisplay, fontSize: '1.7rem', fontWeight: 600, marginBottom: '8px' }}>
                 Upload Couple Selfie
               </h2>
-              <p style={{ fontSize: '0.85rem', color: '#b0a898', marginBottom: '24px', lineHeight: 1.5 }}>
+              <p style={{ fontSize: '0.85rem', color: 'var(--onb-desc)', marginBottom: '24px', lineHeight: 1.5 }}>
                 Provide a portrait containing both individuals. Our biometric scanner will extract joint facial vectors to encrypt the partnership locker.
               </p>
 
               <div style={{
-                border: '2px dashed rgba(255,255,255,0.15)',
+                border: '2px dashed var(--onb-border)',
                 borderRadius: '16px',
                 padding: '32px 20px',
                 background: 'rgba(255,255,255,0.01)',
@@ -327,16 +327,16 @@ export function RelationshipPortal({ isOpen, onClose }) {
               }}
               onClick={handleDemoSelfie}
               >
-                <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifySelf: 'center', justifyContent: 'center' }}>
+                <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'var(--onb-border)', display: 'flex', alignItems: 'center', justifySelf: 'center', justifyContent: 'center' }}>
                   📸
                 </div>
                 <div>
-                  <span style={{ fontSize: '0.9rem', fontWeight: 600, color: '#fff' }}>Click to select files</span>
-                  <p style={{ fontSize: '0.72rem', color: '#b0a898', marginTop: '4px' }}>PNG, JPG up to 10MB</p>
+                  <span style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--onb-title)' }}>Click to select files</span>
+                  <p style={{ fontSize: '0.72rem', color: 'var(--onb-desc)', marginTop: '4px' }}>PNG, JPG up to 10MB</p>
                 </div>
               </div>
 
-              <div style={{ fontSize: '0.8rem', color: '#b0a898', marginBottom: '24px' }}>
+              <div style={{ fontSize: '0.8rem', color: 'var(--onb-desc)', marginBottom: '24px' }}>
                 — OR —
               </div>
 
@@ -380,7 +380,7 @@ export function RelationshipPortal({ isOpen, onClose }) {
                   <h2 style={{ fontFamily: T.fontDisplay, fontSize: '1.7rem', fontWeight: 600, marginBottom: '8px' }}>
                     Biometric Face Scan
                   </h2>
-                  <p style={{ fontSize: '0.85rem', color: '#b0a898', marginBottom: '24px', lineHeight: 1.5 }}>
+                  <p style={{ fontSize: '0.85rem', color: 'var(--onb-desc)', marginBottom: '24px', lineHeight: 1.5 }}>
                     Scanning nodes and mapping couples synchronization density vectors.
                   </p>
 
@@ -389,7 +389,7 @@ export function RelationshipPortal({ isOpen, onClose }) {
                       <div style={{ fontSize: '1.25rem', fontFamily: 'monospace', fontWeight: 700, color: T.gold, marginBottom: '8px' }}>
                         {scanPercentage}% SCANNED
                       </div>
-                      <div style={{ width: '100%', height: '4px', background: 'rgba(255,255,255,0.06)', borderRadius: '4px', overflow: 'hidden' }}>
+                      <div style={{ width: '100%', height: '4px', background: 'var(--onb-border)', borderRadius: '4px', overflow: 'hidden' }}>
                         <div style={{ width: `${scanPercentage}%`, height: '100%', background: T.gold, transition: 'width 0.2s ease' }} />
                       </div>
                     </div>
@@ -420,10 +420,10 @@ export function RelationshipPortal({ isOpen, onClose }) {
                     <Sparkles size={18} style={{ position: 'absolute', top: 0, right: 0, color: T.gold }} className="animate-bounce" />
                   </div>
 
-                  <h2 style={{ fontFamily: T.fontDisplay, fontSize: '2rem', fontWeight: 700, color: '#fff', marginBottom: '12px' }}>
+                  <h2 style={{ fontFamily: T.fontDisplay, fontSize: '2rem', fontWeight: 700, color: 'var(--onb-title)', marginBottom: '12px' }}>
                     Relationship Verified!
                   </h2>
-                  <p style={{ fontSize: '0.9rem', color: '#b0a898', marginBottom: '32px', lineHeight: 1.6 }}>
+                  <p style={{ fontSize: '0.9rem', color: 'var(--onb-desc)', marginBottom: '32px', lineHeight: 1.6 }}>
                     Handshake complete. Your financial souls are now cryptographically linked. Welcome to the **Committed Stage** of EverBond Wealth. Dual-Engine Activated!
                   </p>
 
@@ -450,7 +450,7 @@ export function RelationshipPortal({ isOpen, onClose }) {
               right: '20px',
               background: 'transparent',
               border: 'none',
-              color: 'rgba(255,255,255,0.4)',
+              color: 'var(--onb-back)',
               cursor: 'pointer',
               fontSize: '1.25rem',
               fontWeight: 500

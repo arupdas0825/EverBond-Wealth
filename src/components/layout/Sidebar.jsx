@@ -171,21 +171,22 @@ export function MobileNav({ page, setPage }) {
       {open && (
         <div onClick={() => setOpen(false)} style={{
           position: 'fixed', inset: 0, zIndex: 190,
-          background: 'rgba(0,0,0,0.18)', backdropFilter: 'blur(3px)',
+          background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(4px)',
           display: 'flex', alignItems: 'flex-end',
           paddingBottom: 'calc(100px + env(safe-area-inset-bottom))',
           justifyContent: 'center',
         }}>
           <div onClick={e => e.stopPropagation()} style={{
-            background: 'rgba(255,252,248,0.96)',
+            background: 'var(--bg-card)',
             backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)',
-            border: '1px solid rgba(255,255,255,0.8)', borderRadius: 22,
+            border: '1px solid var(--border-mid)', borderRadius: 22,
             padding: '18px 20px', width: 'calc(100% - 32px)', maxWidth: 420,
-            boxShadow: '0 8px 40px rgba(0,0,0,0.16)',
+            boxShadow: 'var(--sh-lg)',
+            color: 'var(--text)'
           }}>
             {/* Dynamic Mobile Upgrade Card */}
             {stage === 'Single' ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: '8px 0 14px', borderBottom: '1px solid rgba(26,23,20,.08)', marginBottom: 14 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: '8px 0 14px', borderBottom: '1px solid var(--border)', marginBottom: 14 }}>
                 <div style={{ fontSize: '.7rem', fontWeight: 700, textTransform: 'uppercase', color: T.sky }}>Independent builder</div>
                 <div style={{ fontSize: '.88rem', fontWeight: 600, color: 'var(--text)' }}>{partner1 || 'Solo Builder'}</div>
                 <button 
@@ -198,7 +199,7 @@ export function MobileNav({ page, setPage }) {
             ) : (
               <div style={{
                 display: 'flex', alignItems: 'center', gap: 8,
-                padding: '8px 0 14px', borderBottom: '1px solid rgba(26,23,20,.08)', marginBottom: 14
+                padding: '8px 0 14px', borderBottom: '1px solid var(--border)', marginBottom: 14
               }}>
                 <span style={{ fontSize: '1.4rem' }}>{stage === 'Married' ? '👑' : '💑'}</span>
                 <div>
@@ -220,7 +221,7 @@ export function MobileNav({ page, setPage }) {
                   <button 
                     key={n.key}
                     onClick={() => { handleNavClick(n); setOpen(false); }}
-                    style={{ width: '100%', padding: '10px 12px', border: '1px solid var(--border)', borderRadius: 10, background: '#fff', color: locked ? '#aaa' : 'var(--text)', fontWeight: 600, fontSize: '0.82rem', display: 'flex', alignItems: 'center', justifySelf: 'flex-start', gap: 8, cursor: 'pointer' }}
+                    style={{ width: '100%', padding: '10px 12px', border: '1px solid var(--border)', borderRadius: 10, background: 'var(--bg-warm)', color: locked ? 'var(--text-faint)' : 'var(--text)', fontWeight: 600, fontSize: '0.82rem', display: 'flex', alignItems: 'center', justifySelf: 'flex-start', gap: 8, cursor: 'pointer' }}
                   >
                     <span>{n.icon}</span> {n.label} {locked && '🔒'}
                   </button>
