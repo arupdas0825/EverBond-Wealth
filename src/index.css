@@ -1635,3 +1635,25 @@ input,select{font-family:var(--fb)}
   20%, 60% { transform: translateX(-6px); }
   40%, 80% { transform: translateX(6px); }
 }
+
+/* ═══════════════════════════════════════════════════════════
+   LANDING PAGE ADDITIONS (V2.0 REDESIGN)
+   Luxury Glassmorphism & High-Contrast Layouts
+   Designed for all viewport widths
+   ═══════════════════════════════════════════════════════════ */
+.lp-container {
+  scroll-behavior: smooth;
+}
+
+.lp-bento-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 20px;
+}
+
+@media(max-width: 850px) {
+  .lp-bento-grid {
+    grid-template-columns: 1fr !important;
+    gap: 16px;
+  }
+}

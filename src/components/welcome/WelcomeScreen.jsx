@@ -5,6 +5,7 @@ import { Logo } from '../common/Logo';
 import { CURRENCIES, REGIONS } from '../../constants/presets';
 import { Heart, Sparkles, User, Shield, Compass, TrendingUp, Award, Clock } from 'lucide-react';
 import { T } from '../../theme/tokens';
+import { LandingPage } from './LandingPage';
 
 const DREAM_GOALS = [
   { key: 'home', label: 'Buy a Home', icon: '🏡', desc: 'Secure your dream property asset' },
@@ -141,6 +142,10 @@ export function WelcomeScreen() {
       setStep(3);
     }
   };
+
+  if (step === 0) {
+    return <LandingPage onStartJourney={() => setStep(1)} />;
+  }
 
   return (
     <div className="onboarding-wrap">
