@@ -12,6 +12,7 @@ import { MilestonePage } from './components/milestones/MilestonePage';
 import { SimulationPage } from './components/simulation/SimulationPage';
 import { CouplePlanningPage } from './components/welcome/CouplePlanningPage';
 import { FamilyPlanningPage } from './components/welcome/FamilyPlanningPage';
+import { SettingsPage } from './components/settings/SettingsPage';
 import { ThemeToggle } from './components/common/ThemeToggle';
 import './index.css';
 
@@ -89,6 +90,7 @@ export default function App() {
             {page==='simulation' && <SimulationPage/>}
             {page==='couple-planning' && <CouplePlanningPage/>}
             {page==='family-planning' && <FamilyPlanningPage/>}
+            {page==='settings' && <SettingsPage/>}
           </div>
         </main>
         <MobileNav page={page} setPage={setPage}/>

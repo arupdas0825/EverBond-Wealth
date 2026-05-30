@@ -12,7 +12,8 @@ const NAV = [
   { key: 'milestones', icon: '📅', label: 'Milestones' },
   { key: 'simulation', icon: '🚀', label: 'Simulate' },
   { key: 'couple-planning', icon: '💑', label: 'Couple Plan', lockedAt: 'Single' },
-  { key: 'family-planning', icon: '👑', label: 'Family Dynasty', lockedAt: 'Committed' }
+  { key: 'family-planning', icon: '👑', label: 'Family Dynasty', lockedAt: 'Committed' },
+  { key: 'settings', icon: '⚙️', label: 'Settings' }
 ];
 
 export function Sidebar({ page, setPage }) {
