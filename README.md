@@ -271,7 +271,8 @@ everbond-wealth/
 *A high-end, SaaS-style scrolling presentation introduces EverBond Wealth before onboarding begins.*
 
 ### 🚀 Welcome & Stage Selection
-![Stage Selection](https://github.com/user-attachments/assets/87d0a073-c1db-43d2-b504-f4961a181e3e)
+<img width="1574" height="790" alt="image" src="https://github.com/user-attachments/assets/165f9b89-e3e3-46d0-9084-0a96dc2c6242" />
+
 *Interactive selection screen tailored to the user's current life chapter.*
 
 ### 📊 Consolidated Dashboard (Married Stage)
