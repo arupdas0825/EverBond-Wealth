@@ -8,6 +8,7 @@ import {
   Globe, CreditCard, Key, Smartphone, FileText, ExternalLink, Trash2
 } from 'lucide-react';
 import { Logo } from '../common/Logo';
+import { Card } from '../common/Card';
 import { formatCurrency } from '../../utils/finance';
 
 export function SettingsPage() {
@@ -150,15 +151,11 @@ export function SettingsPage() {
         variants={containerVariants}
         initial="hidden"
         animate="show"
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(12, 1fr)',
-          gap: '20px'
-        }}
+        className="eb-settings-grid"
       >
         
         {/* ── SECTION 1: PROFILE BENTO (Double Width) ── */}
-        <motion.div variants={itemVariants} style={{ gridColumn: 'span 8', minHeight: '260px' }} className="lp-bento-card-large">
+        <motion.div variants={itemVariants} className="span-8" style={{ minHeight: '260px' }}>
           <Card gold style={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', position: 'relative' }}>
             <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.gold, display: 'block', marginBottom: '14px' }}>Profile Calibration</span>
             
@@ -252,7 +249,7 @@ export function SettingsPage() {
         </motion.div>
 
         {/* ── SECTION 2: RELATIONSHIP SETTINGS ── */}
-        <motion.div variants={itemVariants} style={{ gridColumn: 'span 4' }} className="lp-bento-card-small">
+        <motion.div variants={itemVariants} className="span-4">
           <Card style={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
             <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.gold, display: 'block', marginBottom: '14px' }}>Relationship Node</span>
             
@@ -307,7 +304,7 @@ export function SettingsPage() {
         </motion.div>
 
         {/* ── SECTION 3: FINANCIAL PREFERENCES ── */}
-        <motion.div variants={itemVariants} style={{ gridColumn: 'span 4' }} className="lp-bento-card-small">
+        <motion.div variants={itemVariants} className="span-4">
           <Card style={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
             <div>
               <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.gold, display: 'block', marginBottom: '14px' }}>Financial Preferences</span>
@@ -345,7 +342,7 @@ export function SettingsPage() {
         </motion.div>
 
         {/* ── SECTION 5: APPEARANCE PREVIEW (Double Width) ── */}
-        <motion.div variants={itemVariants} style={{ gridColumn: 'span 8' }} className="lp-bento-card-large">
+        <motion.div variants={itemVariants} className="span-8">
           <Card style={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
             <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.gold, display: 'block', marginBottom: '14px' }}>Appearance Theme</span>
             
@@ -420,7 +417,7 @@ export function SettingsPage() {
         </motion.div>
 
         {/* ── SECTION 4: GOALS & JOURNEY ── */}
-        <motion.div variants={itemVariants} style={{ gridColumn: 'span 4' }} className="lp-bento-card-small">
+        <motion.div variants={itemVariants} className="span-4">
           <Card style={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
             <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.gold, display: 'block', marginBottom: '14px' }}>Goals &amp; Milestones</span>
             
@@ -479,7 +476,7 @@ export function SettingsPage() {
         </motion.div>
 
         {/* ── SECTION 6: DATA PORTABILITY (Double Width) ── */}
-        <motion.div variants={itemVariants} style={{ gridColumn: 'span 8' }} className="lp-bento-card-large">
+        <motion.div variants={itemVariants} className="span-8">
           <Card style={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
             <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.gold, display: 'block', marginBottom: '14px' }}>Data Portability</span>
             
@@ -549,7 +546,7 @@ export function SettingsPage() {
         </motion.div>
 
         {/* ── SECTION 7: PRIVACY & ROADMAP ── */}
-        <motion.div variants={itemVariants} style={{ gridColumn: 'span 4' }} className="lp-bento-card-small">
+        <motion.div variants={itemVariants} className="span-4">
           <Card style={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
             <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.gold, display: 'block', marginBottom: '14px' }}>Privacy &amp; Credentials</span>
             
@@ -594,7 +591,7 @@ export function SettingsPage() {
         </motion.div>
 
         {/* ── SECTION 8: ABOUT EVERBOND ── */}
-        <motion.div variants={itemVariants} style={{ gridColumn: 'span 6' }} className="lp-bento-card-large">
+        <motion.div variants={itemVariants} className="span-6">
           <Card style={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
             <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.gold, display: 'block', marginBottom: '12px' }}>About Ecosystem</span>
             
@@ -617,7 +614,7 @@ export function SettingsPage() {
         </motion.div>
 
         {/* ── SECTION 9: DANGER ZONE ── */}
-        <motion.div variants={itemVariants} style={{ gridColumn: 'span 6' }} className="lp-bento-card-large">
+        <motion.div variants={itemVariants} className="span-6">
           <Card style={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', border: '1.5px solid var(--rose-border)' }}>
             <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.rose, display: 'block', marginBottom: '14px' }}>Danger Zone</span>
             

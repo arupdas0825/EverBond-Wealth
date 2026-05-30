@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useFinanceStore } from './store/useFinanceStore';
 import { WelcomeScreen } from './components/welcome/WelcomeScreen';
-import { Sidebar, MobileNav } from './components/layout/Sidebar';
+import { Sidebar } from './components/layout/Sidebar';
+import { MobileNav } from './components/layout/MobileNav';
 import { Logo } from './components/common/Logo';
 import { Dashboard }    from './components/dashboard/Dashboard';
 import { IncomePage }   from './components/income/IncomePage';
@@ -52,7 +53,7 @@ function OnboardingGuard({ children }) {
         <motion.div
           key="app"
           initial={{ opacity: 0, filter: 'blur(10px)' }}
-          animate={{ opacity: 1, filter: 'blur(0px)' }}
+          animate={{ opacity: 1, filter: 'blur(0px)', transitionEnd: { filter: 'none' } }}
           transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1], delay: 0.05 }}
           style={{ width: '100%', height: '100%' }}
         >

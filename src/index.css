@@ -237,7 +237,7 @@ input,select{font-family:var(--fb)}
 .eb-mobile-header {
   display: none;
 }
-@media(max-width:768px) {
+@media(max-width:1024px) {
   .eb-mobile-header {
     display: flex;
     align-items: center;
@@ -654,7 +654,7 @@ input,select{font-family:var(--fb)}
    MOBILE — 768px
    Apple‑style glassmorphism bottom nav pill
 ═══════════════════════════════════════════════════════════ */
-@media(max-width:768px){
+@media(max-width:1024px){
   :root{--page-x:16px;--page-y:24px}
   .eb-app{flex-direction:column}
   .eb-sidebar{display:none}
@@ -1655,5 +1655,27 @@ input,select{font-family:var(--fb)}
   .lp-bento-grid {
     grid-template-columns: 1fr !important;
     gap: 16px;
+  }
+}
+
+/* ── SETTINGS CENTER BENTO RESPONSIVENESS ── */
+.eb-settings-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 20px;
+  width: 100%;
+}
+.span-4 { grid-column: span 4; }
+.span-6 { grid-column: span 6; }
+.span-8 { grid-column: span 8; }
+.span-12 { grid-column: span 12; }
+
+@media(max-width: 850px) {
+  .eb-settings-grid {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+  .span-4, .span-6, .span-8, .span-12 {
+    grid-column: span 12 !important;
   }
 }
