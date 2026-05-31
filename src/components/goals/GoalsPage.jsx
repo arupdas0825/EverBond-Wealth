@@ -35,7 +35,7 @@ export function GoalsPage() {
       setStage('Married');
       setProfile({
         partner1,
-        partner2: partner2 || 'Spouse',
+        partner2: partner2 || 'Partner',
         stage: 'Married',
         p1Salary: 150000,
         p2Salary: 120000

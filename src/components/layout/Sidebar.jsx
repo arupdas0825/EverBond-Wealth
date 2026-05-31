@@ -74,8 +74,8 @@ export function Sidebar({ page, setPage }) {
               partnerLinked: false,
               verificationStatus: 'unverified',
               invitationCode: '',
-              partner2: partner2 || 'Spouse',
-              partnerName: partner2 || 'Spouse'
+              partner2: partner2 || 'Partner',
+              partnerName: partner2 || 'Partner'
             });
             setPage('dashboard');
           }
@@ -153,7 +153,7 @@ export function Sidebar({ page, setPage }) {
             <div className="couple-chip" style={{ border: `1.5px solid ${T.gold}`, background: 'var(--gold-pale)' }}>
               <Crown size={14} style={{ color: T.gold }} />
               <div>
-                <div className="couple-label" style={{ color: T.gold }}>Spouse Verified</div>
+                <div className="couple-label" style={{ color: T.gold }}>Partner Verified</div>
                 <div className="couple-names">{partner1} &amp; {partner2}</div>
               </div>
             </div>
@@ -221,8 +221,8 @@ export function MobileNav({ page, setPage }) {
               partnerLinked: false,
               verificationStatus: 'unverified',
               invitationCode: '',
-              partner2: partner2 || 'Spouse',
-              partnerName: partner2 || 'Spouse'
+              partner2: partner2 || 'Partner',
+              partnerName: partner2 || 'Partner'
             });
             setPage('dashboard');
           }
@@ -287,7 +287,7 @@ export function MobileNav({ page, setPage }) {
                   <div style={{
                     fontSize: '.63rem', fontWeight: 700, textTransform: 'uppercase',
                     letterSpacing: '.08em', color: stage === 'Married' ? T.gold : T.sage, marginBottom: 2
-                  }}>{stage === 'Married' ? 'Spouse Verified' : 'Couple Verified'}</div>
+                  }}>{stage === 'Married' ? 'Partner Verified' : 'Couple Verified'}</div>
                   <div style={{ fontSize: '.9rem', fontWeight: 600, color: 'var(--text)' }}>
                     {partner1} {stage === 'Married' ? '&' : '❤'} {partner2}
                   </div>

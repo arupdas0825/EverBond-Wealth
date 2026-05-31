@@ -88,7 +88,7 @@ export function IncomePage() {
                   style={{ background: stage === 'Married' ? T.gold : stage === 'Committed' ? T.rose : T.sky, fontSize: '0.74rem', padding: '6px 12px', width: 'auto' }}
                   onClick={() => alert("🔗 To sync incomes, go to the Dashboard and use the Partner Connection status widget to invite your partner!")}
                 >
-                  {stage === 'Single' ? "Sync Partner Ledger" : stage === 'Married' ? "Connect Spouse" : "Connect Partner"}
+                  {stage === 'Single' ? "Sync Partner Ledger" : "Connect Partner"}
                 </button>
               </div>
             </div>

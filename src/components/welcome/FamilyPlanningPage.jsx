@@ -72,7 +72,7 @@ export function FamilyPlanningPage() {
                 Family Workspace Preview
               </span>
               <h4 style={{ fontSize: '0.88rem', fontWeight: 700, color: 'var(--text)', marginTop: '2px' }}>
-                🔒 Collaborative Family Features Locked · Connect your spouse to activate
+                🔒 Collaborative Family Features Locked · Connect your partner to activate
               </h4>
             </div>
           </div>
@@ -108,13 +108,13 @@ export function FamilyPlanningPage() {
                   <Lock size={20} />
                 </div>
                 <h4 className="lock-title">🔒 Shared Family Dashboard</h4>
-                <p className="lock-desc">Connect with your spouse to unlock multi-generational wealth calculations and asset reserves.</p>
+                <p className="lock-desc">Connect with your partner to unlock multi-generational wealth calculations and asset reserves.</p>
                 <button 
                   className="btn-primary" 
                   style={{ background: T.gold, fontSize: '0.78rem', padding: '8px 16px', width: 'auto' }}
-                  onClick={() => alert("🔗 Go to the Dashboard and use the Spouse Connection status widget to invite your spouse!")}
+                  onClick={() => alert("🔗 Go to the Dashboard and use the Partner Connection status widget to invite your partner!")}
                 >
-                  Connect Spouse
+                  Connect Partner
                 </button>
               </div>
             </div>
@@ -193,13 +193,13 @@ export function FamilyPlanningPage() {
                   <Lock size={20} />
                 </div>
                 <h4 className="lock-title">🔒 Combined Family Planning</h4>
-                <p className="lock-desc">Invite your spouse to calculate joint tuition targets, child plans, and family inflation models.</p>
+                <p className="lock-desc">Invite your partner to calculate joint tuition targets, child plans, and family inflation models.</p>
                 <button 
                   className="btn-primary" 
                   style={{ background: T.gold, fontSize: '0.78rem', padding: '8px 16px', width: 'auto' }}
-                  onClick={() => alert("🔗 Go to the Dashboard and use the Spouse Connection status widget to invite your spouse!")}
+                  onClick={() => alert("🔗 Go to the Dashboard and use the Partner Connection status widget to invite your partner!")}
                 >
-                  Connect Spouse
+                  Connect Partner
                 </button>
               </div>
             </div>

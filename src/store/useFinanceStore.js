@@ -52,7 +52,7 @@ export const useFinanceStore = create(
       },
       onboardingMarried: {
         name: '',
-        spouseName: '',
+        partnerName: '',
         familyGoals: '',
         childPlans: '',
         currentSavings: '',
@@ -208,7 +208,7 @@ export const useFinanceStore = create(
             combinedGoals: '',
           },
           onboardingMarried: {
-            spouseName: '',
+            partnerName: '',
             familyGoals: '',
             childPlans: '',
             currentSavings: '',

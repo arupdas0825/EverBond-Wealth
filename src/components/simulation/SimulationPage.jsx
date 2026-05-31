@@ -229,7 +229,7 @@ export function SimulationPage() {
                 style={{ background: stage === 'Married' ? T.gold : T.rose, fontSize: '0.78rem', padding: '8px 16px', width: 'auto' }} 
                 onClick={() => alert("🔗 Go to the Dashboard and use the Partner Connection status widget to invite your partner!")}
               >
-                {stage === 'Married' ? "Connect Spouse" : "Connect Partner"}
+                Connect Partner
               </button>
             </div>
           </div>

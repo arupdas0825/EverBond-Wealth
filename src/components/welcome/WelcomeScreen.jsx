@@ -62,7 +62,7 @@ export function WelcomeScreen() {
       p2Salary = 80000;
     } else {
       finalPartner1 = onboardingMarried.name || 'Dynasty Head';
-      finalPartner2 = onboardingMarried.spouseName || 'Spouse 2';
+      finalPartner2 = onboardingMarried.partnerName || 'Partner 2';
       p1Salary = 150000;
       p2Salary = 120000;
     }
@@ -123,8 +123,8 @@ export function WelcomeScreen() {
       if (!onboardingMarried.name || !onboardingMarried.name.trim()) {
         errors.userName = 'Please enter your name.';
       }
-      if (!onboardingMarried.spouseName || !onboardingMarried.spouseName.trim()) {
-        errors.spouseName = 'Please enter your spouse\'s name.';
+      if (!onboardingMarried.partnerName || !onboardingMarried.partnerName.trim()) {
+        errors.partnerName = 'Please enter your partner\'s name.';
       }
     }
 
@@ -549,13 +549,13 @@ export function WelcomeScreen() {
                       />
                     </div>
                     <div>
-                      <label className="form-label" style={{ color: 'var(--onb-label)', marginBottom: '4px' }}>Spouse's Name</label>
+                      <label className="form-label" style={{ color: 'var(--onb-label)', marginBottom: '4px' }}>Partner's Name</label>
                       <input 
                         className="onb-input-glow" 
                         type="text" 
-                        placeholder="Enter spouse's name"
-                        value={onboardingMarried.spouseName}
-                        onChange={e => setOnboardingMarried({ spouseName: e.target.value })}
+                        placeholder="Enter partner's name"
+                        value={onboardingMarried.partnerName}
+                        onChange={e => setOnboardingMarried({ partnerName: e.target.value })}
                       />
                     </div>
                   </div>

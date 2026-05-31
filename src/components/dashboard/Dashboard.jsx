@@ -874,7 +874,7 @@ export function Dashboard() {
               <div style={{ position: 'absolute', inset: 0, background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(2.5px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', borderRadius: 'var(--r-lg)', zIndex: 10 }}>
                 <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-mid)', borderRadius: '12px', padding: '12px 18px', textAlign: 'center', boxShadow: 'var(--sh-sm)', maxWidth: '280px' }}>
                   <span style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>🔒 Combined Wealth View Locked</span>
-                  <span style={{ fontSize: '0.68rem', color: 'var(--text-faint)' }}>Connect your spouse to unlock consolidated family net worth ledger.</span>
+                  <span style={{ fontSize: '0.68rem', color: 'var(--text-faint)' }}>Connect your partner to unlock consolidated family net worth ledger.</span>
                 </div>
               </div>
             )}
@@ -908,7 +908,7 @@ export function Dashboard() {
               <div style={{ position: 'absolute', inset: 0, background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(2.5px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', borderRadius: 'var(--r-lg)', zIndex: 10 }}>
                 <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-mid)', borderRadius: '12px', padding: '12px 18px', textAlign: 'center', boxShadow: 'var(--sh-sm)', maxWidth: '280px' }}>
                   <span style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>🔒 Family Sync Features Locked</span>
-                  <span style={{ fontSize: '0.68rem', color: 'var(--text-faint)' }}>Connect your spouse to unlock child planning trust sync.</span>
+                  <span style={{ fontSize: '0.68rem', color: 'var(--text-faint)' }}>Connect your partner to unlock child planning trust sync.</span>
                 </div>
               </div>
             )}
@@ -1106,7 +1106,7 @@ export function Dashboard() {
               </h2>
               <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', lineHeight: 1.5, maxWidth: '400px', margin: '0 auto' }}>
                 {stage === 'Married' 
-                  ? "Connect with your spouse to unlock Combined Family Planning." 
+                  ? "Connect with your partner to unlock Combined Family Planning." 
                   : "Connect with your partner to unlock Couple Planning."}
               </p>
             </div>
@@ -1160,12 +1160,12 @@ export function Dashboard() {
                 >
                   <div>
                     <label style={{ fontSize: '0.68rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', display: 'block', marginBottom: '6px' }}>
-                      {stage === 'Married' ? "Spouse's Legal Name" : "Partner's Legal Name"}
+                      Partner's Name
                     </label>
                     <input
                       type="text"
                       className="onb-input-glow"
-                      placeholder={stage === 'Married' ? "Enter spouse name..." : "Enter partner name..."}
+                      placeholder="Enter partner name..."
                       value={pName}
                       onChange={e => setPName(e.target.value)}
                       required
@@ -1186,7 +1186,7 @@ export function Dashboard() {
                     </div>
                     <div>
                       <label style={{ fontSize: '0.68rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', display: 'block', marginBottom: '6px' }}>
-                        Spouse / Partner ID (Optional)
+                        Partner ID (Optional)
                       </label>
                       <input
                         type="text"
@@ -1223,7 +1223,7 @@ export function Dashboard() {
                   style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}
                 >
                   <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '16px', lineHeight: 1.45 }}>
-                    Provide this invitation key to your {stage === 'Married' ? 'spouse' : 'partner'}. They must enter it on their terminal to link your portfolios.
+                    Provide this invitation key to your partner. They must enter it on their terminal to link your portfolios.
                   </p>
 
                   <div style={{
@@ -1360,7 +1360,7 @@ export function Dashboard() {
                   </h4>
                   
                   <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', lineHeight: 1.45, marginBottom: '20px' }}>
-                    Your {stage === 'Married' ? 'spouse' : 'partner'} ({partner2 || pName || 'Beloved'}) has decrypted the packet. Click below to execute the cryptographically signed linkage.
+                    Your partner ({partner2 || pName || 'Beloved'}) has decrypted the packet. Click below to execute the cryptographically signed linkage.
                   </p>
 
                   <button
@@ -1524,7 +1524,7 @@ export function Dashboard() {
                       <strong style={{ color: T.sage }}>🟢 Couple Verified</strong>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span style={{ color: 'var(--text-faint)' }}>Spouse / Partner:</span>
+                      <span style={{ color: 'var(--text-faint)' }}>Partner:</span>
                       <strong style={{ color: 'var(--text)' }}>{partner2 || pName || 'Linked Partner'}</strong>
                     </div>
                   </div>
