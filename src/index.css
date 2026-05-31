@@ -237,7 +237,7 @@ input,select{font-family:var(--fb)}
 .eb-mobile-header {
   display: none;
 }
-@media(max-width:1024px) {
+@media(max-width:767px) {
   .eb-mobile-header {
     display: flex;
     align-items: center;
@@ -654,7 +654,7 @@ input,select{font-family:var(--fb)}
    MOBILE — 768px
    Apple‑style glassmorphism bottom nav pill
 ═══════════════════════════════════════════════════════════ */
-@media(max-width:1024px){
+@media(max-width:767px){
   :root{--page-x:16px;--page-y:24px}
   .eb-app{flex-direction:column}
   .eb-sidebar{display:none}

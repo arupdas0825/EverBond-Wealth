@@ -67,20 +67,32 @@ function OnboardingGuard({ children }) {
 export default function App() {
   const theme = useFinanceStore(s=>s.theme);
   const [page,setPage] = useState('dashboard');
+  const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1024);
 
   // Synchronize HTML data-theme attribute
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
 
+  // Track window width for clean conditional navigation rendering (removes from DOM)
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const isMobile = windowWidth < 768;
+
   return (
     <OnboardingGuard>
       <div className="eb-app">
         <ThemeToggle />
-        <div className="eb-mobile-header">
-          <Logo size={32} />
-        </div>
-        <Sidebar page={page} setPage={setPage}/>
+        {isMobile && (
+          <div className="eb-mobile-header">
+            <Logo size={32} />
+          </div>
+        )}
+        {!isMobile && <Sidebar page={page} setPage={setPage}/>}
         <main className="eb-main">
           <div className="eb-page">
             {page==='dashboard'  && <Dashboard/>}
@@ -94,7 +106,7 @@ export default function App() {
             {page==='settings' && <SettingsPage/>}
           </div>
         </main>
-        <MobileNav page={page} setPage={setPage}/>
+        {isMobile && <MobileNav page={page} setPage={setPage}/>}
       </div>
     </OnboardingGuard>
   );
