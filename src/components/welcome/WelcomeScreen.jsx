@@ -418,7 +418,7 @@ export function WelcomeScreen() {
                       <input 
                         className="onb-input-glow" 
                         type="text" 
-                        placeholder="Arup"
+                        placeholder="Enter your name"
                         value={onboardingSingle.name}
                         onChange={e => setOnboardingSingle({ name: e.target.value })}
                       />
@@ -480,11 +480,11 @@ export function WelcomeScreen() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '24px' }}>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                     <div>
-                      <label className="form-label" style={{ color: 'var(--onb-label)', marginBottom: '4px' }}>Your Legal Name</label>
+                      <label className="form-label" style={{ color: 'var(--onb-label)', marginBottom: '4px' }}>Your Name</label>
                       <input 
                         className="onb-input-glow" 
                         type="text" 
-                        placeholder="Arup"
+                        placeholder="Enter your name"
                         value={onboardingCommitted.name}
                         onChange={e => setOnboardingCommitted({ name: e.target.value })}
                       />
@@ -494,7 +494,7 @@ export function WelcomeScreen() {
                       <input 
                         className="onb-input-glow" 
                         type="text" 
-                        placeholder="Shatarupa"
+                        placeholder="Enter partner's name"
                         value={onboardingCommitted.partnerName}
                         onChange={e => setOnboardingCommitted({ partnerName: e.target.value })}
                       />
@@ -539,11 +539,11 @@ export function WelcomeScreen() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '24px' }}>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                     <div>
-                      <label className="form-label" style={{ color: 'var(--onb-label)', marginBottom: '4px' }}>Your Legal Name</label>
+                      <label className="form-label" style={{ color: 'var(--onb-label)', marginBottom: '4px' }}>Your Name</label>
                       <input 
                         className="onb-input-glow" 
                         type="text" 
-                        placeholder="Arup"
+                        placeholder="Enter your name"
                         value={onboardingMarried.name}
                         onChange={e => setOnboardingMarried({ name: e.target.value })}
                       />
@@ -553,7 +553,7 @@ export function WelcomeScreen() {
                       <input 
                         className="onb-input-glow" 
                         type="text" 
-                        placeholder="Shatarupa"
+                        placeholder="Enter spouse's name"
                         value={onboardingMarried.spouseName}
                         onChange={e => setOnboardingMarried({ spouseName: e.target.value })}
                       />
