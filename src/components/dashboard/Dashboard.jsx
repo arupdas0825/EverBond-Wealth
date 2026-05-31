@@ -337,6 +337,95 @@ export function Dashboard() {
     );
   };
 
+  const PartnerStatusCard = () => {
+    return (
+      <div style={{
+        background: 'var(--bg-card)',
+        border: '1.5px solid var(--border-mid)',
+        borderRadius: 'var(--r-lg)',
+        padding: '24px',
+        marginBottom: '24px',
+        boxShadow: 'var(--sh-xs)',
+        position: 'relative',
+        overflow: 'hidden'
+      }}>
+        {partnerAccepted ? (
+          <div style={{ position: 'relative', zIndex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '20px' }}>
+            <div>
+              <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: stage === 'Married' ? T.gold : T.rose }}>Ecosystem Connection</span>
+              <h3 style={{ fontFamily: T.fontDisplay, fontSize: '1.4rem', fontWeight: 700, color: 'var(--text)', marginTop: '4px', marginBottom: '8px' }}>
+                Linked with {partner2 || 'Partner'}
+              </h3>
+              
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.82rem' }}>
+                <span style={{ color: 'var(--text-muted)' }}>Status:</span>
+                <strong style={{ color: T.sage }}>🟢 Connected</strong>
+              </div>
+            </div>
+
+            <button
+              className="btn-primary"
+              style={{
+                background: 'linear-gradient(135deg, #1c1a16 0%, #111 100%)',
+                fontSize: '0.85rem',
+                padding: '10px 20px',
+                width: 'auto',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}
+              onClick={() => setIsInviteModalOpen(true)}
+            >
+              <Users size={16} /> Manage Node Connection
+            </button>
+          </div>
+        ) : (
+          <div style={{ position: 'relative', zIndex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '24px' }}>
+            <div>
+              <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: stage === 'Married' ? T.gold : T.rose }}>Ecosystem Connection</span>
+              <h3 style={{ fontFamily: T.fontDisplay, fontSize: '1.4rem', fontWeight: 700, color: 'var(--text)', marginTop: '4px', marginBottom: '12px' }}>
+                Partner Status: <span style={{ color: T.rose }}>Not Connected</span>
+              </h3>
+              
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '12px' }}>
+                <span style={{ fontSize: '0.72rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-muted)' }}>Benefits unlocked after connecting:</span>
+                <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', marginTop: '4px' }}>
+                  <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <span style={{ color: T.sage }}>✓</span> Shared Goals
+                  </span>
+                  <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <span style={{ color: T.sage }}>✓</span> Joint Planning
+                  </span>
+                  <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <span style={{ color: T.sage }}>✓</span> Couple Dashboard
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <button
+              className="btn-primary"
+              style={{
+                background: `linear-gradient(135deg, ${stage === 'Married' ? T.gold : T.rose} 0%, ${stage === 'Married' ? '#9e7b24' : '#a33b52'} 100%)`,
+                boxShadow: 'var(--sh-sm)',
+                fontSize: '0.85rem',
+                padding: '12px 24px',
+                width: 'auto',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                borderRadius: '100px'
+              }}
+              onClick={() => setIsInviteModalOpen(true)}
+            >
+              <Users size={16} /> Connect Partner
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   // 1. SINGLE WORKSPACE LAYOUT
   const renderSingleWorkspace = () => {
     const career5y = totalSalary * Math.pow(1.07, 5);
@@ -535,11 +624,11 @@ export function Dashboard() {
     );
   };
 
-  // 2. COMMITTED WORKSPACE LAYOUT
   const renderCommittedWorkspace = () => {
     // Math checks for Home Fund
     const downpaymentTarget = homeTargetCost * (homeDownpaymentPct / 100);
     const monthsToHome = calculateGoalTimeline(homeMonthlySavings, downpaymentTarget, 8);
+    const { p1Salary, p2Salary } = useFinanceStore();
 
     return (
       <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
@@ -560,221 +649,151 @@ export function Dashboard() {
         <LifeJourneyWidget />
         <PremiumInsightsPanel />
 
-        {/* Partner connection card */}
-        <div style={{
-          background: 'var(--bg-card)',
-          border: '1.5px solid var(--border-mid)',
-          borderRadius: 'var(--r-lg)',
-          padding: '24px',
-          marginBottom: '24px',
-          boxShadow: 'var(--sh-xs)',
-          position: 'relative',
-          overflow: 'hidden'
-        }}>
-          <div style={{ position: 'relative', zIndex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '20px' }}>
-            <div>
-              <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.rose }}>Handshake Status</span>
-              <h3 style={{ fontFamily: T.fontDisplay, fontSize: '1.4rem', fontWeight: 700, color: 'var(--text)', marginTop: '4px', marginBottom: '8px' }}>
-                {partnerAccepted ? `Linked with ${partner2 || 'Partner'}` : 'Decentralized Handshake Sync'}
-              </h3>
-              
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.82rem' }}>
-                <span style={{ color: 'var(--text-muted)' }}>Security Status:</span>
-                <strong style={{ color: partnerAccepted ? T.sage : invitationCode ? T.goldMid : T.rose }}>
-                  {partnerAccepted ? '🟢 Connected' : invitationCode ? '🟡 Handshake Pending' : '🔴 Connection Inactive'}
-                </strong>
-              </div>
-            </div>
+        {/* Redesigned Partner Connection Status Card */}
+        <PartnerStatusCard />
 
-            <button
-              className="btn-primary"
-              style={{
-                background: partnerAccepted ? 'linear-gradient(135deg, #1c1a16 0%, #111 100%)' : `linear-gradient(135deg, ${T.rose} 0%, #a33b52 100%)`,
-                boxShadow: partnerAccepted ? 'none' : 'var(--sh-sm)',
-                fontSize: '0.85rem',
-                padding: '10px 20px',
-                width: 'auto',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px'
-              }}
-              onClick={() => setIsInviteModalOpen(true)}
-            >
-              <Users size={16} /> {partnerAccepted ? 'Manage Node Connection' : 'Link Partner Ledger'}
-            </button>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          
+          {/* Bento Grid Row 1 */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+            
+            {/* Card 1: Personal Wealth and Shared Pool */}
+            <Card style={{ position: 'relative' }}>
+              <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.rose }}>Asset Segregation</span>
+              <h3 style={{ fontFamily: T.fontDisplay, fontSize: '1.3rem', fontWeight: 700, color: 'var(--text)', marginTop: '4px', marginBottom: '16px' }}>Personal Wealth Splits</h3>
+              
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                {[
+                  { label: 'Your In-hand Salary', value: fmt(p1Salary || 100000) },
+                  { label: `${partner2 || 'Partner'}'s Salary`, value: partnerAccepted ? fmt(p2Salary || 80000) : "Not Connected (🔒)" },
+                  { label: 'Combined Income Pool', value: partnerAccepted ? fmt(totalSalary) : `${fmt(p1Salary || 100000)} (🔒 Solo)` },
+                  { label: 'Consensual Savings Target', value: partnerAccepted ? fmt(snap.budget.investments) : `${fmt((p1Salary || 100000) * (snap.presets ? snap.presets.invest : 0.35))} (🔒 Solo)` }
+                ].map((item, idx) => (
+                  <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: idx < 3 ? '1px solid var(--border)' : 'none', paddingBottom: idx < 3 ? '10px' : '0' }}>
+                    <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{item.label}</span>
+                    <strong style={{ fontSize: '0.88rem', color: idx === 2 && partnerAccepted ? T.rose : 'var(--text)' }}>{item.value}</strong>
+                  </div>
+                ))}
+              </div>
+            </Card>
+
+            {/* Card 2: Interactive Future Home Fund Simulator */}
+            <Card>
+              <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.rose }}>Property Calibration</span>
+              <h3 style={{ fontFamily: T.fontDisplay, fontSize: '1.3rem', fontWeight: 700, color: 'var(--text)', marginTop: '4px', marginBottom: '16px' }}>Future Home Fund</h3>
+              
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', marginBottom: '6px' }}>
+                    <span style={{ color: 'var(--text-muted)' }}>Target Home Value</span>
+                    <strong style={{ color: T.rose }}>{cmpct(homeTargetCost)}</strong>
+                  </div>
+                  <input 
+                    type="range" min={3000000} max={25000000} step={500000}
+                    className="eb-slider"
+                    value={homeTargetCost} 
+                    onChange={e => setHomeTargetCost(parseInt(e.target.value))}
+                  />
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                  <div style={{ background: 'var(--bg-warm)', padding: '10px', borderRadius: '10px', textAlign: 'center' }}>
+                    <span style={{ fontSize: '0.65rem', color: 'var(--text-faint)' }}>Downpayment (20%)</span>
+                    <div style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--text)', marginTop: '2px' }}>{cmpct(downpaymentTarget)}</div>
+                  </div>
+                  <div style={{ background: 'var(--bg-warm)', padding: '10px', borderRadius: '10px', textAlign: 'center' }}>
+                    <span style={{ fontSize: '0.65rem', color: 'var(--text-faint)' }}>Months to target</span>
+                    <div style={{ fontSize: '1.05rem', fontWeight: 700, color: T.rose, marginTop: '2px' }}>
+                      {isFinite(monthsToHome) ? `${monthsToHome} mo` : '—'}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Card>
+          </div>
+
+          {/* Bento Grid Row 2 */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '20px' }}>
+            
+            {/* Card 3: Marriage Planning Bento */}
+            <Card>
+              <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.rose }}>Lifestyle Strategy</span>
+              <h3 style={{ fontFamily: T.fontDisplay, fontSize: '1.3rem', fontWeight: 700, color: 'var(--text)', marginTop: '4px', marginBottom: '16px' }}>Marriage Budget Calibration</h3>
+              
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', marginBottom: '6px' }}>
+                    <span style={{ color: 'var(--text-muted)' }}>Wedding Budget Cap</span>
+                    <strong style={{ color: T.rose }}>{fmt(weddingCost)}</strong>
+                  </div>
+                  <input 
+                    type="range" min={500000} max={6000000} step={100000}
+                    className="eb-slider"
+                    value={weddingCost}
+                    onChange={e => setWeddingCost(parseInt(e.target.value))}
+                  />
+                </div>
+
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', marginBottom: '6px' }}>
+                    <span style={{ color: 'var(--text-muted)' }}>Guest Volume Limit</span>
+                    <strong style={{ color: T.rose }}>{weddingGuests} Guests</strong>
+                  </div>
+                  <input 
+                    type="range" min={50} max={500} step={10}
+                    className="eb-slider"
+                    value={weddingGuests}
+                    onChange={e => setWeddingGuests(parseInt(e.target.value))}
+                  />
+                </div>
+
+                <div style={{ fontSize: '0.72rem', color: 'var(--text-faint)', fontStyle: 'italic', borderTop: '1px solid var(--border)', paddingTop: '10px' }}>
+                  *Calculated averages allocate approx. {fmt(weddingCost / weddingGuests)} per guest package inclusive of banquet reserves.
+                </div>
+              </div>
+            </Card>
+
+            {/* Card 4: Relationship Timeline */}
+            <Card style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', position: 'relative' }}>
+              <div>
+                <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.rose }}>Anniversary Calibration</span>
+                <h3 style={{ fontFamily: T.fontDisplay, fontSize: '1.3rem', fontWeight: 700, color: 'var(--text)', marginTop: '4px', marginBottom: '16px' }}>Relationship Timeline</h3>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', flex: 1, paddingLeft: '12px', position: 'relative', marginTop: '10px', filter: !partnerAccepted ? 'blur(1.5px)' : 'none', opacity: !partnerAccepted ? 0.6 : 1 }}>
+                <div style={{ position: 'absolute', left: '4px', top: '8px', bottom: '8px', width: '1.5px', background: T.rose }} />
+
+                {[
+                  { label: 'Sovereign Ledger Synced', date: 'Active Consensus', ok: true },
+                  { label: 'First Shared Goal Acquired', date: 'Projected 2026', ok: milestones.length > 0 && partnerAccepted },
+                  { label: 'Future Home Deposit Met', date: `Projected in ${isFinite(monthsToHome) ? Math.ceil(monthsToHome/12) : 3} Years`, ok: false }
+                ].map((node, idx) => (
+                  <div key={idx} style={{ position: 'relative', paddingLeft: '16px' }}>
+                    <div style={{
+                      position: 'absolute',
+                      left: '-16px',
+                      top: '4px',
+                      width: '9px',
+                      height: '9px',
+                      borderRadius: '50%',
+                      background: node.ok ? T.rose : 'var(--bg-muted)',
+                      border: `1.5px solid ${node.ok ? T.rose : 'var(--border-str)'}`
+                    }} />
+                    <div style={{ fontSize: '0.82rem', fontWeight: 700, color: node.ok ? 'var(--text)' : 'var(--text-faint)' }}>{node.label}</div>
+                    <div style={{ fontSize: '0.68rem', color: 'var(--text-faint)' }}>{node.date}</div>
+                  </div>
+                ))}
+              </div>
+              {!partnerAccepted && (
+                <div style={{ position: 'absolute', inset: 0, background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(2px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', borderRadius: 'var(--r-lg)', zIndex: 10 }}>
+                  <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-mid)', borderRadius: '12px', padding: '10px 14px', textAlign: 'center', boxShadow: 'var(--sh-sm)', maxWidth: '240px' }}>
+                    <span style={{ fontSize: '0.74rem', fontWeight: 700, color: 'var(--text-muted)' }}>🔒 Shared Timeline Sync Requires Partner Connection</span>
+                  </div>
+                </div>
+              )}
+            </Card>
           </div>
         </div>
-
-        {/* If Partner not connected, show locked screen overlays on collaborative details */}
-        {!partnerAccepted ? (
-          <div style={{ position: 'relative' }}>
-            {/* Blurry Previews */}
-            <div style={{ filter: 'blur(8px)', pointerEvents: 'none', userSelect: 'none' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-                <Card><div style={{ height: '200px' }} /></Card>
-                <Card><div style={{ height: '200px' }} /></Card>
-              </div>
-            </div>
-
-            {/* Lock Screen Overlay */}
-            <div className="glass-lock-screen" style={{ borderRadius: 'var(--r-lg)', zIndex: 100 }}>
-              <div className="lock-screen-inner" style={{ padding: '40px', maxWidth: '440px', textAlign: 'center' }}>
-                <div className="lock-icon-glow" style={{ color: T.rose, background: 'var(--rose-light)' }}>
-                  <Lock size={22} />
-                </div>
-                <h4 style={{ fontFamily: T.fontDisplay, fontSize: '1.4rem', fontWeight: 700, color: 'var(--text)', marginBottom: '8px' }}>Unlock Co-Budgeting Features</h4>
-                <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: '20px' }}>
-                  Sync ledgers with your partner to enable collaborative timeline tracking, consensual SIP asset allocation, and shared goal planning.
-                </p>
-                <button 
-                  className="btn-primary" 
-                  style={{ background: T.rose, width: 'auto', padding: '10px 24px' }}
-                  onClick={() => setIsInviteModalOpen(true)}
-                >
-                  Initiate Handshake Connection
-                </button>
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            
-            {/* Bento Grid Row 1 */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-              
-              {/* Card 1: Personal Wealth and Shared Pool */}
-              <Card>
-                <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.rose }}>Asset Segregation</span>
-                <h3 style={{ fontFamily: T.fontDisplay, fontSize: '1.3rem', fontWeight: 700, color: 'var(--text)', marginTop: '4px', marginBottom: '16px' }}>Personal Wealth Splits</h3>
-                
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                  {[
-                    { label: 'Your In-hand Salary', value: fmt(onboardingCommitted.name ? 100000 : totalSalary) },
-                    { label: `${partner2 || 'Partner'}'s Salary`, value: fmt(80000) },
-                    { label: 'Combined Income Pool', value: fmt(totalSalary) },
-                    { label: 'Consensual Savings Target', value: fmt(snap.budget.investments) }
-                  ].map((item, idx) => (
-                    <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: idx < 3 ? '1px solid var(--border)' : 'none', paddingBottom: idx < 3 ? '10px' : '0' }}>
-                      <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{item.label}</span>
-                      <strong style={{ fontSize: '0.88rem', color: idx === 2 ? T.rose : 'var(--text)' }}>{item.value}</strong>
-                    </div>
-                  ))}
-                </div>
-              </Card>
-
-              {/* Card 2: Interactive Future Home Fund Simulator */}
-              <Card>
-                <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.rose }}>Property Calibration</span>
-                <h3 style={{ fontFamily: T.fontDisplay, fontSize: '1.3rem', fontWeight: 700, color: 'var(--text)', marginTop: '4px', marginBottom: '16px' }}>Future Home Fund</h3>
-                
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                  <div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', marginBottom: '6px' }}>
-                      <span style={{ color: 'var(--text-muted)' }}>Target Home Value</span>
-                      <strong style={{ color: T.rose }}>{cmpct(homeTargetCost)}</strong>
-                    </div>
-                    <input 
-                      type="range" min={3000000} max={25000000} step={500000}
-                      className="eb-slider"
-                      value={homeTargetCost} 
-                      onChange={e => setHomeTargetCost(parseInt(e.target.value))}
-                    />
-                  </div>
-
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                    <div style={{ background: 'var(--bg-warm)', padding: '10px', borderRadius: '10px', textAlign: 'center' }}>
-                      <span style={{ fontSize: '0.65rem', color: 'var(--text-faint)' }}>Downpayment (20%)</span>
-                      <div style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--text)', marginTop: '2px' }}>{cmpct(downpaymentTarget)}</div>
-                    </div>
-                    <div style={{ background: 'var(--bg-warm)', padding: '10px', borderRadius: '10px', textAlign: 'center' }}>
-                      <span style={{ fontSize: '0.65rem', color: 'var(--text-faint)' }}>Months to target</span>
-                      <div style={{ fontSize: '1.05rem', fontWeight: 700, color: T.rose, marginTop: '2px' }}>
-                        {isFinite(monthsToHome) ? `${monthsToHome} mo` : '—'}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </Card>
-            </div>
-
-            {/* Bento Grid Row 2 */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '20px' }}>
-              
-              {/* Card 3: Marriage Planning Bento */}
-              <Card>
-                <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.rose }}>Lifestyle Strategy</span>
-                <h3 style={{ fontFamily: T.fontDisplay, fontSize: '1.3rem', fontWeight: 700, color: 'var(--text)', marginTop: '4px', marginBottom: '16px' }}>Marriage Budget Calibration</h3>
-                
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                  <div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', marginBottom: '6px' }}>
-                      <span style={{ color: 'var(--text-muted)' }}>Wedding Budget Cap</span>
-                      <strong style={{ color: T.rose }}>{fmt(weddingCost)}</strong>
-                    </div>
-                    <input 
-                      type="range" min={500000} max={6000000} step={100000}
-                      className="eb-slider"
-                      value={weddingCost}
-                      onChange={e => setWeddingCost(parseInt(e.target.value))}
-                    />
-                  </div>
-
-                  <div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', marginBottom: '6px' }}>
-                      <span style={{ color: 'var(--text-muted)' }}>Guest Volume Limit</span>
-                      <strong style={{ color: T.rose }}>{weddingGuests} Guests</strong>
-                    </div>
-                    <input 
-                      type="range" min={50} max={500} step={10}
-                      className="eb-slider"
-                      value={weddingGuests}
-                      onChange={e => setWeddingGuests(parseInt(e.target.value))}
-                    />
-                  </div>
-
-                  <div style={{ fontSize: '0.72rem', color: 'var(--text-faint)', fontStyle: 'italic', borderTop: '1px solid var(--border)', paddingTop: '10px' }}>
-                    *Calculated averages allocate approx. {fmt(weddingCost / weddingGuests)} per guest package inclusive of banquet reserves.
-                  </div>
-                </div>
-              </Card>
-
-              {/* Card 4: Relationship Timeline */}
-              <Card style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                <div>
-                  <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.rose }}>Anniversary Calibration</span>
-                  <h3 style={{ fontFamily: T.fontDisplay, fontSize: '1.3rem', fontWeight: 700, color: 'var(--text)', marginTop: '4px', marginBottom: '16px' }}>Relationship Timeline</h3>
-                </div>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', flex: 1, paddingLeft: '12px', position: 'relative', marginTop: '10px' }}>
-                  <div style={{ position: 'absolute', left: '4px', top: '8px', bottom: '8px', width: '1.5px', background: T.rose }} />
-
-                  {[
-                    { label: 'Sovereign Ledger Synced', date: 'Active Consensus', ok: true },
-                    { label: 'First Shared Goal Acquired', date: 'Projected 2026', ok: milestones.length > 0 },
-                    { label: 'Future Home Deposit Met', date: `Projected in ${isFinite(monthsToHome) ? Math.ceil(monthsToHome/12) : 3} Years`, ok: false }
-                  ].map((node, idx) => (
-                    <div key={idx} style={{ position: 'relative', paddingLeft: '16px' }}>
-                      <div style={{
-                        position: 'absolute',
-                        left: '-16px',
-                        top: '4px',
-                        width: '9px',
-                        height: '9px',
-                        borderRadius: '50%',
-                        background: node.ok ? T.rose : 'var(--bg-muted)',
-                        border: `1.5px solid ${node.ok ? T.rose : 'var(--border-str)'}`
-                      }} />
-                      <div style={{ fontSize: '0.82rem', fontWeight: 700, color: node.ok ? 'var(--text)' : 'var(--text-faint)' }}>{node.label}</div>
-                      <div style={{ fontSize: '0.68rem', color: 'var(--text-faint)' }}>{node.date}</div>
-                    </div>
-                  ))}
-                </div>
-              </Card>
-
-            </div>
-          </div>
-        )}
-
       </motion.div>
     );
   };
@@ -815,11 +834,14 @@ export function Dashboard() {
         <LifeJourneyWidget />
         <PremiumInsightsPanel />
 
+        {/* Redesigned Partner Connection Status Card */}
+        <PartnerStatusCard />
+
         {/* Bento Grid Row 1 */}
         <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '20px', marginBottom: '20px' }}>
           
           {/* Card 1: Family Net Worth Consolidated Ledger */}
-          <Card gold style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+          <Card gold style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', position: 'relative' }}>
             <div>
               <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.gold }}>Consolidated Family Net Worth</span>
               <h2 style={{ fontFamily: T.fontDisplay, fontSize: 'clamp(2.1rem, 5vw, 3.2rem)', fontWeight: 700, color: 'var(--text)', margin: '12px 0 6px' }}>
@@ -847,10 +869,19 @@ export function Dashboard() {
                 </div>
               </div>
             </div>
+
+            {!partnerAccepted && (
+              <div style={{ position: 'absolute', inset: 0, background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(2.5px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', borderRadius: 'var(--r-lg)', zIndex: 10 }}>
+                <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-mid)', borderRadius: '12px', padding: '12px 18px', textAlign: 'center', boxShadow: 'var(--sh-sm)', maxWidth: '280px' }}>
+                  <span style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>🔒 Combined Wealth View Locked</span>
+                  <span style={{ fontSize: '0.68rem', color: 'var(--text-faint)' }}>Connect your spouse to unlock consolidated family net worth ledger.</span>
+                </div>
+              </div>
+            )}
           </Card>
 
           {/* Card 2: Child Education Planning trust */}
-          <Card>
+          <Card style={{ position: 'relative' }}>
             <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.gold }}>Generational Launchpad</span>
             <h3 style={{ fontFamily: T.fontDisplay, fontSize: '1.3rem', fontWeight: 700, color: 'var(--text)', marginTop: '4px', marginBottom: '16px' }}>Child Education Trust</h3>
             
@@ -872,6 +903,15 @@ export function Dashboard() {
                 </div>
               </div>
             </div>
+
+            {!partnerAccepted && (
+              <div style={{ position: 'absolute', inset: 0, background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(2.5px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', borderRadius: 'var(--r-lg)', zIndex: 10 }}>
+                <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-mid)', borderRadius: '12px', padding: '12px 18px', textAlign: 'center', boxShadow: 'var(--sh-sm)', maxWidth: '280px' }}>
+                  <span style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>🔒 Family Sync Features Locked</span>
+                  <span style={{ fontSize: '0.68rem', color: 'var(--text-faint)' }}>Connect your spouse to unlock child planning trust sync.</span>
+                </div>
+              </div>
+            )}
           </Card>
         </div>
 

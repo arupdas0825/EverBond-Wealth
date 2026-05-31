@@ -37,6 +37,9 @@ export function Sidebar({ page, setPage }) {
     // Dashboard is never locked
     if (n.key === 'dashboard') return false;
 
+    // Lock Couple Planning in Committed Stage if partner not accepted/connected
+    if (n.key === 'couple-planning' && stage === 'Committed' && !partnerAccepted) return true;
+
     // Standard stage locks
     if (n.lockedAt === 'Single' && stage === 'Single') return true;
     if (n.lockedAt === 'Committed' && (stage === 'Single' || stage === 'Committed')) return true;
@@ -46,6 +49,12 @@ export function Sidebar({ page, setPage }) {
 
   const handleNavClick = (n) => {
     if (isLocked(n)) {
+      if (n.key === 'couple-planning' && stage === 'Committed' && !partnerAccepted) {
+        alert('🔒 Couple Planning requires Partner Connection. Please connect your partner on the Dashboard first.');
+        setPage('dashboard');
+        return;
+      }
+
       if (n.lockedAt === 'Single' && stage === 'Single') {
         alert('🔒 Unlocks in Committed stage. Link a partner node to unlock Couple Planning.');
         setPage('dashboard');
@@ -177,6 +186,9 @@ export function MobileNav({ page, setPage }) {
   const isLocked = (n) => {
     if (n.key === 'dashboard') return false;
 
+    // Lock Couple Planning in Committed Stage if partner not accepted/connected
+    if (n.key === 'couple-planning' && stage === 'Committed' && !partnerAccepted) return true;
+
     if (n.lockedAt === 'Single' && stage === 'Single') return true;
     if (n.lockedAt === 'Committed' && (stage === 'Single' || stage === 'Committed')) return true;
 
@@ -185,6 +197,12 @@ export function MobileNav({ page, setPage }) {
 
   const handleNavClick = (n) => {
     if (isLocked(n)) {
+      if (n.key === 'couple-planning' && stage === 'Committed' && !partnerAccepted) {
+        alert('🔒 Couple Planning requires Partner Connection. Please connect your partner on the Dashboard first.');
+        setPage('dashboard');
+        return;
+      }
+
       if (n.lockedAt === 'Single' && stage === 'Single') {
         alert('🔒 Unlocks in Committed stage. Link a partner on the Dashboard.');
         setPage('dashboard');
