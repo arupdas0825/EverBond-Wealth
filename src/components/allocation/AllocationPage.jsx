@@ -9,9 +9,14 @@ import { Card } from '../common/Card';
 import { Logo } from '../common/Logo';
 
 const TT = {
-  borderRadius:'14px',border:'none',
-  boxShadow:'0 8px 32px rgba(0,0,0,.10)',
-  fontFamily:T.fontBody,fontSize:'13px',padding:'12px 16px',
+  borderRadius: '14px',
+  border: '1px solid var(--border-mid)',
+  boxShadow: 'var(--sh-md)',
+  fontFamily: T.fontBody,
+  fontSize: '13px',
+  padding: '12px 16px',
+  background: 'var(--bg-card)',
+  color: 'var(--text)',
 };
 
 function AllocSection({ label, rows }) {
@@ -116,7 +121,7 @@ export function AllocationPage() {
               <BarChart data={goalData} layout="vertical" margin={{top:0,right:8,left:0,bottom:0}}>
                 <XAxis type="number" hide/>
                 <YAxis dataKey="name" type="category" width={110} axisLine={false} tickLine={false}
-                  tick={{fontSize:12,fill:T.textMuted,fontWeight:500}}/>
+                  tick={{fontSize:12,fill:'var(--text-muted)',fontWeight:500}}/>
                 <Tooltip contentStyle={TT} cursor={{fill:'transparent'}} formatter={v=>[fmt(v),'']}/>
                 <Bar dataKey="value" radius={[0,6,6,0]}>
                   {goalData.map((d,i)=><Cell key={i} fill={d.color} fillOpacity={.85}/>)}

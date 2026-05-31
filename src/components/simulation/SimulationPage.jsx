@@ -16,9 +16,14 @@ import { Lock } from 'lucide-react';
 const YEARS     = [1, 5, 10, 20, 30];
 const MILESTONES= [1, 3, 5, 10, 15, 20, 25, 30];
 const TT = {
-  borderRadius:'14px',border:'none',
-  boxShadow:'0 8px 32px rgba(0,0,0,.10)',
-  fontFamily:T.fontBody,fontSize:'13px',padding:'14px 18px',
+  borderRadius: '14px',
+  border: '1px solid var(--border-mid)',
+  boxShadow: 'var(--sh-md)',
+  fontFamily: T.fontBody,
+  fontSize: '13px',
+  padding: '12px 16px',
+  background: 'var(--bg-card)',
+  color: 'var(--text)',
 };
 
 export function SimulationPage() {
@@ -147,11 +152,11 @@ export function SimulationPage() {
               </defs>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)"/>
               <XAxis dataKey="name" axisLine={false} tickLine={false}
-                tick={{fontSize:11,fill:T.textFaint,fontWeight:600}} dy={7}/>
+                tick={{fontSize:11,fill:'var(--text-faint)',fontWeight:600}} dy={7}/>
               <YAxis hide domain={['auto','auto']}/>
               <Tooltip contentStyle={TT}
                 formatter={(v,name)=>[cmpct(v),name]}
-                labelStyle={{fontWeight:700,color:T.text,marginBottom:6}}/>
+                labelStyle={{fontWeight:700,color:'var(--text)',marginBottom:6}}/>
               <Area name="Wealth Corpus" type="monotone" dataKey="Wealth Corpus"
                 stroke={T.goldMid} strokeWidth={2.8}
                 fill="url(#gcorpus)"

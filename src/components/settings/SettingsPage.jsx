@@ -209,7 +209,7 @@ function SettingsPageImpl() {
                 fontWeight: 700,
                 fontFamily: T.fontDisplay,
                 boxShadow: 'var(--sh-gold)',
-                border: '3px solid #fff'
+                border: '3px solid var(--bg-card)'
               }}>
                 {(partner1 || 'S').slice(0, 2).toUpperCase()}
               </div>

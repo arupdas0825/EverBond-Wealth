@@ -24,11 +24,13 @@ import { Logo } from '../common/Logo';
 
 const TT = {
   borderRadius: '14px',
-  border: 'none',
-  boxShadow: '0 8px 32px rgba(0,0,0,.10)',
+  border: '1px solid var(--border-mid)',
+  boxShadow: 'var(--sh-md)',
   fontFamily: T.fontBody,
   fontSize: '13px',
   padding: '12px 16px',
+  background: 'var(--bg-card)',
+  color: 'var(--text)',
 };
 
 function greeting(stage, name, partner2) {
@@ -1091,7 +1093,7 @@ export function Dashboard() {
                 width: '56px',
                 height: '56px',
                 borderRadius: '50%',
-                background: stage === 'Married' ? 'var(--gold-pale)' : 'var(--rose-light)',
+                background: stage === 'Married' ? 'var(--gold-pale)' : 'var(--rose-lt)',
                 color: stage === 'Married' ? T.gold : T.rose,
                 display: 'flex',
                 alignItems: 'center',
