@@ -79,6 +79,16 @@
   --onb-back:    var(--text-faint);
   --onb-border:  var(--border-mid);
   --onb-bg-card: rgba(255, 255, 255, 0.72);
+
+  /* Sidebar Theme Contrast Variables */
+  --sidebar-item-color: #1F2937;
+  --sidebar-item-hover-bg: #F4EFE3;
+  --sidebar-item-hover-border: #B8902A;
+  --sidebar-item-hover-color: #1A1714;
+  --sidebar-item-active-bg: #1A1714;
+  --sidebar-item-active-color: #FFFFFF;
+  --sidebar-item-active-border: #B8902A;
+  --sidebar-icon-opacity: 0.95;
 }
 
 [data-theme='dark'] {
@@ -113,6 +123,16 @@
   --onb-back:    #888888;
   --onb-border:  rgba(255, 255, 255, 0.12);
   --onb-bg-card: rgba(255, 255, 255, 0.05);
+
+  /* Sidebar Theme Contrast Variables */
+  --sidebar-item-color: #E5E7EB;
+  --sidebar-item-hover-bg: rgba(255, 255, 255, 0.06);
+  --sidebar-item-hover-border: #B8902A;
+  --sidebar-item-hover-color: #FFFFFF;
+  --sidebar-item-active-bg: rgba(184, 144, 42, 0.15);
+  --sidebar-item-active-color: #FFFFFF;
+  --sidebar-item-active-border: #B8902A;
+  --sidebar-icon-opacity: 0.95;
 }
 
 /* Smooth transitions for theme switcher */
@@ -197,15 +217,32 @@ input,select{font-family:var(--fb)}
 .nav-item{
   display:flex;align-items:center;gap:12px;
   padding:11px 13px;border-radius:var(--r-sm);
-  border:none;background:transparent;
-  color:var(--text-faint);font-size:.88rem;font-weight:500;
+  border:none;
+  border-left:3px solid transparent;
+  background:transparent;
+  color:var(--sidebar-item-color);font-size:.88rem;font-weight:600;
   cursor:pointer;width:100%;text-align:left;
   transition:all var(--t2) var(--ease);
 }
-.nav-item:hover{background:var(--bg-warm);color:var(--text-muted)}
-.nav-item.active{background:var(--text);color:var(--text-inv);box-shadow:var(--sh-md)}
-.nav-icon-w{font-size:1rem;width:20px;text-align:center;flex-shrink:0;opacity:.75}
-.nav-item.active .nav-icon-w{opacity:1}
+.nav-item:hover{
+  background:var(--sidebar-item-hover-bg) !important;
+  color:var(--sidebar-item-hover-color) !important;
+  border-left:3px solid var(--sidebar-item-hover-border) !important;
+}
+.nav-item.active{
+  background:var(--sidebar-item-active-bg) !important;
+  color:var(--sidebar-item-active-color) !important;
+  border-left:3px solid var(--sidebar-item-active-border) !important;
+  box-shadow:var(--sh-md);
+  font-weight: 750;
+}
+.nav-icon-w{
+  font-size:1.05rem;width:20px;text-align:center;flex-shrink:0;
+  opacity:var(--sidebar-icon-opacity) !important;
+  filter:brightness(1.2);
+  transition:all var(--t2) var(--ease);
+}
+.nav-item.active .nav-icon-w{opacity:1 !important;}
 
 .sb-footer{border-top:1px solid var(--border);padding-top:18px;margin-top:12px}
 .couple-chip{
@@ -1441,14 +1478,16 @@ input,select{font-family:var(--fb)}
 }
 
 .sidebar-locked-item {
-  color: var(--text-faint) !important;
-  opacity: 0.6;
-  cursor: not-allowed;
+  color: var(--sidebar-item-color) !important;
+  opacity: 0.70 !important;
+  cursor: pointer;
 }
 
 .sidebar-locked-item:hover {
-  background: transparent !important;
-  color: var(--text-faint) !important;
+  background: var(--sidebar-item-hover-bg) !important;
+  color: var(--sidebar-item-hover-color) !important;
+  border-left: 3px solid var(--sidebar-item-hover-border) !important;
+  opacity: 0.95 !important;
 }
 
 /* Glass Lock Screen Overlay */

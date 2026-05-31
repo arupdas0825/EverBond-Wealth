@@ -77,7 +77,7 @@ export function MobileNav({ page, setPage }) {
                 gap: '3px',
                 background: 'none',
                 border: 'none',
-                color: isActive ? T.gold : 'var(--text-faint)',
+                color: isActive ? T.gold : 'var(--text-muted)',
                 padding: '6px 10px',
                 borderRadius: '18px',
                 cursor: 'pointer',
