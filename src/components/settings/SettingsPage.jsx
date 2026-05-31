@@ -11,11 +11,46 @@ import { Logo } from '../common/Logo';
 import { Card } from '../common/Card';
 import { formatCurrency } from '../../utils/finance';
 
+class SettingsErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error("SettingsErrorBoundary caught an error", error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="fade-in" style={{ padding: '40px 24px', textAlign: 'center', background: 'var(--bg-card)', borderRadius: '18px', border: '1.5px solid var(--border)', margin: '20px auto', maxWidth: '500px' }}>
+          <h2 style={{ fontFamily: T.fontDisplay, fontSize: '1.8rem', fontWeight: 700, color: 'var(--text)', marginBottom: '12px' }}>Settings Center</h2>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem' }}>Settings module is loading.</p>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 export function SettingsPage() {
+  return (
+    <SettingsErrorBoundary>
+      <SettingsPageImpl />
+    </SettingsErrorBoundary>
+  );
+}
+
+function SettingsPageImpl() {
   const store = useFinanceStore();
   const { 
     partner1, partner2, stage, region, mode, currency, 
-    verificationStatus, partnerAccepted, onboardingCommitted,
+    verificationStatus, partnerAccepted, onboardingCommitted = {}, theme,
     setProfile, setStage, setMindset, setTheme, reset, setVerificationState
   } = store;
 
