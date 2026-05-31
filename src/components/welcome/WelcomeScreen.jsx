@@ -8,12 +8,12 @@ import { T } from '../../theme/tokens';
 import { LandingPage } from './LandingPage';
 
 const DREAM_GOALS = [
-  { key: 'home', label: 'Buy a Home', icon: '🏡', desc: 'Secure your dream property asset' },
-  { key: 'retirement', label: 'Early Retirement', icon: '🌅', desc: 'Reach financial sovereignty' },
-  { key: 'vacation', label: 'Dream Vacation', icon: '✈️', desc: 'Explore global destinations together' },
   { key: 'freedom', label: 'Financial Freedom', icon: '💸', desc: 'Break away from income constraints' },
-  { key: 'wedding', label: 'Wedding Planning', icon: '💍', desc: 'Celebrate committed partnership' },
-  { key: 'child', label: 'Child Future Planning', icon: '🎓', desc: 'Provide superior education & launchpad' }
+  { key: 'home', label: 'Dream Home', icon: '🏡', desc: 'Secure your dream property asset' },
+  { key: 'security', label: 'Family Security', icon: '🛡️', desc: 'Establish safety cushion for loved ones' },
+  { key: 'retirement', label: 'Early Retirement', icon: '🌅', desc: 'Reach financial sovereignty' },
+  { key: 'vacation', label: 'Travel Fund', icon: '✈️', desc: 'Explore global destinations' },
+  { key: 'growth', label: 'Wealth Growth', icon: '📈', desc: 'Accelerate compound wealth expansion' }
 ];
 
 export function WelcomeScreen() {
@@ -103,7 +103,7 @@ export function WelcomeScreen() {
   const getStepText = (s) => {
     if (s === 1) return "Choose Partnership Stage";
     if (s === 2) return "Configure Identity & Ledger";
-    return "Align Wealth Psychology";
+    return "Choose Your Financial Style";
   };
 
   const handleStep2Continue = () => {
@@ -601,10 +601,10 @@ export function WelcomeScreen() {
             </motion.div>
           )}
 
-          {/* STEP 3: FINANCIAL PERSONALITY */}
+          {/* STEP 3: FINANCIAL PERSONALITY & GOAL ALIGNMENT */}
           {step === 3 && (
             <motion.div
-              key="mindset"
+              key="personality-goals"
               initial={{ opacity: 0, scale: 0.96 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.96 }}
@@ -613,12 +613,13 @@ export function WelcomeScreen() {
               style={{ padding: '40px' }}
             >
               <div className="text-center mb-32">
-                <span style={{ fontSize: '0.68rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.12em', color: T.gold }}>Wealth psychology</span>
+                <span style={{ fontSize: '0.68rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.12em', color: T.gold }}>Financial Personality Setup</span>
                 <h2 style={{ fontFamily: T.fontDisplay, fontSize: '2.1rem', fontWeight: 600, color: 'var(--onb-title)', marginTop: '6px' }}>
-                  How would you describe your financial mindset?
+                  Choose Your Financial Style
                 </h2>
               </div>
 
+              {/* Financial Style Selectable Cards */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '32px' }}>
                 
                 {/* CONSERVATIVE */}
@@ -631,7 +632,7 @@ export function WelcomeScreen() {
                     <Shield size={24} style={{ color: T.sky }} />
                     <div>
                       <h3 className="onb-card-title">Conservative</h3>
-                      <p className="onb-card-desc">Safety first. 60% Needs · 30% core compounding investments. Preserving assets while growing with steady anchors.</p>
+                      <p className="onb-card-desc" style={{ color: 'var(--onb-desc)', fontSize: '0.8rem' }}>Focus on stability and lower risk.</p>
                     </div>
                   </div>
                 </div>
@@ -646,7 +647,7 @@ export function WelcomeScreen() {
                     <Compass size={24} style={{ color: T.goldMid }} />
                     <div>
                       <h3 className="onb-card-title">Balanced</h3>
-                      <p className="onb-card-desc">Optimized allocation. 55% Needs · 35% compound pool. Calculated growth index anchored with secure buffers.</p>
+                      <p className="onb-card-desc" style={{ color: 'var(--onb-desc)', fontSize: '0.8rem' }}>A mix of growth and security.</p>
                     </div>
                   </div>
                 </div>
@@ -661,154 +662,46 @@ export function WelcomeScreen() {
                     <TrendingUp size={24} style={{ color: T.rose }} />
                     <div>
                       <h3 className="onb-card-title">Aggressive</h3>
-                      <p className="onb-card-desc">Exponential compounder. 50% Needs · 40% high-octane growth portfolio. Maximum wealth speed, tolerating high volatility.</p>
+                      <p className="onb-card-desc" style={{ color: 'var(--onb-desc)', fontSize: '0.8rem' }}>Higher growth potential with higher risk.</p>
                     </div>
                   </div>
                 </div>
 
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              {/* Optional Section: Select Your Primary Goal */}
+              <div style={{ borderTop: '1px solid var(--onb-border)', paddingTop: '28px', marginTop: '12px' }}>
+                <div className="text-center mb-24">
+                  <span style={{ fontSize: '0.68rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.12em', color: T.gold }}>Optional Section</span>
+                  <h3 style={{ fontFamily: T.fontDisplay, fontSize: '1.6rem', fontWeight: 600, color: 'var(--onb-title)', marginTop: '4px' }}>
+                    Select Your Primary Goal
+                  </h3>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '32px' }}>
+                  {DREAM_GOALS.map(g => (
+                    <div 
+                      key={g.key}
+                      className={`onb-card-option ${dreamGoals.includes(g.key) ? 'selected' : ''}`}
+                      onClick={() => handleGoalToggle(g.key)}
+                      style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '4px' }}
+                    >
+                      <div style={{ fontSize: '1.4rem' }}>{g.icon}</div>
+                      <div style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--onb-title)' }}>{g.label}</div>
+                      <div style={{ fontSize: '0.72rem', color: 'var(--onb-desc)', lineHeight: 1.3 }}>{g.desc}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--onb-border)', paddingTop: '24px' }}>
                 <button className="btn-reset" style={{ width: 'auto', background: 'transparent', border: 'none', color: 'var(--onb-back)' }} onClick={() => setStep(2)}>Back</button>
-                <button 
-                  className="btn-primary" 
-                  style={{ width: 'auto', padding: '12px 28px' }}
-                  onClick={() => setStep(4)}
-                >
-                  Continue →
-                </button>
-              </div>
-            </motion.div>
-          )}
-
-          {/* STEP 4: DREAM GOALS */}
-          {step === 4 && (
-            <motion.div
-              key="goals"
-              initial={{ opacity: 0, scale: 0.96 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.96 }}
-              transition={{ duration: 0.5 }}
-              className="liquid-glass"
-              style={{ padding: '40px' }}
-            >
-              <div className="text-center mb-24">
-                <span style={{ fontSize: '0.68rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.12em', color: T.gold }}>Target Indexing</span>
-                <h2 style={{ fontFamily: T.fontDisplay, fontSize: '2.1rem', fontWeight: 600, color: 'var(--onb-title)', marginTop: '6px' }}>
-                  What dreams are we securing?
-                </h2>
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '32px' }}>
-                {DREAM_GOALS.map(g => (
-                  <div 
-                    key={g.key}
-                    className={`onb-card-option ${dreamGoals.includes(g.key) ? 'selected' : ''}`}
-                    onClick={() => handleGoalToggle(g.key)}
-                    style={{ padding: '16px' }}
-                  >
-                    <div style={{ fontSize: '1.4rem', marginBottom: '8px' }}>{g.icon}</div>
-                    <div style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--onb-title)', marginBottom: '4px' }}>{g.label}</div>
-                    <div style={{ fontSize: '0.72rem', color: 'var(--onb-desc)', lineHeight: 1.3 }}>{g.desc}</div>
-                  </div>
-                ))}
-              </div>
-
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <button className="btn-reset" style={{ width: 'auto', background: 'transparent', border: 'none', color: 'var(--onb-back)' }} onClick={() => setStep(3)}>Back</button>
-                <button 
-                  className="btn-primary" 
-                  style={{ width: 'auto', padding: '12px 28px' }}
-                  onClick={() => setStep(5)}
-                >
-                  Continue →
-                </button>
-              </div>
-            </motion.div>
-          )}
-
-          {/* STEP 5: FUTURE JOURNEY PREVIEW */}
-          {step === 5 && (
-            <motion.div
-              key="timeline-preview"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.5 }}
-              className="liquid-glass"
-              style={{ padding: '40px' }}
-            >
-              <div className="text-center mb-32">
-                <span style={{ fontSize: '0.68rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.12em', color: T.gold }}>Dynamic Foresight</span>
-                <h2 style={{ fontFamily: T.fontDisplay, fontSize: '2.1rem', fontWeight: 600, color: 'var(--onb-title)', marginTop: '6px' }}>
-                  Your Life Journey Blueprint
-                </h2>
-              </div>
-
-              {/* TIMELINE */}
-              <div style={{ position: 'relative', paddingLeft: '24px', display: 'flex', flexDirection: 'column', gap: '28px', marginBottom: '32px' }}>
-                
-                {/* Timeline vertical bar */}
-                <div style={{ position: 'absolute', left: '5px', top: '10px', bottom: '10px', width: '2px', background: 'linear-gradient(180deg, var(--gold-mid), var(--onb-border))' }} />
-
-                {/* Node 1 */}
-                <div style={{ position: 'relative' }}>
-                  <div style={{ position: 'absolute', left: '-24px', top: '4px' }}>
-                    <div className="timeline-pulse-node" style={{ background: T.sky, boxShadow: `0 0 10px ${T.sky}` }} />
-                  </div>
-                  <div>
-                    <span style={{ fontSize: '0.72rem', fontWeight: 700, color: T.sky, textTransform: 'uppercase', letterSpacing: '0.05em' }}>2026 · Launch</span>
-                    <h4 style={{ fontSize: '0.98rem', fontWeight: 600, color: 'var(--onb-title)', marginTop: '2px' }}>Core Wealth Engine Sparked</h4>
-                    <p style={{ fontSize: '0.78rem', color: 'var(--onb-desc)', marginTop: '2px' }}>Personal assets indexed and calibrated for {mindset} growth parameters.</p>
-                  </div>
-                </div>
-
-                {/* Node 2 */}
-                <div style={{ position: 'relative' }}>
-                  <div style={{ position: 'absolute', left: '-24px', top: '4px' }}>
-                    <div className="timeline-pulse-node" style={{ background: T.rose, boxShadow: `0 0 10px ${T.rose}` }} />
-                  </div>
-                  <div>
-                    <span style={{ fontSize: '0.72rem', fontWeight: 700, color: T.rose, textTransform: 'uppercase', letterSpacing: '0.05em' }}>2028 · Evolution</span>
-                    <h4 style={{ fontSize: '0.98rem', fontWeight: 600, color: 'var(--onb-title)', marginTop: '2px' }}>Cryptographic Partnership Sync</h4>
-                    <p style={{ fontSize: '0.78rem', color: 'var(--onb-desc)', marginTop: '2px' }}>Lockers merged. Dynamic dual-engine compound system fully online.</p>
-                  </div>
-                </div>
-
-                {/* Node 3 */}
-                <div style={{ position: 'relative' }}>
-                  <div style={{ position: 'absolute', left: '-24px', top: '4px' }}>
-                    <div className="timeline-pulse-node" style={{ background: T.goldMid, boxShadow: `0 0 10px ${T.goldMid}` }} />
-                  </div>
-                  <div>
-                    <span style={{ fontSize: '0.72rem', fontWeight: 700, color: T.goldMid, textTransform: 'uppercase', letterSpacing: '0.05em' }}>2032 · Target Secured</span>
-                    <h4 style={{ fontSize: '0.98rem', fontWeight: 600, color: 'var(--onb-title)', marginTop: '2px' }}>First Major Family Asset Acquired</h4>
-                    <p style={{ fontSize: '0.78rem', color: 'var(--onb-desc)', marginTop: '2px' }}>Dynamic SIP targets triggered, executing automated maturity distributions.</p>
-                  </div>
-                </div>
-
-                {/* Node 4 */}
-                <div style={{ position: 'relative' }}>
-                  <div style={{ position: 'absolute', left: '-24px', top: '4px' }}>
-                    <div className="timeline-pulse-node" style={{ background: T.sage, boxShadow: `0 0 10px ${T.sage}` }} />
-                  </div>
-                  <div>
-                    <span style={{ fontSize: '0.72rem', fontWeight: 700, color: T.sage, textTransform: 'uppercase', letterSpacing: '0.05em' }}>2045 · Sovereignty</span>
-                    <h4 style={{ fontSize: '0.98rem', fontWeight: 600, color: 'var(--onb-title)', marginTop: '2px' }}>Sovereign Financial Freedom</h4>
-                    <p style={{ fontSize: '0.78rem', color: 'var(--onb-desc)', marginTop: '2px' }}>Compounding peak unlocked. Multi-generational dynasty safety buffer secured.</p>
-                  </div>
-                </div>
-
-              </div>
-
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <button className="btn-reset" style={{ width: 'auto', background: 'transparent', border: 'none', color: 'var(--onb-back)' }} onClick={() => setStep(4)}>Back</button>
                 <button 
                   className="btn-primary" 
                   style={{ width: 'auto', padding: '12px 28px', background: `linear-gradient(135deg, ${T.goldMid} 0%, ${T.gold} 100%)` }}
                   onClick={handleCompleteOnboarding}
                 >
-                  Confirm &amp; Complete Setup
+                  Start My Financial Journey
                 </button>
               </div>
             </motion.div>
