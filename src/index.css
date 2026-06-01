@@ -1942,35 +1942,131 @@ input,select{font-family:var(--fb)}
   background: var(--sage);
 }
 
-/* ── Connect Partner Modal ── */
-.eb-connect-overlay {
+/* ── Premium Global Modal Overlay ── */
+.eb-premium-overlay {
   position: fixed;
-  inset: 0;
-  z-index: 3000;
-  background: rgba(5, 5, 8, 0.65);
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(8, 8, 12, 0.45); /* Soft dark backdrop */
   backdrop-filter: blur(20px) saturate(140%);
   -webkit-backdrop-filter: blur(20px) saturate(140%);
   display: flex;
-  justify-content: center;
   align-items: center;
-  padding: 20px;
+  justify-content: center;
+  z-index: 9999;
+  padding: 24px;
 }
 
-.eb-connect-modal {
+/* ── Premium Modal Card ── */
+.eb-premium-modal {
   width: 100%;
-  max-width: 520px;
-  padding: 36px;
+  max-width: 540px; /* Centered modal max-width 500-600px */
   background: var(--bg-card);
-  border: 1px solid var(--border-mid);
-  box-shadow: var(--sh-lg);
-  border-radius: 24px;
+  border: 1.5px solid var(--gold-border);
+  box-shadow: 
+    0 30px 70px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+  border-radius: 28px;
   position: relative;
+  overflow: hidden;
+  padding: 48px 40px; /* Large, Airy, Premium spacing */
+  display: flex;
+  flex-direction: column;
+  gap: 32px; /* Consistent airy layout gap */
+  backdrop-filter: blur(30px) saturate(190%);
+  -webkit-backdrop-filter: blur(30px) saturate(190%);
+  transition: background 0.4s var(--ease), border-color 0.4s var(--ease);
 }
 
+/* ── Close Button ── */
+.eb-modal-close {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--border-mid);
+  background: var(--bg-warm);
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 10;
+}
+
+.eb-modal-close:hover {
+  background: var(--border-mid);
+  color: var(--text);
+  transform: rotate(90deg) scale(1.05);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+/* ── Modal Header Content ── */
+.eb-modal-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 16px;
+}
+
+.eb-modal-icon-container {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--gold-mid) 0%, var(--gold) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 24px rgba(184, 144, 42, 0.3);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.eb-modal-title {
+  font-family: var(--fd);
+  font-size: 1.85rem;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.01em;
+}
+
+.eb-modal-desc {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  line-height: 1.55;
+  max-width: 400px;
+}
+
+/* ── Responsive Styling: Tablet / Mobile Bottom Sheet ── */
 @media (max-width: 600px) {
-  .eb-connect-modal {
-    padding: 24px 20px;
-    border-radius: 20px;
+  .eb-premium-overlay {
+    padding: 0;
+    align-items: flex-end; /* Mobile Bottom Sheet */
+  }
+
+  .eb-premium-modal {
+    max-width: 100%;
+    border-radius: 28px 28px 0 0; /* Bottom sheet rounded corners */
+    padding: 40px 24px 48px;
+    gap: 28px;
+    border-bottom: none;
+    border-left: none;
+    border-right: none;
+    box-shadow: 0 -15px 40px rgba(0, 0, 0, 0.2);
+  }
+  
+  .eb-modal-close {
+    top: 20px;
+    right: 20px;
   }
 }
 

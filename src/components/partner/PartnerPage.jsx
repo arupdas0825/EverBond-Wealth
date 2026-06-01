@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useFinanceStore } from '../../store/useFinanceStore';
 import { T } from '../../theme/tokens';
@@ -190,6 +191,47 @@ export function PartnerPage({ setPage }) {
   // Success acceptance screen & confetti particles local state
   const [showSuccessOverlay, setShowSuccessOverlay] = useState(false);
   const [confettiParticles, setConfettiParticles] = useState([]);
+
+  // Responsive mobile media listener
+  const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth < 600 : false);
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 600);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Programmatic Scroll Lock targeting document.body when modals mount
+  useEffect(() => {
+    const shouldLock = isModalOpen || showDisconnectConfirm;
+    if (shouldLock) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isModalOpen, showDisconnectConfirm]);
+
+  // Premium Custom Spring Animation Variants (Responsive Center Card vs Bottom Sheet)
+  const premiumModalVariants = {
+    hidden: isMobile 
+      ? { y: '100%', opacity: 1, scale: 1 } 
+      : { y: 20, opacity: 0, scale: 0.95 },
+    visible: { 
+      y: 0, 
+      opacity: 1, 
+      scale: 1,
+      transition: { 
+        type: 'spring', 
+        stiffness: isMobile ? 300 : 260, 
+        damping: isMobile ? 30 : 24 
+      } 
+    },
+    exit: isMobile 
+      ? { y: '100%', opacity: 1, scale: 1, transition: { duration: 0.25, ease: 'easeIn' } } 
+      : { y: 20, opacity: 0, scale: 0.95, transition: { duration: 0.2 } }
+  };
 
   // Init EverBond ID on mount
   useEffect(() => {
@@ -1047,325 +1089,252 @@ export function PartnerPage({ setPage }) {
       {/* ══════════════════════════════════════════════════════
          Connect Partner Modal
       ══════════════════════════════════════════════════════ */}
-      <AnimatePresence>
-        {isModalOpen && (
-          <motion.div
-            key="modal-overlay"
-            variants={modalOverlayVariants}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-            style={{
-              position: 'fixed',
-              inset: 0,
-              zIndex: 4000,
-              background: 'rgba(5, 5, 8, 0.65)',
-              backdropFilter: 'blur(20px)',
-              WebkitBackdropFilter: 'blur(20px)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '20px',
-            }}
-            onClick={(e) => { if (e.target === e.currentTarget) setIsModalOpen(false); }}
-          >
+      {createPortal(
+        <AnimatePresence>
+          {isModalOpen && (
             <motion.div
-              variants={modalCardVariants}
+              key="modal-overlay"
+              variants={modalOverlayVariants}
               initial="hidden"
               animate="visible"
               exit="exit"
-              className="liquid-glass"
-              style={{
-                width: '100%',
-                maxWidth: '480px',
-                padding: '40px 32px',
-                background: 'var(--bg-card)',
-                border: '1.5px solid var(--gold-border)',
-                boxShadow: 'var(--sh-lg)',
-                borderRadius: '24px',
-                position: 'relative',
-              }}
+              className="eb-premium-overlay"
+              onClick={(e) => { if (e.target === e.currentTarget) setIsModalOpen(false); }}
             >
-              {/* Close Button */}
-              <button
-                onClick={() => setIsModalOpen(false)}
-                style={{
-                  position: 'absolute',
-                  top: '16px',
-                  right: '16px',
-                  width: '34px',
-                  height: '34px',
-                  borderRadius: '50%',
-                  border: '1px solid var(--border-mid)',
-                  background: 'var(--bg-warm)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  cursor: 'pointer',
-                  color: 'var(--text-faint)',
-                  transition: 'all 0.2s ease',
-                }}
+              <motion.div
+                variants={premiumModalVariants}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+                className="eb-premium-modal"
               >
-                <X size={16} />
-              </button>
-
-              {/* Header */}
-              <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-                {/* Icon */}
-                <div style={{
-                  width: '56px',
-                  height: '56px',
-                  borderRadius: '50%',
-                  background: `linear-gradient(135deg, ${T.goldMid} 0%, ${T.gold} 100%)`,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  margin: '0 auto 18px',
-                  boxShadow: 'var(--sh-gold)',
-                }}>
-                  <Key size={24} style={{ color: '#fff' }} />
-                </div>
-
-                <h2 style={{
-                  fontFamily: T.fontDisplay,
-                  fontSize: '1.6rem',
-                  fontWeight: 700,
-                  color: 'var(--text)',
-                  marginBottom: '8px',
-                }}>
-                  Connect Your Partner
-                </h2>
-                <p style={{
-                  fontSize: '0.85rem',
-                  color: 'var(--text-muted)',
-                  lineHeight: 1.5,
-                  maxWidth: '360px',
-                  margin: '0 auto',
-                }}>
-                  Enter your partner's EverBond ID to begin a shared financial journey.
-                </p>
-              </div>
-
-              {/* Form */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                {/* Partner EverBond ID */}
-                <div>
-                  <label style={{
-                    fontSize: '0.65rem',
-                    fontWeight: 800,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.09em',
-                    color: T.gold,
-                    display: 'block',
-                    marginBottom: '8px',
-                  }}>
-                    Partner EverBond ID
-                  </label>
-                  <input
-                    type="text"
-                    className="onb-input-glow"
-                    value={partnerIdInput}
-                    onChange={(e) => setPartnerIdInput(e.target.value.toUpperCase())}
-                    placeholder="EB-XXXXXX"
-                    style={{ fontFamily: 'monospace', letterSpacing: '0.06em' }}
-                    autoFocus
-                  />
-                </div>
-
-                {/* Partner Name */}
-                <div>
-                  <label style={{
-                    fontSize: '0.65rem',
-                    fontWeight: 800,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.09em',
-                    color: T.gold,
-                    display: 'block',
-                    marginBottom: '8px',
-                  }}>
-                    Partner Name
-                  </label>
-                  <input
-                    type="text"
-                    className="onb-input-glow"
-                    value={partnerNameInput}
-                    onChange={(e) => setPartnerNameInput(e.target.value)}
-                    placeholder="Partner's name"
-                  />
-                </div>
-
-                {/* Relationship Anniversary */}
-                <div>
-                  <label style={{
-                    fontSize: '0.65rem',
-                    fontWeight: 800,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.09em',
-                    color: T.gold,
-                    display: 'block',
-                    marginBottom: '8px',
-                  }}>
-                    Relationship Anniversary
-                  </label>
-                  <input
-                    type="date"
-                    className="onb-input-glow"
-                    value={dateInput}
-                    onChange={(e) => setDateInput(e.target.value)}
-                  />
-                </div>
-
-                {/* Submit Button */}
-                <motion.button
-                  whileHover={{ scale: 1.02, y: -1 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={handleSubmitConnection}
-                  disabled={!partnerIdInput.trim()}
-                  style={{
-                    width: '100%',
-                    padding: '15px 24px',
-                    borderRadius: 'var(--r-md)',
-                    background: partnerIdInput.trim()
-                      ? `linear-gradient(135deg, ${T.goldMid} 0%, ${T.gold} 100%)`
-                      : 'var(--bg-muted)',
-                    border: 'none',
-                    color: partnerIdInput.trim() ? '#fff' : 'var(--text-faint)',
-                    fontSize: '0.92rem',
-                    fontWeight: 700,
-                    cursor: partnerIdInput.trim() ? 'pointer' : 'not-allowed',
-                    boxShadow: partnerIdInput.trim() ? '0 8px 28px rgba(184,144,42,0.35)' : 'none',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '10px',
-                    marginTop: '4px',
-                    transition: 'background 0.25s ease, box-shadow 0.25s ease',
-                  }}
+                {/* Close Button */}
+                <button
+                  className="eb-modal-close"
+                  onClick={() => setIsModalOpen(false)}
+                  aria-label="Close modal"
                 >
-                  <Sparkles size={17} />
-                  Send Connection Request
-                </motion.button>
-              </div>
+                  <X size={18} />
+                </button>
+
+                {/* Header */}
+                <div className="eb-modal-header">
+                  {/* Icon */}
+                  <div className="eb-modal-icon-container">
+                    <Key size={24} />
+                  </div>
+
+                  <h2 className="eb-modal-title">
+                    Connect Your Partner
+                  </h2>
+                  <p className="eb-modal-desc">
+                    Enter your partner's EverBond ID to begin a shared financial journey.
+                  </p>
+                </div>
+
+                {/* Form */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                  {/* Partner EverBond ID */}
+                  <div>
+                    <label style={{
+                      fontSize: '0.65rem',
+                      fontWeight: 800,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.09em',
+                      color: T.gold,
+                      display: 'block',
+                      marginBottom: '8px',
+                    }}>
+                      Partner EverBond ID
+                    </label>
+                    <input
+                      type="text"
+                      className="onb-input-glow eb-id-input"
+                      value={partnerIdInput}
+                      onChange={(e) => setPartnerIdInput(e.target.value.toUpperCase())}
+                      placeholder="EB-XXXXXX"
+                      autoFocus
+                    />
+                  </div>
+
+                  {/* Partner Name */}
+                  <div>
+                    <label style={{
+                      fontSize: '0.65rem',
+                      fontWeight: 800,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.09em',
+                      color: T.gold,
+                      display: 'block',
+                      marginBottom: '8px',
+                    }}>
+                      Partner Name
+                    </label>
+                    <input
+                      type="text"
+                      className="onb-input-glow"
+                      value={partnerNameInput}
+                      onChange={(e) => setPartnerNameInput(e.target.value)}
+                      placeholder="Partner's name"
+                    />
+                  </div>
+
+                  {/* Relationship Anniversary */}
+                  <div>
+                    <label style={{
+                      fontSize: '0.65rem',
+                      fontWeight: 800,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.09em',
+                      color: T.gold,
+                      display: 'block',
+                      marginBottom: '8px',
+                    }}>
+                      Relationship Anniversary
+                    </label>
+                    <input
+                      type="date"
+                      className="onb-input-glow"
+                      value={dateInput}
+                      onChange={(e) => setDateInput(e.target.value)}
+                    />
+                  </div>
+
+                  {/* Submit Button */}
+                  <motion.button
+                    whileHover={{ scale: 1.02, y: -1 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={handleSubmitConnection}
+                    disabled={!partnerIdInput.trim()}
+                    style={{
+                      width: '100%',
+                      padding: '16px 24px',
+                      borderRadius: 'var(--r-md)',
+                      background: partnerIdInput.trim()
+                        ? `linear-gradient(135deg, ${T.goldMid} 0%, ${T.gold} 100%)`
+                        : 'var(--bg-muted)',
+                      border: 'none',
+                      color: partnerIdInput.trim() ? '#fff' : 'var(--text-faint)',
+                      fontSize: '0.92rem',
+                      fontWeight: 700,
+                      cursor: partnerIdInput.trim() ? 'pointer' : 'not-allowed',
+                      boxShadow: partnerIdInput.trim() ? '0 8px 28px rgba(184,144,42,0.35)' : 'none',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '10px',
+                      marginTop: '8px',
+                      transition: 'background 0.25s ease, box-shadow 0.25s ease',
+                    }}
+                  >
+                    <Sparkles size={17} />
+                    Send Connection Request
+                  </motion.button>
+                </div>
+              </motion.div>
             </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
 
       {/* ── Disconnect Confirmation Modal ── */}
-      <AnimatePresence>
-        {showDisconnectConfirm && (
-          <motion.div
-            key="disconnect-modal-overlay"
-            variants={modalOverlayVariants}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-            style={{
-              position: 'fixed',
-              inset: 0,
-              zIndex: 4100,
-              background: 'rgba(5, 5, 8, 0.7)',
-              backdropFilter: 'blur(20px)',
-              WebkitBackdropFilter: 'blur(20px)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '20px',
-            }}
-            onClick={(e) => { if (e.target === e.currentTarget) setShowDisconnectConfirm(false); }}
-          >
+      {createPortal(
+        <AnimatePresence>
+          {showDisconnectConfirm && (
             <motion.div
-              variants={modalCardVariants}
+              key="disconnect-modal-overlay"
+              variants={modalOverlayVariants}
               initial="hidden"
               animate="visible"
               exit="exit"
-              className="liquid-glass"
-              style={{
-                width: '100%',
-                maxWidth: '440px',
-                padding: '36px 28px',
-                background: 'var(--bg-card)',
-                border: '1.5px solid var(--rose-border)',
-                boxShadow: '0 20px 50px rgba(208, 92, 114, 0.15)',
-                borderRadius: '24px',
-                position: 'relative',
-                textAlign: 'center',
-              }}
+              className="eb-premium-overlay"
+              style={{ zIndex: 10000 }}
+              onClick={(e) => { if (e.target === e.currentTarget) setShowDisconnectConfirm(false); }}
             >
-              <div style={{
-                width: '56px',
-                height: '56px',
-                borderRadius: '50%',
-                background: 'var(--rose-lt, rgba(208,92,114,0.1))',
-                border: '1px solid var(--rose-border)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                margin: '0 auto 20px',
-                color: 'var(--rose)',
-              }}>
-                <X size={28} />
-              </div>
-
-              <h3 style={{
-                fontFamily: T.fontDisplay,
-                fontSize: '1.45rem',
-                fontWeight: 700,
-                color: 'var(--text)',
-                marginBottom: '8px',
-              }}>
-                Disconnect Partner?
-              </h3>
-              <p style={{
-                fontSize: '0.85rem',
-                color: 'var(--text-muted)',
-                lineHeight: 1.5,
-                marginBottom: '28px',
-              }}>
-                Are you sure you want to disconnect? This will remove access to shared planning features, couple dashboard, and joint timeline tracking.
-              </p>
-
-              <div style={{ display: 'flex', gap: '12px' }}>
+              <motion.div
+                variants={premiumModalVariants}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+                className="eb-premium-modal"
+                style={{ 
+                  maxWidth: '460px',
+                  borderColor: 'var(--rose-border)',
+                  boxShadow: '0 30px 60px rgba(208, 92, 114, 0.12)'
+                }}
+              >
+                {/* Close Button */}
                 <button
+                  className="eb-modal-close"
                   onClick={() => setShowDisconnectConfirm(false)}
-                  style={{
-                    flex: 1,
-                    padding: '12px 20px',
-                    borderRadius: 'var(--r-pill)',
-                    border: '1.5px solid var(--border-mid)',
-                    background: 'var(--bg-card)',
-                    color: 'var(--text-muted)',
-                    fontSize: '0.85rem',
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease',
-                  }}
+                  aria-label="Close modal"
                 >
-                  Cancel
+                  <X size={18} />
                 </button>
-                <button
-                  onClick={handleDisconnect}
-                  style={{
-                    flex: 1,
-                    padding: '12px 20px',
-                    borderRadius: 'var(--r-pill)',
-                    border: 'none',
-                    background: `linear-gradient(135deg, ${T.rose} 0%, #a33b52 100%)`,
-                    color: '#fff',
-                    fontSize: '0.85rem',
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                    boxShadow: '0 6px 20px rgba(208,92,114,0.25)',
-                    transition: 'all 0.2s ease',
-                  }}
-                >
-                  Disconnect
-                </button>
-              </div>
+
+                {/* Header */}
+                <div className="eb-modal-header">
+                  <div className="eb-modal-icon-container" style={{
+                    background: 'var(--rose-lt, rgba(208,92,114,0.1))',
+                    border: '1px solid var(--rose-border)',
+                    color: 'var(--rose)',
+                    boxShadow: 'none'
+                  }}>
+                    <X size={28} />
+                  </div>
+
+                  <h3 className="eb-modal-title">
+                    Disconnect Partner?
+                  </h3>
+                  <p className="eb-modal-desc" style={{ maxWidth: '360px' }}>
+                    Are you sure you want to disconnect? This will remove access to shared planning features, couple dashboard, and joint timeline tracking.
+                  </p>
+                </div>
+
+                <div style={{ display: 'flex', gap: '12px', width: '100%' }}>
+                  <button
+                    onClick={() => setShowDisconnectConfirm(false)}
+                    style={{
+                      flex: 1,
+                      padding: '14px 20px',
+                      borderRadius: 'var(--r-pill)',
+                      border: '1.5px solid var(--border-mid)',
+                      background: 'var(--bg-card)',
+                      color: 'var(--text-muted)',
+                      fontSize: '0.85rem',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                    }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleDisconnect}
+                    style={{
+                      flex: 1,
+                      padding: '14px 20px',
+                      borderRadius: 'var(--r-pill)',
+                      border: 'none',
+                      background: `linear-gradient(135deg, ${T.rose} 0%, #a33b52 100%)`,
+                      color: '#fff',
+                      fontSize: '0.85rem',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      boxShadow: '0 6px 20px rgba(208,92,114,0.25)',
+                      transition: 'all 0.2s ease',
+                    }}
+                  >
+                    Disconnect
+                  </button>
+                </div>
+              </motion.div>
             </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
 
       {/* ── Success Connection Overlay (Confetti Effect) ── */}
       <AnimatePresence>
