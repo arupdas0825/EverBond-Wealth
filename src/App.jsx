@@ -19,6 +19,7 @@ import { ThemeToggle } from './components/common/ThemeToggle';
 import { ToastProvider } from './components/common/Toast';
 import { CookieConsent } from './components/common/CookieConsent';
 import { PrivacyDrawer } from './components/common/PrivacyDrawer';
+import { ResetModal } from './components/common/ResetModal';
 import './index.css';
 
 /**
@@ -74,6 +75,15 @@ export default function App() {
   const [page,setPage] = useState('dashboard');
   const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1024);
   const [activePolicyDoc, setActivePolicyDoc] = useState(null);
+  const [showResetModal, setShowResetModal] = useState(false);
+
+  const handleConfirmReset = () => {
+    const storeReset = useFinanceStore.getState().reset;
+    storeReset();
+    localStorage.removeItem('eb_v6');
+    setShowResetModal(false);
+    window.location.reload();
+  };
 
   // Initialize EverBond ID on first load
   useEffect(() => { initEverBondId(); }, []);
@@ -151,7 +161,7 @@ export default function App() {
               <Logo size={32} />
             </div>
           )}
-          {!isMobile && <Sidebar page={page} setPage={setPage}/>}
+          {!isMobile && <Sidebar page={page} setPage={setPage} onReset={() => setShowResetModal(true)}/>}
           <main className="eb-main">
             <div className="eb-page">
               {page==='dashboard'  && <Dashboard setPage={setPage}/>}
@@ -166,7 +176,7 @@ export default function App() {
               {page==='settings' && <SettingsPage setActivePolicyDoc={setActivePolicyDoc} />}
             </div>
           </main>
-          {isMobile && <MobileNav page={page} setPage={setPage}/>}
+          {isMobile && <MobileNav page={page} setPage={setPage} onReset={() => setShowResetModal(true)}/>}
         </div>
       </OnboardingGuard>
 
@@ -182,6 +192,14 @@ export default function App() {
           />
         )}
       </AnimatePresence>
+
+      {/* Global Premium Reset Workspace Modal */}
+      <ResetModal 
+        isOpen={showResetModal} 
+        onClose={() => setShowResetModal(false)} 
+        onConfirm={handleConfirmReset} 
+        theme={theme}
+      />
     </ToastProvider>
   );
 }

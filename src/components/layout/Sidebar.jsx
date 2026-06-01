@@ -17,7 +17,7 @@ const NAV = [
   { key: 'settings', icon: '⚙️', label: 'Settings' }
 ];
 
-export function Sidebar({ page, setPage }) {
+export function Sidebar({ page, setPage, onReset }) {
   const { 
     partner1, 
     partner2, 
@@ -34,7 +34,11 @@ export function Sidebar({ page, setPage }) {
   } = useFinanceStore();
 
   const handleReset = () => {
-    if (window.confirm('Reset EverBond Wealth? All data will be cleared.')) reset();
+    if (onReset) {
+      onReset();
+    } else {
+      if (window.confirm('Reset EverBond Wealth? All data will be cleared.')) reset();
+    }
   };
 
   const isLocked = (n) => {
