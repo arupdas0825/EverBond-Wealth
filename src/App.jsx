@@ -83,6 +83,55 @@ export default function App() {
     document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
 
+  // Reset scroll on browser refresh / initial load / mount
+  useEffect(() => {
+    if ('scrollRestoration' in window.history) {
+      window.history.scrollRestoration = 'manual';
+    }
+
+    const performScrollReset = () => {
+      window.scrollTo({
+        top: 0,
+        left: 0,
+        behavior: 'instant'
+      });
+
+      const mainEl = document.querySelector('.eb-main');
+      if (mainEl) mainEl.scrollTop = 0;
+
+      const sidebarEl = document.querySelector('.eb-sidebar');
+      if (sidebarEl) sidebarEl.scrollTop = 0;
+
+      const navGroupEl = document.querySelector('.nav-group');
+      if (navGroupEl) navGroupEl.scrollTop = 0;
+    };
+
+    performScrollReset();
+
+    window.addEventListener('load', performScrollReset);
+    return () => {
+      window.removeEventListener('load', performScrollReset);
+    };
+  }, []);
+
+  // Reset scroll position on every route/page change
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: 'instant'
+    });
+
+    const mainEl = document.querySelector('.eb-main');
+    if (mainEl) mainEl.scrollTop = 0;
+
+    const sidebarEl = document.querySelector('.eb-sidebar');
+    if (sidebarEl) sidebarEl.scrollTop = 0;
+
+    const navGroupEl = document.querySelector('.nav-group');
+    if (navGroupEl) navGroupEl.scrollTop = 0;
+  }, [page]);
+
   // Track window width for clean conditional navigation rendering (removes from DOM)
   useEffect(() => {
     const handleResize = () => setWindowWidth(window.innerWidth);
