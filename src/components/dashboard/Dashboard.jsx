@@ -20,6 +20,7 @@ import {
   TrendingDown, PlusCircle, Compass, HelpCircle, BarChart3, Info
 } from 'lucide-react';
 import { Logo } from '../common/Logo';
+import { useToast } from '../common/Toast';
 
 const TT = {
   borderRadius: '14px',
@@ -53,6 +54,7 @@ function greeting(stage, name, partner2) {
 }
 
 export function Dashboard({ setPage }) {
+  const toast = useToast();
   const { 
     partner1, 
     partner2, 
@@ -79,7 +81,9 @@ export function Dashboard({ setPage }) {
     onboardingMarried,
     goalTargets,
     setGoalTargets,
-    addMilestone
+    addMilestone,
+    simulateIncomingRequest,
+    incomingRequest
   } = useFinanceStore();
 
   const theme = useFinanceStore(s => s.theme);
@@ -312,6 +316,53 @@ export function Dashboard({ setPage }) {
               <Users size={16} /> View Details
             </button>
           </div>
+        ) : connectionStatus === 'received' ? (
+          <div style={{ position: 'relative', zIndex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '20px' }}>
+            <div>
+              <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.gold }}>Ecosystem Connection</span>
+              <h3 style={{ fontFamily: T.fontDisplay, fontSize: '1.4rem', fontWeight: 700, color: 'var(--text)', marginTop: '4px', marginBottom: '8px' }}>
+                Request Received
+              </h3>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.82rem' }}>
+                <span style={{ color: 'var(--text-muted)' }}>Status:</span>
+                <strong style={{ color: T.gold }}>🔴 Incoming Request</strong>
+              </div>
+              <div style={{ fontSize: '0.85rem', color: 'var(--text)', marginTop: '8px' }}>
+                <strong>{incomingRequest?.senderName || 'Arup'}</strong> wants to connect with you.
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button
+                className="btn-primary"
+                style={{
+                  background: `linear-gradient(135deg, ${T.goldMid} 0%, ${T.gold} 100%)`,
+                  fontSize: '0.85rem',
+                  padding: '10px 20px',
+                  width: 'auto',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  boxShadow: 'var(--sh-gold)',
+                  borderRadius: '100px',
+                }}
+                onClick={() => setPage('partner')}
+              >
+                <Sparkles size={15} /> Accept Invitation
+              </button>
+              <button
+                className="btn-secondary"
+                style={{
+                  fontSize: '0.85rem',
+                  padding: '10px 16px',
+                  width: 'auto',
+                  borderRadius: '100px',
+                }}
+                onClick={() => setPage('partner')}
+              >
+                View Details
+              </button>
+            </div>
+          </div>
         ) : (
           <div style={{ position: 'relative', zIndex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '24px' }}>
             <div>
@@ -321,7 +372,7 @@ export function Dashboard({ setPage }) {
               </h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '12px' }}>
                 <span style={{ fontSize: '0.72rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-muted)' }}>Benefits unlocked after connecting:</span>
-                <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', marginTop: '4px' }}>
+                <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', marginTop: '4px', alignItems: 'center' }}>
                   <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px' }}>
                     <span style={{ color: T.sage }}>✓</span> Shared Goals
                   </span>
@@ -330,6 +381,27 @@ export function Dashboard({ setPage }) {
                   </span>
                   <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px' }}>
                     <span style={{ color: T.sage }}>✓</span> Couple Dashboard
+                  </span>
+                  <span 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      simulateIncomingRequest({
+                        senderEverBondId: 'EB-A7K92X',
+                        senderName: 'Arup',
+                        relationshipDate: '2025-02-15'
+                      });
+                      toast.info('Simulated request received! Go to Partner page to accept.');
+                    }}
+                    style={{ 
+                      fontSize: '0.72rem', 
+                      color: T.gold, 
+                      cursor: 'pointer', 
+                      marginLeft: '10px', 
+                      textDecoration: 'underline',
+                      fontWeight: 700 
+                    }}
+                  >
+                    📥 Simulate Mock Request
                   </span>
                 </div>
               </div>

@@ -29,7 +29,8 @@ export function Sidebar({ page, setPage }) {
     partnerAccepted,
     connectionStatus,
     everBondId,
-    setVerificationState
+    setVerificationState,
+    incomingRequest
   } = useFinanceStore();
 
   const handleReset = () => {
@@ -153,6 +154,23 @@ export function Sidebar({ page, setPage }) {
                 <span style={{ fontSize: '0.6rem', fontFamily: 'monospace', color: 'var(--text-faint)' }}>{everBondId}</span>
               )}
             </div>
+          ) : connectionStatus === 'received' ? (
+            <div 
+              className="couple-chip" 
+              onClick={() => setPage('partner')}
+              style={{ border: '1.5px solid var(--gold-border)', background: 'var(--gold-pale)', flexDirection: 'column', alignItems: 'flex-start', gap: '6px', cursor: 'pointer' }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--rose)', display: 'inline-block' }} />
+                <span style={{ fontSize: '0.72rem', fontWeight: 800, textTransform: 'uppercase', color: T.gold }}>Request Received!</span>
+              </div>
+              <div className="couple-names" style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+                {incomingRequest?.senderName || 'Partner'} wants to connect
+              </div>
+              <span style={{ fontSize: '0.68rem', fontWeight: 700, color: T.gold, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                🔗 Review Request →
+              </span>
+            </div>
           ) : connectionStatus === 'connected' && stage === 'Committed' ? (
             <div className="couple-chip" style={{ border: `1.5px solid ${T.sage}`, background: 'var(--sage-lt)', flexDirection: 'column', alignItems: 'flex-start' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -225,7 +243,8 @@ export function MobileNav({ page, setPage }) {
     partnerAccepted,
     connectionStatus,
     everBondId,
-    setVerificationState
+    setVerificationState,
+    incomingRequest
   } = useFinanceStore();
   const [open, setOpen] = useState(false);
 
@@ -337,6 +356,27 @@ export function MobileNav({ page, setPage }) {
                 {everBondId && (
                   <div style={{ fontSize: '.62rem', fontFamily: 'monospace', color: 'var(--text-faint)', marginTop: '2px' }}>{everBondId}</div>
                 )}
+              </div>
+            ) : connectionStatus === 'received' ? (
+              <div 
+                onClick={() => { setPage('partner'); setOpen(false); }}
+                style={{ display: 'flex', flexDirection: 'column', gap: 6, padding: '8px 0 14px', borderBottom: '1px solid var(--border)', marginBottom: 14, cursor: 'pointer' }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ fontSize: '1.4rem' }}>📩</span>
+                  <div>
+                    <div style={{ fontSize: '.63rem', fontWeight: 700, textTransform: 'uppercase', color: T.gold, marginBottom: 2, display: 'flex', alignItems: 'center', gap: 4 }}>
+                      <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--rose)', display: 'inline-block' }} />
+                      Request Received
+                    </div>
+                    <div style={{ fontSize: '.9rem', fontWeight: 600, color: 'var(--text)' }}>
+                      {incomingRequest?.senderName || 'Partner'} wants to connect
+                    </div>
+                  </div>
+                </div>
+                <div style={{ fontSize: '.72rem', fontWeight: 700, color: T.gold, marginTop: 2 }}>
+                  🔗 Review Invitation →
+                </div>
               </div>
             ) : connectionStatus === 'connected' ? (
               <div style={{

@@ -171,6 +171,9 @@ export function PartnerPage({ setPage }) {
     disconnectPartner,
     setStage,
     setVerificationState,
+    simulateIncomingRequest,
+    declineRequest,
+    incomingRequest,
   } = useFinanceStore();
 
   // Local state
@@ -183,6 +186,10 @@ export function PartnerPage({ setPage }) {
   const [simulateProgress, setSimulateProgress] = useState(0);
   const [showDisconnectConfirm, setShowDisconnectConfirm] = useState(false);
   const simulateTimerRef = useRef(null);
+
+  // Success acceptance screen & confetti particles local state
+  const [showSuccessOverlay, setShowSuccessOverlay] = useState(false);
+  const [confettiParticles, setConfettiParticles] = useState([]);
 
   // Init EverBond ID on mount
   useEffect(() => {
@@ -214,6 +221,46 @@ export function PartnerPage({ setPage }) {
     setCopied(true);
     toast.success('EverBond ID copied.');
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleSimulateIncomingRequest = () => {
+    simulateIncomingRequest({
+      senderEverBondId: 'EB-A7K92X',
+      senderName: 'Arup',
+      relationshipDate: '2025-02-15'
+    });
+    toast.info('Simulated connection request received from Arup!');
+  };
+
+  const handleDeclineRequest = () => {
+    declineRequest();
+    toast.info('Connection request declined.');
+  };
+
+  const handleAcceptRequest = () => {
+    // Generate premium gold and champagne falling particles
+    const particles = Array.from({ length: 120 }).map((_, i) => ({
+      id: i,
+      x: Math.random() * 100,
+      y: -10 - Math.random() * 20,
+      size: Math.random() * 8 + 4,
+      color: ['#b8902a', '#e5c158', '#f3d97e', '#dfb03e', '#ffffff', '#faeed1'][Math.floor(Math.random() * 6)],
+      delay: Math.random() * 1.5,
+      duration: Math.random() * 3 + 2,
+      sway: Math.random() * 50 - 25,
+      rotation: Math.random() * 720,
+    }));
+    setConfettiParticles(particles);
+    setShowSuccessOverlay(true);
+
+    // Transition state after 3.5 seconds
+    setTimeout(() => {
+      const incoming = useFinanceStore.getState().incomingRequest;
+      acceptConnection({ partnerName: incoming?.senderName || partner2 || 'Partner' });
+      if (stage === 'Single') setStage('Committed');
+      setShowSuccessOverlay(false);
+      toast.success('Connection established successfully!');
+    }, 3500);
   };
 
   const handleSubmitConnection = () => {
@@ -250,32 +297,24 @@ export function PartnerPage({ setPage }) {
     setPartnerIdInput('');
     setPartnerNameInput('');
     setDateInput('');
-
-    // Auto-accept after 2s
-    const name = partnerNameInput.trim();
-    setTimeout(() => {
-      acceptConnection({ partnerName: name });
-      if (stage === 'Single') setStage('Committed');
-    }, 2000);
   };
 
   const handleSimulateAccept = () => {
     setIsSimulating(true);
     setSimulateProgress(0);
 
-    // Animate progress over 2 seconds
+    // Animate progress over 1.5 seconds
     const start = Date.now();
     const tick = () => {
       const elapsed = Date.now() - start;
-      const pct = Math.min(elapsed / 2000, 1);
+      const pct = Math.min(elapsed / 1500, 1);
       setSimulateProgress(pct);
       if (pct < 1) {
         requestAnimationFrame(tick);
       } else {
-        acceptConnection({ partnerName: partner2 || 'Partner' });
-        if (stage === 'Single') setStage('Committed');
         setIsSimulating(false);
-        toast.success('Partner connected successfully!');
+        // Trigger success animation overlay
+        handleAcceptRequest();
       }
     };
     requestAnimationFrame(tick);
@@ -429,31 +468,57 @@ export function PartnerPage({ setPage }) {
                     Connect your partner to unlock collaborative financial planning.
                   </p>
 
-                  {/* CTA Button */}
-                  <motion.button
-                    whileHover={{ scale: 1.03, y: -2 }}
-                    whileTap={{ scale: 0.97 }}
-                    onClick={() => setIsModalOpen(true)}
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '10px',
-                      padding: '14px 32px',
-                      borderRadius: 'var(--r-pill)',
-                      background: `linear-gradient(135deg, ${T.goldMid} 0%, ${T.gold} 100%)`,
-                      border: 'none',
-                      color: '#fff',
-                      fontSize: '0.95rem',
-                      fontWeight: 700,
-                      cursor: 'pointer',
-                      boxShadow: '0 8px 28px rgba(184,144,42,0.35)',
-                      letterSpacing: '0.01em',
-                    }}
-                  >
-                    <Link2 size={18} />
-                    Connect Partner
-                    <ArrowRight size={16} />
-                  </motion.button>
+                  {/* CTA Buttons */}
+                  <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap', maxWidth: '440px', margin: '0 auto 28px' }}>
+                    <motion.button
+                      whileHover={{ scale: 1.03, y: -2 }}
+                      whileTap={{ scale: 0.97 }}
+                      onClick={() => setIsModalOpen(true)}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '10px',
+                        padding: '14px 32px',
+                        borderRadius: 'var(--r-pill)',
+                        background: `linear-gradient(135deg, ${T.goldMid} 0%, ${T.gold} 100%)`,
+                        border: 'none',
+                        color: '#fff',
+                        fontSize: '0.95rem',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        boxShadow: '0 8px 28px rgba(184,144,42,0.35)',
+                        letterSpacing: '0.01em',
+                      }}
+                    >
+                      <Link2 size={18} />
+                      Connect Partner
+                      <ArrowRight size={16} />
+                    </motion.button>
+
+                    <motion.button
+                      whileHover={{ scale: 1.03, y: -2 }}
+                      whileTap={{ scale: 0.97 }}
+                      onClick={handleSimulateIncomingRequest}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '10px',
+                        padding: '14px 28px',
+                        borderRadius: 'var(--r-pill)',
+                        background: 'transparent',
+                        border: '1.5px solid var(--gold-border)',
+                        color: T.gold,
+                        fontSize: '0.95rem',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        letterSpacing: '0.01em',
+                        transition: 'all 0.2s ease',
+                      }}
+                    >
+                      <Users size={18} />
+                      Receive Mock Request
+                    </motion.button>
+                  </div>
 
                   {/* Locked Features Grid */}
                   <div style={{ marginTop: '40px', textAlign: 'left' }}>
@@ -647,231 +712,333 @@ export function PartnerPage({ setPage }) {
               </motion.div>
             )}
 
-            {/* ── STATUS: CONNECTED ── */}
-            {connectionStatus === 'connected' && (
-              <motion.div
-                key="connected"
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -15 }}
-                transition={{ duration: 0.3 }}
-              >
-                <Card style={{ padding: '36px 28px' }}>
-                  {/* Status Badge */}
-                  <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '10px',
-                    marginBottom: '28px',
-                  }}>
-                    <div style={{
-                      width: '10px',
-                      height: '10px',
-                      borderRadius: '50%',
-                      background: T.sage,
-                    }} />
-                    <span style={{
-                      fontSize: '0.78rem',
-                      fontWeight: 800,
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.08em',
-                      color: T.sage,
-                      background: 'var(--sage-lt, rgba(78,155,120,0.1))',
-                      padding: '6px 14px',
-                      borderRadius: 'var(--r-pill)',
-                      border: '1px solid var(--sage-border, rgba(78,155,120,0.18))',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                    }}>
-                      <motion.span
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        transition={{ type: 'spring', stiffness: 300, damping: 15, delay: 0.2 }}
-                      >
-                        <Check size={12} />
-                      </motion.span>
-                      Connected
-                    </span>
-                  </div>
-
-                  {/* Partner Info Card */}
-                  <div style={{
-                    background: 'var(--bg-warm)',
-                    borderRadius: 'var(--r-md)',
-                    border: '1px solid var(--border)',
-                    padding: '24px',
-                    marginBottom: '28px',
-                  }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '20px', flexWrap: 'wrap' }}>
-                      {/* Partner Avatar */}
-                      <div style={{
-                        width: '52px',
-                        height: '52px',
-                        borderRadius: '50%',
-                        background: `linear-gradient(135deg, ${T.goldMid} 0%, ${T.gold} 100%)`,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        color: '#fff',
-                        fontSize: '1.2rem',
-                        fontWeight: 700,
-                        fontFamily: T.fontDisplay,
-                        boxShadow: 'var(--sh-gold)',
-                        border: '3px solid var(--bg-card)',
-                        flexShrink: 0,
-                      }}>
-                        {(partner2 || 'P').slice(0, 2).toUpperCase()}
-                      </div>
-                      <div>
-                        <h3 style={{
-                          fontFamily: T.fontDisplay,
-                          fontSize: '1.35rem',
-                          fontWeight: 700,
-                          color: 'var(--text)',
-                          marginBottom: '2px',
-                        }}>
-                          {partner2 || 'Partner'}
-                        </h3>
-                        <span style={{ fontSize: '0.75rem', color: 'var(--text-faint)', fontWeight: 600 }}>
-                          Linked Partner
-                        </span>
-                      </div>
-                    </div>
-
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.82rem' }}>
-                        <span style={{ color: 'var(--text-faint)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <Key size={13} /> Partner EverBond ID
-                        </span>
-                        <strong style={{ fontFamily: 'monospace', color: 'var(--text)', letterSpacing: '0.04em' }}>
-                          {partnerEverBondId}
-                        </strong>
-                      </div>
-                      {relationshipDate && (
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.82rem' }}>
-                          <span style={{ color: 'var(--text-faint)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            <Heart size={13} /> Relationship Date
-                          </span>
-                          <strong style={{ color: 'var(--text)' }}>{formatDate(relationshipDate)}</strong>
-                        </div>
-                      )}
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.82rem' }}>
-                        <span style={{ color: 'var(--text-faint)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <Calendar size={13} /> Connected Since
-                        </span>
-                        <strong style={{ color: 'var(--text)' }}>{formatDate(requestSentAt)}</strong>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Unlocked Features */}
-                  <div style={{ marginBottom: '28px' }}>
-                    <span style={{
-                      fontSize: '0.65rem',
-                      fontWeight: 800,
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.1em',
-                      color: T.sage,
-                      display: 'block',
-                      marginBottom: '14px',
-                    }}>
-                      Unlocked Features
-                    </span>
-                    <div style={{
-                      display: 'grid',
-                      gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-                      gap: '10px',
-                    }}>
-                      <UnlockedFeature label="Couple Dashboard" />
-                      <UnlockedFeature label="Shared Goals" />
-                      <UnlockedFeature label="Joint Planning" />
-                      <UnlockedFeature label="Shared Wealth Tracking" />
-                      <UnlockedFeature label="Relationship Timeline" />
-                    </div>
-                  </div>
-
-                  {/* Disconnect Button */}
-                  {!showDisconnectConfirm ? (
-                    <motion.button
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={() => setShowDisconnectConfirm(true)}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '8px',
-                        width: '100%',
-                        padding: '12px 20px',
-                        borderRadius: 'var(--r-md)',
-                        background: 'var(--rose-lt, rgba(208,92,114,0.1))',
-                        border: '1.5px solid var(--rose-border)',
-                        color: 'var(--rose)',
-                        fontSize: '0.82rem',
-                        fontWeight: 700,
-                        cursor: 'pointer',
-                      }}
-                    >
-                      <X size={15} />
-                      Disconnect Partner
-                    </motion.button>
-                  ) : (
+                  {/* ── STATUS: RECEIVED (Request Received) ── */}
+                  {connectionStatus === 'received' && (
                     <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto' }}
-                      style={{
-                        background: 'var(--rose-lt, rgba(208,92,114,0.1))',
-                        border: '1.5px solid var(--rose-border)',
-                        borderRadius: 'var(--r-md)',
-                        padding: '20px',
-                        textAlign: 'center',
-                      }}
+                      key="received"
+                      initial={{ opacity: 0, y: 15 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -15 }}
+                      transition={{ duration: 0.3 }}
                     >
-                      <p style={{ fontSize: '0.85rem', color: 'var(--text)', fontWeight: 600, marginBottom: '6px' }}>
-                        Are you sure you want to disconnect?
-                      </p>
-                      <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '16px' }}>
-                        This will reset all shared features and partnership data.
-                      </p>
-                      <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
-                        <button
-                          onClick={() => setShowDisconnectConfirm(false)}
-                          style={{
-                            padding: '10px 24px',
+                      <Card style={{
+                        padding: '36px 28px',
+                        border: '1.5px solid var(--gold-border)',
+                        boxShadow: '0 12px 30px rgba(184, 144, 42, 0.12)',
+                      }}>
+                        {/* Status Badge */}
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '10px',
+                          marginBottom: '24px',
+                        }}>
+                          <div style={{
+                            width: '10px',
+                            height: '10px',
+                            borderRadius: '50%',
+                            background: T.gold,
+                            animation: 'dotPulse 1.5s ease-in-out infinite',
+                          }} />
+                          <span style={{
+                            fontSize: '0.78rem',
+                            fontWeight: 800,
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.08em',
+                            color: T.gold,
+                            background: 'var(--gold-pale, rgba(184,144,42,0.08))',
+                            padding: '6px 14px',
                             borderRadius: 'var(--r-pill)',
-                            border: '1.5px solid var(--border-mid)',
-                            background: 'var(--bg-card)',
-                            color: 'var(--text-muted)',
-                            fontSize: '0.8rem',
+                            border: '1px solid var(--gold-border)',
+                          }}>
+                            Partner Connection Request
+                          </span>
+                        </div>
+
+                        {/* Message */}
+                        <div style={{ textAlign: 'center', marginBottom: '28px' }}>
+                          <div style={{
+                            width: '64px',
+                            height: '64px',
+                            borderRadius: '50%',
+                            background: 'var(--gold-pale, rgba(184,144,42,0.06))',
+                            border: '1px solid var(--gold-border)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            margin: '0 auto 16px',
+                            color: T.gold,
+                          }}>
+                            <Users size={28} />
+                          </div>
+                          <h3 style={{
+                            fontFamily: T.fontDisplay,
+                            fontSize: '1.4rem',
                             fontWeight: 700,
-                            cursor: 'pointer',
-                          }}
-                        >
-                          Cancel
-                        </button>
-                        <button
-                          onClick={handleDisconnect}
-                          style={{
-                            padding: '10px 24px',
-                            borderRadius: 'var(--r-pill)',
-                            border: 'none',
-                            background: `linear-gradient(135deg, ${T.rose} 0%, #a33b52 100%)`,
-                            color: '#fff',
-                            fontSize: '0.8rem',
-                            fontWeight: 700,
-                            cursor: 'pointer',
-                            boxShadow: '0 6px 22px rgba(217,102,122,0.3)',
-                          }}
-                        >
-                          Confirm Disconnect
-                        </button>
-                      </div>
+                            color: 'var(--text)',
+                            marginBottom: '6px',
+                          }}>
+                            {incomingRequest?.senderName || 'Arup'} wants to connect with you.
+                          </h3>
+                          <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: 0 }}>
+                            Accept this invitation to activate your shared financial journey and merge workspaces.
+                          </p>
+                        </div>
+
+                        {/* Info Row */}
+                        <div style={{
+                          background: 'var(--bg-warm, rgba(0,0,0,0.02))',
+                          borderRadius: 'var(--r-md)',
+                          border: '1px solid var(--border-mid)',
+                          padding: '16px 20px',
+                          marginBottom: '28px',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '12px'
+                        }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.85rem' }}>
+                            <span style={{ color: 'var(--text-faint)', fontWeight: 600 }}>Partner EverBond ID</span>
+                            <strong style={{ fontFamily: 'monospace', color: 'var(--text)', letterSpacing: '0.04em' }}>
+                              {incomingRequest?.senderEverBondId || 'EB-A7K92X'}
+                            </strong>
+                          </div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.85rem' }}>
+                            <span style={{ color: 'var(--text-faint)', fontWeight: 600 }}>Relationship Anniversary</span>
+                            <strong style={{ color: 'var(--text)' }}>
+                              {formatDate(incomingRequest?.relationshipDate || '2025-02-15')}
+                            </strong>
+                          </div>
+                        </div>
+
+                        {/* Actions */}
+                        <div style={{ display: 'flex', gap: '14px', flexWrap: 'wrap' }}>
+                          <motion.button
+                            whileHover={{ scale: 1.02, y: -1 }}
+                            whileTap={{ scale: 0.98 }}
+                            onClick={handleAcceptRequest}
+                            style={{
+                              flex: 1,
+                              minWidth: '160px',
+                              padding: '14px 24px',
+                              borderRadius: 'var(--r-pill)',
+                              background: `linear-gradient(135deg, ${T.goldMid} 0%, ${T.gold} 100%)`,
+                              border: 'none',
+                              color: '#fff',
+                              fontSize: '0.9rem',
+                              fontWeight: 700,
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              gap: '8px',
+                              boxShadow: '0 8px 20px rgba(184,144,42,0.25)',
+                            }}
+                          >
+                            <Sparkles size={16} />
+                            Accept Invitation
+                          </motion.button>
+
+                          <motion.button
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            onClick={handleDeclineRequest}
+                            style={{
+                              flex: 1,
+                              minWidth: '120px',
+                              padding: '14px 24px',
+                              borderRadius: 'var(--r-pill)',
+                              background: 'transparent',
+                              border: '1.5px solid var(--border-mid)',
+                              color: 'var(--text-muted)',
+                              fontSize: '0.9rem',
+                              fontWeight: 700,
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              gap: '8px',
+                              transition: 'all 0.2s ease',
+                            }}
+                          >
+                            <X size={15} />
+                            Decline
+                          </motion.button>
+                        </div>
+                      </Card>
                     </motion.div>
                   )}
-                </Card>
-              </motion.div>
-            )}
+
+                  {/* ── STATUS: CONNECTED ── */}
+                  {connectionStatus === 'connected' && (
+                    <motion.div
+                      key="connected"
+                      initial={{ opacity: 0, y: 15 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -15 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <Card style={{ padding: '36px 28px' }}>
+                        {/* Status Badge */}
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '10px',
+                          marginBottom: '28px',
+                        }}>
+                          <div style={{
+                            width: '10px',
+                            height: '10px',
+                            borderRadius: '50%',
+                            background: T.sage,
+                          }} />
+                          <span style={{
+                            fontSize: '0.78rem',
+                            fontWeight: 800,
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.08em',
+                            color: T.sage,
+                            background: 'var(--sage-lt, rgba(78,155,120,0.1))',
+                            padding: '6px 14px',
+                            borderRadius: 'var(--r-pill)',
+                            border: '1px solid var(--sage-border, rgba(78,155,120,0.18))',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                          }}>
+                            <motion.span
+                              initial={{ scale: 0 }}
+                              animate={{ scale: 1 }}
+                              transition={{ type: 'spring', stiffness: 300, damping: 15, delay: 0.2 }}
+                            >
+                              <Check size={12} />
+                            </motion.span>
+                            Connected
+                          </span>
+                        </div>
+
+                        {/* Partner Info Card */}
+                        <div style={{
+                          background: 'var(--bg-warm)',
+                          borderRadius: 'var(--r-md)',
+                          border: '1px solid var(--border)',
+                          padding: '24px',
+                          marginBottom: '28px',
+                        }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '20px', flexWrap: 'wrap' }}>
+                            {/* Partner Avatar */}
+                            <div style={{
+                              width: '52px',
+                              height: '52px',
+                              borderRadius: '50%',
+                              background: `linear-gradient(135deg, ${T.goldMid} 0%, ${T.gold} 100%)`,
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              color: '#fff',
+                              fontSize: '1.2rem',
+                              fontWeight: 700,
+                              fontFamily: T.fontDisplay,
+                              boxShadow: 'var(--sh-gold)',
+                              border: '3px solid var(--bg-card)',
+                              flexShrink: 0,
+                            }}>
+                              {(partner2 || 'P').slice(0, 2).toUpperCase()}
+                            </div>
+                            <div>
+                              <h3 style={{
+                                fontFamily: T.fontDisplay,
+                                fontSize: '1.35rem',
+                                fontWeight: 700,
+                                color: 'var(--text)',
+                                marginBottom: '2px',
+                              }}>
+                                {partner2 || 'Partner'}
+                              </h3>
+                              <span style={{ fontSize: '0.75rem', color: 'var(--text-faint)', fontWeight: 600 }}>
+                                Linked Partner
+                              </span>
+                            </div>
+                          </div>
+
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.82rem' }}>
+                              <span style={{ color: 'var(--text-faint)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                <Key size={13} /> Partner EverBond ID
+                              </span>
+                              <strong style={{ fontFamily: 'monospace', color: 'var(--text)', letterSpacing: '0.04em' }}>
+                                {partnerEverBondId}
+                              </strong>
+                            </div>
+                            {relationshipDate && (
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.82rem' }}>
+                                <span style={{ color: 'var(--text-faint)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                  <Heart size={13} /> Relationship Date
+                                </span>
+                                <strong style={{ color: 'var(--text)' }}>{formatDate(relationshipDate)}</strong>
+                              </div>
+                            )}
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.82rem' }}>
+                              <span style={{ color: 'var(--text-faint)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                <Calendar size={13} /> Connected Since
+                              </span>
+                              <strong style={{ color: 'var(--text)' }}>{formatDate(requestSentAt)}</strong>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Unlocked Features */}
+                        <div style={{ marginBottom: '28px' }}>
+                          <span style={{
+                            fontSize: '0.65rem',
+                            fontWeight: 800,
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.1em',
+                            color: T.sage,
+                            display: 'block',
+                            marginBottom: '14px',
+                          }}>
+                            Unlocked Features
+                          </span>
+                          <div style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+                            gap: '10px',
+                          }}>
+                            <UnlockedFeature label="Couple Dashboard" />
+                            <UnlockedFeature label="Shared Goals" />
+                            <UnlockedFeature label="Joint Planning" />
+                            <UnlockedFeature label="Shared Wealth Tracking" />
+                            <UnlockedFeature label="Relationship Timeline" />
+                          </div>
+                        </div>
+
+                        {/* Disconnect Button */}
+                        <motion.button
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                          onClick={() => setShowDisconnectConfirm(true)}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '8px',
+                            width: '100%',
+                            padding: '12px 20px',
+                            borderRadius: 'var(--r-md)',
+                            background: 'var(--rose-lt, rgba(208,92,114,0.1))',
+                            border: '1.5px solid var(--rose-border)',
+                            color: 'var(--rose)',
+                            fontSize: '0.82rem',
+                            fontWeight: 700,
+                            cursor: 'pointer',
+                          }}
+                        >
+                          <X size={15} />
+                          Disconnect Partner
+                        </motion.button>
+                      </Card>
+                    </motion.div>
+                  )}
 
           </AnimatePresence>
         </motion.div>
@@ -1084,8 +1251,264 @@ export function PartnerPage({ setPage }) {
         )}
       </AnimatePresence>
 
-      {/* ── Disconnect Confirmation Modal (connected state) ── */}
-      {/* Already inline above in connected state */}
+      {/* ── Disconnect Confirmation Modal ── */}
+      <AnimatePresence>
+        {showDisconnectConfirm && (
+          <motion.div
+            key="disconnect-modal-overlay"
+            variants={modalOverlayVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            style={{
+              position: 'fixed',
+              inset: 0,
+              zIndex: 4100,
+              background: 'rgba(5, 5, 8, 0.7)',
+              backdropFilter: 'blur(20px)',
+              WebkitBackdropFilter: 'blur(20px)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '20px',
+            }}
+            onClick={(e) => { if (e.target === e.currentTarget) setShowDisconnectConfirm(false); }}
+          >
+            <motion.div
+              variants={modalCardVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              className="liquid-glass"
+              style={{
+                width: '100%',
+                maxWidth: '440px',
+                padding: '36px 28px',
+                background: 'var(--bg-card)',
+                border: '1.5px solid var(--rose-border)',
+                boxShadow: '0 20px 50px rgba(208, 92, 114, 0.15)',
+                borderRadius: '24px',
+                position: 'relative',
+                textAlign: 'center',
+              }}
+            >
+              <div style={{
+                width: '56px',
+                height: '56px',
+                borderRadius: '50%',
+                background: 'var(--rose-lt, rgba(208,92,114,0.1))',
+                border: '1px solid var(--rose-border)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto 20px',
+                color: 'var(--rose)',
+              }}>
+                <X size={28} />
+              </div>
+
+              <h3 style={{
+                fontFamily: T.fontDisplay,
+                fontSize: '1.45rem',
+                fontWeight: 700,
+                color: 'var(--text)',
+                marginBottom: '8px',
+              }}>
+                Disconnect Partner?
+              </h3>
+              <p style={{
+                fontSize: '0.85rem',
+                color: 'var(--text-muted)',
+                lineHeight: 1.5,
+                marginBottom: '28px',
+              }}>
+                Are you sure you want to disconnect? This will remove access to shared planning features, couple dashboard, and joint timeline tracking.
+              </p>
+
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <button
+                  onClick={() => setShowDisconnectConfirm(false)}
+                  style={{
+                    flex: 1,
+                    padding: '12px 20px',
+                    borderRadius: 'var(--r-pill)',
+                    border: '1.5px solid var(--border-mid)',
+                    background: 'var(--bg-card)',
+                    color: 'var(--text-muted)',
+                    fontSize: '0.85rem',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDisconnect}
+                  style={{
+                    flex: 1,
+                    padding: '12px 20px',
+                    borderRadius: 'var(--r-pill)',
+                    border: 'none',
+                    background: `linear-gradient(135deg, ${T.rose} 0%, #a33b52 100%)`,
+                    color: '#fff',
+                    fontSize: '0.85rem',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    boxShadow: '0 6px 20px rgba(208,92,114,0.25)',
+                    transition: 'all 0.2s ease',
+                  }}
+                >
+                  Disconnect
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── Success Connection Overlay (Confetti Effect) ── */}
+      <AnimatePresence>
+        {showSuccessOverlay && (
+          <motion.div
+            key="success-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.5 }}
+            style={{
+              position: 'fixed',
+              inset: 0,
+              zIndex: 5000,
+              background: 'rgba(5, 5, 8, 0.85)',
+              backdropFilter: 'blur(30px)',
+              WebkitBackdropFilter: 'blur(30px)',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              overflow: 'hidden',
+              pointerEvents: 'auto',
+            }}
+          >
+            {/* Drifting Gold and Champagne Confetti */}
+            {confettiParticles.map((p) => (
+              <motion.div
+                key={p.id}
+                initial={{
+                  left: `${p.x}%`,
+                  top: `${p.y}%`,
+                  rotate: p.rotation,
+                  opacity: 1,
+                  scale: Math.random() * 0.4 + 0.6,
+                }}
+                animate={{
+                  top: '110%',
+                  x: p.sway,
+                  rotate: p.rotation + 720,
+                  opacity: [1, 1, 0],
+                }}
+                transition={{
+                  duration: p.duration,
+                  delay: p.delay,
+                  ease: 'easeOut',
+                  repeat: 0,
+                }}
+                style={{
+                  position: 'absolute',
+                  width: p.size,
+                  height: p.size,
+                  backgroundColor: p.color,
+                  borderRadius: Math.random() > 0.45 ? '50%' : '2px',
+                  boxShadow: '0 2px 8px rgba(184, 144, 42, 0.4)',
+                  zIndex: 5001,
+                  pointerEvents: 'none',
+                }}
+              />
+            ))}
+
+            {/* Glowing gold back-light */}
+            <div style={{
+              position: 'absolute',
+              width: '400px',
+              height: '400px',
+              borderRadius: '50%',
+              background: 'radial-gradient(circle, rgba(184, 144, 42, 0.2) 0%, rgba(0, 0, 0, 0) 70%)',
+              zIndex: 5002,
+              animation: 'goldPulse 3s ease-in-out infinite',
+            }} />
+
+            {/* Content card */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 30 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              transition={{ type: 'spring', stiffness: 220, damping: 20, delay: 0.2 }}
+              style={{
+                textAlign: 'center',
+                zIndex: 5003,
+                padding: '40px',
+                maxWidth: '480px',
+                width: '100%',
+              }}
+            >
+              {/* Check Circle */}
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ type: 'spring', stiffness: 300, damping: 15, delay: 0.5 }}
+                style={{
+                  width: '90px',
+                  height: '90px',
+                  borderRadius: '50%',
+                  background: `linear-gradient(135deg, ${T.goldMid} 0%, ${T.gold} 100%)`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#fff',
+                  margin: '0 auto 28px',
+                  boxShadow: '0 12px 35px rgba(184, 144, 42, 0.5)',
+                  border: '4px solid rgba(255, 255, 255, 0.1)',
+                }}
+              >
+                <Heart size={44} fill="#fff" />
+              </motion.div>
+
+              <h2 style={{
+                fontFamily: T.fontDisplay,
+                fontSize: '2rem',
+                fontWeight: 800,
+                color: '#fff',
+                marginBottom: '8px',
+                textShadow: '0 2px 10px rgba(0,0,0,0.5)',
+              }}>
+                Partner Connected Successfully
+              </h2>
+              
+              <p style={{
+                fontSize: '1rem',
+                color: T.gold,
+                fontWeight: 700,
+                letterSpacing: '0.05em',
+                textTransform: 'uppercase',
+                marginBottom: '16px',
+              }}>
+                Shared Journey Activated
+              </p>
+              
+              <p style={{
+                fontSize: '0.85rem',
+                color: 'rgba(255, 255, 255, 0.7)',
+                lineHeight: 1.5,
+                maxWidth: '360px',
+                margin: '0 auto',
+              }}>
+                Initializing your joint planning workspace. Shared goals, timelines, and wallets are being unlocked...
+              </p>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
     </div>
   );

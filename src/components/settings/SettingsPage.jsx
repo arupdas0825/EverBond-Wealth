@@ -66,6 +66,7 @@ function SettingsPageImpl() {
   const [anniversaryInput, setAnniversaryInput] = useState(onboardingCommitted.anniversaryDate || '');
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [copiedId, setCopiedId] = useState(false);
+  const [showDisconnectModal, setShowDisconnectModal] = useState(false);
   
   // Danger zone modals local state
   const [activeDangerModal, setActiveDangerModal] = useState(null); // 'onboarding' | 'clear' | 'new'
@@ -99,10 +100,13 @@ function SettingsPageImpl() {
   };
 
   const handleDisconnectPartner = () => {
-    if (window.confirm(`Are you sure you want to disconnect from ${partner2 || 'your partner'}? This will reset all shared lockers.`)) {
-      disconnectPartner();
-      toast.info('Partner disconnected.');
-    }
+    setShowDisconnectModal(true);
+  };
+
+  const confirmDisconnectPartner = () => {
+    disconnectPartner();
+    setShowDisconnectModal(false);
+    toast.success('Connection removed.');
   };
 
   const handleExportData = () => {
@@ -761,6 +765,96 @@ function SettingsPageImpl() {
                   onClick={executeDangerAction}
                 >
                   Confirm &amp; Delete
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* ── Disconnect Confirmation Modal ── */}
+      <AnimatePresence>
+        {showDisconnectModal && (
+          <div 
+            style={{
+              position: 'fixed',
+              inset: 0,
+              zIndex: 4000,
+              background: 'rgba(5, 5, 8, 0.65)',
+              backdropFilter: 'blur(20px)',
+              WebkitBackdropFilter: 'blur(20px)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '20px',
+            }}
+            onClick={(e) => { if (e.target === e.currentTarget) setShowDisconnectModal(false); }}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 15 }}
+              transition={{ type: 'spring', stiffness: 260, damping: 24 }}
+              className="liquid-glass"
+              style={{
+                width: '100%',
+                maxWidth: '420px',
+                padding: '32px',
+                background: 'var(--bg-card)',
+                border: '1.5px solid var(--rose-border)',
+                boxShadow: '0 20px 50px rgba(208, 92, 114, 0.15)',
+                borderRadius: '24px',
+                textAlign: 'center'
+              }}
+            >
+              <div style={{
+                width: '50px',
+                height: '50px',
+                borderRadius: '50%',
+                background: 'var(--rose-lt, rgba(208,92,114,0.1))',
+                border: '1px solid var(--rose-border)',
+                color: 'var(--rose)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto 16px',
+              }}>
+                <ShieldAlert size={24} />
+              </div>
+
+              <h3 style={{ fontFamily: T.fontDisplay, fontSize: '1.45rem', fontWeight: 700, color: 'var(--text)', marginBottom: '8px' }}>
+                Disconnect Partner?
+              </h3>
+              
+              <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: '24px' }}>
+                Are you sure you want to disconnect? This will remove access to shared planning features.
+              </p>
+
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <button 
+                  className="btn-secondary" 
+                  style={{ flex: 1, padding: '12px', borderRadius: 'var(--r-pill)', fontSize: '0.82rem', fontWeight: 700 }}
+                  onClick={() => setShowDisconnectModal(false)}
+                >
+                  Cancel
+                </button>
+                <button 
+                  className="btn-primary" 
+                  style={{ 
+                    flex: 1.2, 
+                    padding: '12px', 
+                    borderRadius: 'var(--r-pill)', 
+                    fontSize: '0.82rem', 
+                    fontWeight: 700,
+                    background: `linear-gradient(135deg, ${T.rose} 0%, #a33b52 100%)`,
+                    border: 'none',
+                    color: '#fff',
+                    boxShadow: '0 6px 20px rgba(208,92,114,0.25)',
+                    cursor: 'pointer'
+                  }}
+                  onClick={confirmDisconnectPartner}
+                >
+                  Disconnect
                 </button>
               </div>
             </motion.div>

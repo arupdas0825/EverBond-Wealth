@@ -24,10 +24,16 @@ export const useFinanceStore = create(
       // ── EverBond ID Partner Linking System ──
       everBondId:          '',              // User's permanent EB-XXXXXX (generated once, persisted)
       partnerEverBondId:   '',              // Partner's EverBond ID
-      connectionStatus:    'none',          // 'none' | 'pending' | 'connected'
+      connectionStatus:    'none',          // 'none' | 'pending' | 'received' | 'connected'
       requestSentAt:       null,            // ISO timestamp when request was sent
       relationshipDate:    '',              // Anniversary / relationship date
       relationshipId:      '',              // Unique relationship identifier
+      
+      // Future backend preparation fields
+      requestSent:         false,           // User sent a connection request
+      requestReceived:     false,           // User received a connection request
+      connectedAt:         null,            // ISO timestamp when accepted
+      incomingRequest:     null,            // Incoming request metadata { senderEverBondId, senderName, relationshipDate, sentAt }
 
       // Legacy verification states (kept for backward compat during transition)
       invitationAccepted: false,
@@ -117,24 +123,78 @@ export const useFinanceStore = create(
           relationshipDate: relationshipDate || '',
           connectionStatus: 'pending',
           requestSentAt: new Date().toISOString(),
+          requestSent: true,
+          requestReceived: false,
           // Also sync legacy fields for backward compat
           verificationStatus: 'awaiting',
         });
       },
 
-      /** Accept/complete the connection (mock — simulates partner accepting) */
+      /** Simulate an incoming request from another user (for testing received state) */
+      simulateIncomingRequest: ({ senderEverBondId, senderName, relationshipDate }) => {
+        const dateVal = relationshipDate || '2025-02-15';
+        set({
+          connectionStatus: 'received',
+          requestSent: false,
+          requestReceived: true,
+          incomingRequest: {
+            senderEverBondId,
+            senderName,
+            relationshipDate: dateVal,
+            sentAt: new Date().toISOString(),
+          },
+          // Populate fields so acceptance resolves smoothly
+          partnerEverBondId: senderEverBondId,
+          partner2: senderName,
+          partnerName: senderName,
+          relationshipDate: dateVal,
+          verificationStatus: 'awaiting',
+        });
+      },
+
+      /** Decline an incoming request */
+      declineRequest: () => {
+        set({
+          connectionStatus: 'none',
+          requestSent: false,
+          requestReceived: false,
+          incomingRequest: null,
+          partnerEverBondId: '',
+          partner2: '',
+          partnerName: '',
+          relationshipDate: '',
+          requestSentAt: null,
+          connectedAt: null,
+          verificationStatus: 'unverified',
+        });
+      },
+
+      /** Accept/complete the connection (either pending or received) */
       acceptConnection: ({ partnerName }) => {
         const relId = `REL-${Math.floor(100000 + Math.random() * 900000)}`;
+        const incoming = get().incomingRequest;
+        
+        const resolvedName = partnerName || (incoming ? incoming.senderName : '') || get().partnerName || 'Partner';
+        const resolvedId = get().partnerEverBondId || (incoming ? incoming.senderEverBondId : '') || 'EB-UNKNOWN';
+        const resolvedDate = get().relationshipDate || (incoming ? incoming.relationshipDate : '');
+        
         set({
           connectionStatus: 'connected',
-          partner2: partnerName || 'Partner',
-          partnerName: partnerName || 'Partner',
+          partner2: resolvedName,
+          partnerName: resolvedName,
+          partnerEverBondId: resolvedId,
+          relationshipDate: resolvedDate,
           relationshipId: relId,
+          connectedAt: new Date().toISOString(),
+          requestSent: false,
+          requestReceived: false,
+          incomingRequest: null,
+          
           // Sync legacy fields
           partnerLinked: true,
           partnerAccepted: true,
           verificationStatus: 'verified',
-          partnerId: get().partnerEverBondId,
+          partnerId: resolvedId,
         });
       },
 
@@ -148,6 +208,10 @@ export const useFinanceStore = create(
           relationshipId: '',
           partner2: '',
           partnerName: '',
+          requestSent: false,
+          requestReceived: false,
+          connectedAt: null,
+          incomingRequest: null,
           // Sync legacy fields
           partnerLinked: false,
           partnerAccepted: false,
@@ -269,6 +333,10 @@ export const useFinanceStore = create(
           requestSentAt: null,
           relationshipDate: '',
           relationshipId: '',
+          requestSent: false,
+          requestReceived: false,
+          connectedAt: null,
+          incomingRequest: null,
 
           // Reset legacy partner linking state
           partnerLinked: false,
