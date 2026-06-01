@@ -39,15 +39,15 @@ class SettingsErrorBoundary extends React.Component {
   }
 }
 
-export function SettingsPage() {
+export function SettingsPage({ setActivePolicyDoc }) {
   return (
     <SettingsErrorBoundary>
-      <SettingsPageImpl />
+      <SettingsPageImpl setActivePolicyDoc={setActivePolicyDoc} />
     </SettingsErrorBoundary>
   );
 }
 
-function SettingsPageImpl() {
+function SettingsPageImpl({ setActivePolicyDoc }) {
   const store = useFinanceStore();
   const toast = useToast();
   const { 
@@ -630,6 +630,72 @@ function SettingsPageImpl() {
               }}>
                 <span style={{ color: 'var(--text-muted)' }}>🔒 Verified Couple Badge</span>
                 <span style={{ color: T.gold, fontWeight: 700 }}>Roadmap</span>
+              </div>
+            </div>
+          </Card>
+        </motion.div>
+
+        {/* ── SECTION 7.5: LEGAL & CONSENT ── */}
+        <motion.div variants={itemVariants} className="span-4">
+          <Card style={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+            <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.gold, display: 'block', marginBottom: '14px' }}>Legal &amp; Consent</span>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <div 
+                onClick={() => setActivePolicyDoc('terms')}
+                style={{
+                  background: 'var(--bg-warm)',
+                  border: '1.5px solid var(--border-mid)',
+                  borderRadius: '12px',
+                  padding: '10px 14px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  fontSize: '0.75rem',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                }}
+              >
+                <span style={{ color: 'var(--text-muted)', fontWeight: 600 }}>Terms of Service</span>
+                <span style={{ color: T.gold, fontWeight: 700 }}>Review →</span>
+              </div>
+
+              <div 
+                onClick={() => setActivePolicyDoc('privacy')}
+                style={{
+                  background: 'var(--bg-warm)',
+                  border: '1.5px solid var(--border-mid)',
+                  borderRadius: '12px',
+                  padding: '10px 14px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  fontSize: '0.75rem',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                }}
+              >
+                <span style={{ color: 'var(--text-muted)', fontWeight: 600 }}>Privacy Policy</span>
+                <span style={{ color: T.gold, fontWeight: 700 }}>Review →</span>
+              </div>
+
+              <div 
+                onClick={() => setActivePolicyDoc('cookie')}
+                style={{
+                  background: 'var(--bg-warm)',
+                  border: '1.5px solid var(--border-mid)',
+                  borderRadius: '12px',
+                  padding: '10px 14px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  fontSize: '0.75rem',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                }}
+              >
+                <span style={{ color: 'var(--text-muted)', fontWeight: 600 }}>Cookie Policy</span>
+                <span style={{ color: T.gold, fontWeight: 700 }}>Review →</span>
               </div>
             </div>
           </Card>

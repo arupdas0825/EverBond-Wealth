@@ -17,6 +17,8 @@ import { FamilyPlanningPage } from './components/welcome/FamilyPlanningPage';
 import { SettingsPage } from './components/settings/SettingsPage';
 import { ThemeToggle } from './components/common/ThemeToggle';
 import { ToastProvider } from './components/common/Toast';
+import { CookieConsent } from './components/common/CookieConsent';
+import { PrivacyDrawer } from './components/common/PrivacyDrawer';
 import './index.css';
 
 /**
@@ -71,6 +73,7 @@ export default function App() {
   const initEverBondId = useFinanceStore(s => s.initEverBondId);
   const [page,setPage] = useState('dashboard');
   const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1024);
+  const [activePolicyDoc, setActivePolicyDoc] = useState(null);
 
   // Initialize EverBond ID on first load
   useEffect(() => { initEverBondId(); }, []);
@@ -111,12 +114,25 @@ export default function App() {
               {page==='partner'    && <PartnerPage setPage={setPage}/>}
               {page==='couple-planning' && <CouplePlanningPage/>}
               {page==='family-planning' && <FamilyPlanningPage/>}
-              {page==='settings' && <SettingsPage/>}
+              {page==='settings' && <SettingsPage setActivePolicyDoc={setActivePolicyDoc} />}
             </div>
           </main>
           {isMobile && <MobileNav page={page} setPage={setPage}/>}
         </div>
       </OnboardingGuard>
+
+      {/* Global Floating Cookie Consent Banner */}
+      <CookieConsent onOpenPolicy={(doc) => setActivePolicyDoc(doc)} />
+
+      {/* Global Slide-out Privacy & Terms Drawer */}
+      <AnimatePresence>
+        {activePolicyDoc && (
+          <PrivacyDrawer 
+            activeDoc={activePolicyDoc} 
+            onClose={() => setActivePolicyDoc(null)} 
+          />
+        )}
+      </AnimatePresence>
     </ToastProvider>
   );
 }

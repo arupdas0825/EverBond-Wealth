@@ -6,6 +6,7 @@ import { CURRENCIES, REGIONS } from '../../constants/presets';
 import { Heart, Sparkles, User, Shield, Compass, TrendingUp, Award, Clock } from 'lucide-react';
 import { T } from '../../theme/tokens';
 import { LandingPage } from './LandingPage';
+import { PrivacyDrawer } from '../common/PrivacyDrawer';
 
 const DREAM_GOALS = [
   { key: 'freedom', label: 'Financial Freedom', icon: '💸', desc: 'Break away from income constraints' },
@@ -33,6 +34,10 @@ export function WelcomeScreen() {
   const [validationErrors, setValidationErrors] = useState({});
   const [currency, setLocalCurrency] = useState('INR');
   const [region, setLocalRegion] = useState('India');
+  const [agreeTerms, setAgreeTerms] = useState(false);
+  const [agreePrivacy, setAgreePrivacy] = useState(false);
+  const [agreeProjections, setAgreeProjections] = useState(false);
+  const [activePolicyDoc, setActivePolicyDoc] = useState(null);
   
   // Generate cinematic floating particles on load
   useEffect(() => {
@@ -694,11 +699,90 @@ export function WelcomeScreen() {
                 </div>
               </div>
 
+              {/* Onboarding Consent Section */}
+              <div style={{
+                background: 'rgba(255, 255, 255, 0.02)',
+                border: '1px solid var(--border-mid)',
+                borderRadius: T.radiusSm,
+                padding: '20px',
+                marginTop: '28px',
+                marginBottom: '20px',
+                textAlign: 'left',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '14px',
+              }}>
+                <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.gold, display: 'block' }}>
+                  Acknowledge & Start Journey
+                </span>
+                
+                {/* Checkbox 1: Terms */}
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', cursor: 'pointer' }} onClick={() => setAgreeTerms(!agreeTerms)}>
+                  <input 
+                    type="checkbox" 
+                    checked={agreeTerms} 
+                    onChange={() => {}} 
+                    style={{ marginTop: '3px', cursor: 'pointer', accentColor: T.gold }} 
+                  />
+                  <span style={{ fontSize: '0.8rem', color: 'var(--onb-desc)', lineHeight: 1.45 }}>
+                    I agree to the <span 
+                      style={{ color: T.gold, textDecoration: 'underline', fontWeight: 700 }}
+                      onClick={(e) => { e.stopPropagation(); setActivePolicyDoc('terms'); }}
+                    >
+                      Terms of Service
+                    </span>
+                  </span>
+                </div>
+
+                {/* Checkbox 2: Privacy */}
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', cursor: 'pointer' }} onClick={() => setAgreePrivacy(!agreePrivacy)}>
+                  <input 
+                    type="checkbox" 
+                    checked={agreePrivacy} 
+                    onChange={() => {}} 
+                    style={{ marginTop: '3px', cursor: 'pointer', accentColor: T.gold }} 
+                  />
+                  <span style={{ fontSize: '0.8rem', color: 'var(--onb-desc)', lineHeight: 1.45 }}>
+                    I acknowledge the <span 
+                      style={{ color: T.gold, textDecoration: 'underline', fontWeight: 700 }}
+                      onClick={(e) => { e.stopPropagation(); setActivePolicyDoc('privacy'); }}
+                    >
+                      Privacy Policy
+                    </span>
+                  </span>
+                </div>
+
+                {/* Checkbox 3: Estimates */}
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', cursor: 'pointer' }} onClick={() => setAgreeProjections(!agreeProjections)}>
+                  <input 
+                    type="checkbox" 
+                    checked={agreeProjections} 
+                    onChange={() => {}} 
+                    style={{ marginTop: '3px', cursor: 'pointer', accentColor: T.gold }} 
+                  />
+                  <span style={{ fontSize: '0.8rem', color: 'var(--onb-desc)', lineHeight: 1.45 }}>
+                    I understand that financial projections are mathematical estimates and not official investment advice
+                  </span>
+                </div>
+              </div>
+
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--onb-border)', paddingTop: '24px' }}>
                 <button className="btn-reset" style={{ width: 'auto', background: 'transparent', border: 'none', color: 'var(--onb-back)' }} onClick={() => setStep(2)}>Back</button>
                 <button 
                   className="btn-primary" 
-                  style={{ width: 'auto', padding: '12px 28px', background: `linear-gradient(135deg, ${T.goldMid} 0%, ${T.gold} 100%)` }}
+                  style={{ 
+                    width: 'auto', 
+                    padding: '12px 28px', 
+                    background: agreeTerms && agreePrivacy && agreeProjections
+                      ? `linear-gradient(135deg, ${T.goldMid} 0%, ${T.gold} 100%)`
+                      : 'var(--bg-muted)',
+                    color: agreeTerms && agreePrivacy && agreeProjections ? '#fff' : 'var(--text-faint)',
+                    opacity: agreeTerms && agreePrivacy && agreeProjections ? 1 : 0.5,
+                    cursor: agreeTerms && agreePrivacy && agreeProjections ? 'pointer' : 'not-allowed',
+                    boxShadow: agreeTerms && agreePrivacy && agreeProjections ? '0 6px 20px rgba(184,144,42,0.25)' : 'none',
+                    transition: 'all 0.25s ease'
+                  }}
+                  disabled={!(agreeTerms && agreePrivacy && agreeProjections)}
                   onClick={handleCompleteOnboarding}
                 >
                   Start My Financial Journey
@@ -709,6 +793,16 @@ export function WelcomeScreen() {
 
         </AnimatePresence>
       </div>
+
+      {/* Slide-out Privacy Drawer */}
+      <AnimatePresence>
+        {activePolicyDoc && (
+          <PrivacyDrawer 
+            activeDoc={activePolicyDoc} 
+            onClose={() => setActivePolicyDoc(null)} 
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
