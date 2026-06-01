@@ -160,6 +160,8 @@ export function PartnerPage({ setPage }) {
   // Store
   const {
     everBondId,
+    coupleId,
+    familyId,
     partnerEverBondId,
     connectionStatus,
     requestSentAt,
@@ -410,52 +412,271 @@ export function PartnerPage({ setPage }) {
         {/* ══════════════════════════════════════════════════
            Section 1 — Your EverBond Identity Card
         ══════════════════════════════════════════════════ */}
+        {/* ══════════════════════════════════════════════════
+           Section 1 — EverBond Premium Identity Center
+        ══════════════════════════════════════════════════ */}
         <motion.div variants={itemVariants}>
-          <Card gold style={{ position: 'relative', overflow: 'visible' }}>
-            <GoldLabel>YOUR EVERBOND ID</GoldLabel>
+          <Card gold style={{ position: 'relative', overflow: 'visible', padding: '24px 28px' }}>
+            <GoldLabel>EVERBOND IDENTITY CENTER</GoldLabel>
+            <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginTop: '-8px', marginBottom: '20px', lineHeight: 1.45 }}>
+              Your secure cryptographic relationship anchors. Authenticate your partnership node and unlock cooperative features.
+            </p>
 
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
-              {/* ID Display */}
-              <div style={{ flex: 1, minWidth: '200px' }}>
-                <div style={{
-                  fontFamily: "'Courier New', Consolas, monospace",
-                  fontSize: 'clamp(1.6rem, 4vw, 2.4rem)',
-                  fontWeight: 700,
-                  color: T.gold,
-                  letterSpacing: '0.06em',
-                  lineHeight: 1.2,
-                  marginBottom: '10px',
-                }}>
-                  {everBondId || '——————'}
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+              gap: '16px',
+              marginTop: '16px'
+            }}>
+              
+              {/* 1. PERSONAL IDENTITY CARD */}
+              <div style={{
+                background: 'radial-gradient(circle at 0% 0%, rgba(184, 144, 42, 0.06) 0%, transparent 60%), var(--bg-card)',
+                border: '1px solid var(--gold-border)',
+                borderRadius: '20px',
+                padding: '20px',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                minHeight: '160px',
+                position: 'relative',
+                overflow: 'hidden',
+                boxShadow: 'var(--sh-xs)'
+              }}>
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                    <span style={{ fontSize: '0.62rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.gold }}>
+                      Personal Identity
+                    </span>
+                    <span style={{ fontSize: '0.62rem', background: 'var(--gold-pale)', padding: '2px 8px', borderRadius: '100px', color: T.gold, fontWeight: 700 }}>
+                      Permanent
+                    </span>
+                  </div>
+                  <div style={{
+                    fontFamily: "'Courier New', Consolas, monospace",
+                    fontSize: '1.25rem',
+                    fontWeight: 700,
+                    color: 'var(--text)',
+                    letterSpacing: '0.04em',
+                    margin: '6px 0 12px 0'
+                  }}>
+                    {everBondId || 'EB-PENDING-XXXX'}
+                  </div>
                 </div>
-                <p style={{ fontSize: '0.78rem', color: 'var(--text-faint)', margin: 0, lineHeight: 1.4 }}>
-                  Share this ID with your partner to connect.
-                </p>
+
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', borderTop: '1px solid var(--border)', paddingTop: '12px' }}>
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(everBondId);
+                      toast.success('EverBond ID copied successfully');
+                    }}
+                    className="btn-secondary"
+                    style={{ 
+                      padding: '6px 12px', 
+                      fontSize: '0.72rem', 
+                      display: 'inline-flex', 
+                      alignItems: 'center', 
+                      gap: '4px',
+                      borderRadius: '100px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    <Copy size={12} /> Copy ID
+                  </button>
+                  
+                  {/* Future Ready QR Code action */}
+                  <button
+                    onClick={() => {
+                      toast.info('QR Code Partner Linking feature coming soon to mobile apps!');
+                    }}
+                    className="btn-secondary"
+                    style={{ 
+                      padding: '6px 12px', 
+                      fontSize: '0.72rem', 
+                      display: 'inline-flex', 
+                      alignItems: 'center', 
+                      gap: '4px',
+                      borderRadius: '100px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    📷 Share QR
+                  </button>
+
+                  {/* Future Ready Share Invite Link action */}
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(`https://everbond.wealth/invite/${everBondId}`);
+                      toast.success('Invite link copied successfully');
+                    }}
+                    className="btn-secondary"
+                    style={{ 
+                      padding: '6px 12px', 
+                      fontSize: '0.72rem', 
+                      display: 'inline-flex', 
+                      alignItems: 'center', 
+                      gap: '4px',
+                      borderRadius: '100px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    🔗 Invite Link
+                  </button>
+                </div>
               </div>
 
-              {/* Copy Button */}
-              <motion.button
-                whileTap={{ scale: 0.9 }}
-                whileHover={{ scale: 1.05 }}
-                onClick={handleCopyId}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  padding: '10px 20px',
-                  borderRadius: 'var(--r-pill)',
-                  border: `1.5px solid ${copied ? T.sage : 'var(--gold-border)'}`,
-                  background: copied ? 'var(--sage-lt, rgba(78,155,120,0.1))' : 'var(--gold-pale, rgba(184,144,42,0.08))',
-                  color: copied ? T.sage : T.gold,
-                  fontSize: '0.8rem',
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                  transition: 'all 0.25s ease',
-                }}
-              >
-                {copied ? <Check size={15} /> : <Copy size={15} />}
-                {copied ? 'Copied!' : 'Copy ID'}
-              </motion.button>
+              {/* 2. COUPLE IDENTITY CARD */}
+              <div style={{
+                background: connectionStatus === 'connected'
+                  ? 'radial-gradient(circle at 0% 0%, rgba(78, 155, 120, 0.06) 0%, transparent 60%), var(--bg-card)'
+                  : 'rgba(255, 255, 255, 0.02)',
+                border: connectionStatus === 'connected'
+                  ? '1px solid rgba(78, 155, 120, 0.25)'
+                  : '1px dashed var(--border-mid)',
+                borderRadius: '20px',
+                padding: '20px',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                minHeight: '160px',
+                position: 'relative',
+                overflow: 'hidden',
+                opacity: connectionStatus === 'connected' ? 1 : 0.7,
+                boxShadow: connectionStatus === 'connected' ? 'var(--sh-xs)' : 'none'
+              }}>
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                    <span style={{ fontSize: '0.62rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: connectionStatus === 'connected' ? T.sage : 'var(--text-faint)' }}>
+                      Couple Identity
+                    </span>
+                    {connectionStatus === 'connected' ? (
+                      <span style={{ fontSize: '0.62rem', background: 'var(--sage-lt)', padding: '2px 8px', borderRadius: '100px', color: T.sage, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                        💑 Verified Badge
+                      </span>
+                    ) : (
+                      <span style={{ fontSize: '0.62rem', background: 'var(--bg-warm)', padding: '2px 8px', borderRadius: '100px', color: 'var(--text-faint)', fontWeight: 700 }}>
+                        Locked
+                      </span>
+                    )}
+                  </div>
+                  {connectionStatus === 'connected' ? (
+                    <div style={{
+                      fontFamily: "'Courier New', Consolas, monospace",
+                      fontSize: '1.15rem',
+                      fontWeight: 700,
+                      color: 'var(--text)',
+                      letterSpacing: '0.04em',
+                      margin: '6px 0 12px 0'
+                    }}>
+                      {coupleId}
+                    </div>
+                  ) : (
+                    <div style={{ fontSize: '0.78rem', color: 'var(--text-faint)', margin: '14px 0', lineHeight: 1.4 }}>
+                      🔒 Links after mutual connection request acceptance.
+                    </div>
+                  )}
+                </div>
+
+                {connectionStatus === 'connected' && (
+                  <div style={{ display: 'flex', gap: '8px', borderTop: '1px solid var(--border)', paddingTop: '12px' }}>
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(coupleId);
+                        toast.success('EverBond ID copied successfully');
+                      }}
+                      className="btn-secondary"
+                      style={{ 
+                        padding: '6px 12px', 
+                        fontSize: '0.72rem', 
+                        display: 'inline-flex', 
+                        alignItems: 'center', 
+                        gap: '4px',
+                        borderRadius: '100px',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      <Copy size={12} /> Copy Couple ID
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* 3. FAMILY IDENTITY CARD */}
+              <div style={{
+                background: stage === 'Married'
+                  ? 'radial-gradient(circle at 0% 0%, rgba(124, 107, 190, 0.06) 0%, transparent 60%), var(--bg-card)'
+                  : 'rgba(255, 255, 255, 0.02)',
+                border: stage === 'Married'
+                  ? '1px solid rgba(124, 107, 190, 0.25)'
+                  : '1px dashed var(--border-mid)',
+                borderRadius: '20px',
+                padding: '20px',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                minHeight: '160px',
+                position: 'relative',
+                overflow: 'hidden',
+                opacity: stage === 'Married' ? 1 : 0.7,
+                boxShadow: stage === 'Married' ? 'var(--sh-xs)' : 'none'
+              }}>
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                    <span style={{ fontSize: '0.62rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: stage === 'Married' ? T.violet : 'var(--text-faint)' }}>
+                      Family Identity
+                    </span>
+                    {stage === 'Married' ? (
+                      <span style={{ fontSize: '0.62rem', background: 'var(--violet-lt)', padding: '2px 8px', borderRadius: '100px', color: T.violet, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                        👑 Dynasty Badge
+                      </span>
+                    ) : (
+                      <span style={{ fontSize: '0.62rem', background: 'var(--bg-warm)', padding: '2px 8px', borderRadius: '100px', color: 'var(--text-faint)', fontWeight: 700 }}>
+                        Locked
+                      </span>
+                    )}
+                  </div>
+                  {stage === 'Married' ? (
+                    <div style={{
+                      fontFamily: "'Courier New', Consolas, monospace",
+                      fontSize: '1.15rem',
+                      fontWeight: 700,
+                      color: 'var(--text)',
+                      letterSpacing: '0.04em',
+                      margin: '6px 0 12px 0'
+                    }}>
+                      {familyId}
+                    </div>
+                  ) : (
+                    <div style={{ fontSize: '0.78rem', color: 'var(--text-faint)', margin: '14px 0', lineHeight: 1.4 }}>
+                      🔒 Unlocks upon Married Stage activation in settings.
+                    </div>
+                  )}
+                </div>
+
+                {stage === 'Married' && (
+                  <div style={{ display: 'flex', gap: '8px', borderTop: '1px solid var(--border)', paddingTop: '12px' }}>
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(familyId);
+                        toast.success('EverBond ID copied successfully');
+                      }}
+                      className="btn-secondary"
+                      style={{ 
+                        padding: '6px 12px', 
+                        fontSize: '0.72rem', 
+                        display: 'inline-flex', 
+                        alignItems: 'center', 
+                        gap: '4px',
+                        borderRadius: '100px',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      <Copy size={12} /> Copy Family ID
+                    </button>
+                  </div>
+                )}
+              </div>
+
             </div>
           </Card>
         </motion.div>
