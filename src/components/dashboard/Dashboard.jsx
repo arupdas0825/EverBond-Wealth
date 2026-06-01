@@ -1,5 +1,5 @@
-import React, { useMemo, useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useMemo, useState } from 'react';
+import { motion } from 'framer-motion';
 import { 
   PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, 
   XAxis, YAxis, Tooltip, AreaChart, Area 
@@ -12,11 +12,10 @@ import {
 import { totalMilestoneContribution, requiredMonthlySaving, parseMilestoneDate } from '../../utils/milestones';
 import { T } from '../../theme/tokens';
 import { Card, StatCard } from '../common/Card';
-import { FutureVerification } from '../welcome/FutureVerification';
 import { 
   ShieldAlert, Heart, Users, Coins, Sparkles, Flame, UserCheck, 
   Crown, Lock, RefreshCw, Copy, Check, Link, ArrowRight, User, 
-  Smartphone, Send, Key, Calendar, TrendingUp, Target, Milestone, 
+  Smartphone, Key, Calendar, TrendingUp, Target, Milestone, 
   Shield, Award, Landmark, GraduationCap, Briefcase, ChevronRight,
   TrendingDown, PlusCircle, Compass, HelpCircle, BarChart3, Info
 } from 'lucide-react';
@@ -53,7 +52,7 @@ function greeting(stage, name, partner2) {
   }
 }
 
-export function Dashboard() {
+export function Dashboard({ setPage }) {
   const { 
     partner1, 
     partner2, 
@@ -65,6 +64,9 @@ export function Dashboard() {
     getTotalSalary,
     partnerLinked,
     partnerAccepted,
+    connectionStatus,
+    everBondId,
+    partnerEverBondId,
     verificationStatus,
     invitationCode,
     partnerId,
@@ -82,19 +84,8 @@ export function Dashboard() {
 
   const theme = useFinanceStore(s => s.theme);
 
-  // Invitation Modal Flow Local State
-  const [localStep, setLocalStep] = useState(1);
-  const [pName, setPName] = useState('');
-  const [anniversary, setAnniversary] = useState('');
-  const [pEmail, setPEmail] = useState('');
-  const [generatedCode, setGeneratedCode] = useState('');
-  const [partnerEnteredCode, setPartnerEnteredCode] = useState('');
-  const [copied, setCopied] = useState(false);
-  const [linkingProgress, setLinkingProgress] = useState(0);
-  const [isLinking, setIsLinking] = useState(false);
   const [isUpgradingStage, setIsUpgradingStage] = useState(false);
   const [selectedUpgradeStage, setSelectedUpgradeStage] = useState('Committed');
-  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
 
   // Interactive Widgets State
   const [simYearsSolo, setSimYearsSolo] = useState(15);
@@ -104,22 +95,6 @@ export function Dashboard() {
   const [homeMonthlySavings, setHomeMonthlySavings] = useState(40000);
   const [weddingCost, setWeddingCost] = useState(2000000);
   const [weddingGuests, setWeddingGuests] = useState(150);
-
-  // Sync invitation state on load
-  useEffect(() => {
-    if (invitationCode) {
-      setGeneratedCode(invitationCode);
-      if (partnerAccepted) {
-        setLocalStep(7);
-      } else if (partnerLinked) {
-        setLocalStep(4);
-      } else {
-        setLocalStep(2);
-      }
-    } else {
-      setLocalStep(1);
-    }
-  }, [invitationCode, partnerLinked, partnerAccepted]);
 
   const totalSalary = getTotalSalary();
   const mContribution = useMemo(() => totalMilestoneContribution(milestones), [milestones]);
@@ -132,83 +107,6 @@ export function Dashboard() {
   const scoreColor = health.value >= 75 ? T.sage : health.value >= 50 ? T.goldMid : T.rose;
   const deg = (health.value / 100) * 360;
 
-  // Invitation Event Handlers
-  const handleGenerateCode = (e) => {
-    e.preventDefault();
-    if (!pName.trim()) return;
-    
-    const prefix = stage === 'Married' ? 'EB-MRD' : 'EB-CPL';
-    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-    let code = '';
-    for (let i = 0; i < 5; i++) {
-      code += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    const finalCode = `${prefix}-${code}`;
-    
-    setGeneratedCode(finalCode);
-    setVerificationState({
-      invitationCode: finalCode,
-      partnerName: pName.trim(),
-      partner2: pName.trim(),
-      verificationStatus: 'awaiting'
-    });
-    setLocalStep(2);
-  };
-
-  const handleCopyCode = () => {
-    navigator.clipboard.writeText(generatedCode);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  const handlePartnerSubmitCode = () => {
-    if (partnerEnteredCode.trim().toUpperCase() !== generatedCode.toUpperCase()) {
-      alert('Invalid security invitation code handshake sequence. Please verify.');
-      return;
-    }
-    
-    setVerificationState({
-      partnerLinked: true,
-      verificationStatus: 'connected'
-    });
-    setLocalStep(4);
-  };
-
-  const handlePartnerAccept = () => {
-    setLocalStep(5);
-    setIsLinking(true);
-    setLinkingProgress(0);
-    
-    const interval = setInterval(() => {
-      setLinkingProgress(p => {
-        if (p >= 100) {
-          clearInterval(interval);
-          setIsLinking(false);
-          setLocalStep(6);
-          return 100;
-        }
-        return p + 20;
-      });
-    }, 300);
-  };
-
-  const handleCompleteVerification = () => {
-    setLocalStep(7);
-  };
-
-  const handleUnlockWorkspace = () => {
-    setVerificationState({
-      partnerAccepted: true,
-      partnerLinked: true,
-      verificationStatus: 'verified',
-      partner2: partner2 || pName || 'Partner',
-      partnerName: partner2 || pName || 'Partner',
-      relationshipId: `REL-${Math.floor(100000 + Math.random() * 900000)}`,
-      partnerId: `USR-${Math.floor(100000 + Math.random() * 900000)}`
-    });
-    setIsInviteModalOpen(false);
-  };
-
   const handleStageUpgrade = (targetStage) => {
     setStage(targetStage);
     setVerificationState({
@@ -216,13 +114,13 @@ export function Dashboard() {
       partnerLinked: false,
       verificationStatus: 'unverified',
       invitationCode: '',
+      connectionStatus: 'none',
+      partnerEverBondId: '',
       partner2: '',
       partnerName: ''
     });
     setIsUpgradingStage(false);
-    setLocalStep(1);
-    setPName('');
-    setIsInviteModalOpen(true);
+    setPage('partner');
   };
 
   const createMockGoal = () => {
@@ -351,20 +249,24 @@ export function Dashboard() {
         position: 'relative',
         overflow: 'hidden'
       }}>
-        {partnerAccepted ? (
+        {connectionStatus === 'connected' ? (
           <div style={{ position: 'relative', zIndex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '20px' }}>
             <div>
               <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: stage === 'Married' ? T.gold : T.rose }}>Ecosystem Connection</span>
               <h3 style={{ fontFamily: T.fontDisplay, fontSize: '1.4rem', fontWeight: 700, color: 'var(--text)', marginTop: '4px', marginBottom: '8px' }}>
                 Linked with {partner2 || 'Partner'}
               </h3>
-              
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.82rem' }}>
                 <span style={{ color: 'var(--text-muted)' }}>Status:</span>
                 <strong style={{ color: T.sage }}>🟢 Connected</strong>
               </div>
+              {everBondId && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '6px', fontSize: '0.75rem', color: 'var(--text-faint)' }}>
+                  <span>Partner ID:</span>
+                  <span style={{ fontFamily: 'monospace', color: T.gold }}>{partnerEverBondId || '—'}</span>
+                </div>
+              )}
             </div>
-
             <button
               className="btn-primary"
               style={{
@@ -376,9 +278,38 @@ export function Dashboard() {
                 alignItems: 'center',
                 gap: '8px'
               }}
-              onClick={() => setIsInviteModalOpen(true)}
+              onClick={() => setPage('partner')}
             >
-              <Users size={16} /> Manage Node Connection
+              <Users size={16} /> Manage Connection
+            </button>
+          </div>
+        ) : connectionStatus === 'pending' ? (
+          <div style={{ position: 'relative', zIndex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '24px' }}>
+            <div>
+              <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.goldMid }}>Ecosystem Connection</span>
+              <h3 style={{ fontFamily: T.fontDisplay, fontSize: '1.4rem', fontWeight: 700, color: 'var(--text)', marginTop: '4px', marginBottom: '12px' }}>
+                Partner Status: <span style={{ color: T.goldMid }}>Request Pending</span>
+              </h3>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                🟡 Waiting for partner confirmation...
+              </div>
+            </div>
+            <button
+              className="btn-primary"
+              style={{
+                background: `linear-gradient(135deg, ${T.goldMid} 0%, ${T.gold} 100%)`,
+                boxShadow: 'var(--sh-gold)',
+                fontSize: '0.85rem',
+                padding: '12px 24px',
+                width: 'auto',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                borderRadius: '100px'
+              }}
+              onClick={() => setPage('partner')}
+            >
+              <Users size={16} /> View Details
             </button>
           </div>
         ) : (
@@ -388,7 +319,6 @@ export function Dashboard() {
               <h3 style={{ fontFamily: T.fontDisplay, fontSize: '1.4rem', fontWeight: 700, color: 'var(--text)', marginTop: '4px', marginBottom: '12px' }}>
                 Partner Status: <span style={{ color: T.rose }}>Not Connected</span>
               </h3>
-              
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '12px' }}>
                 <span style={{ fontSize: '0.72rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-muted)' }}>Benefits unlocked after connecting:</span>
                 <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', marginTop: '4px' }}>
@@ -404,7 +334,6 @@ export function Dashboard() {
                 </div>
               </div>
             </div>
-
             <button
               className="btn-primary"
               style={{
@@ -418,7 +347,7 @@ export function Dashboard() {
                 gap: '8px',
                 borderRadius: '100px'
               }}
-              onClick={() => setIsInviteModalOpen(true)}
+              onClick={() => setPage('partner')}
             >
               <Users size={16} /> Connect Partner
             </button>
@@ -620,6 +549,9 @@ export function Dashboard() {
               </Card>
             ))}
           </div>
+          <div style={{ textAlign: 'center', marginTop: '16px' }}>
+            <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>Connect your partner to unlock collaborative planning.</p>
+          </div>
         </div>
 
       </motion.div>
@@ -667,13 +599,13 @@ export function Dashboard() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                 {[
                   { label: 'Your In-hand Salary', value: fmt(p1Salary || 100000) },
-                  { label: `${partner2 || 'Partner'}'s Salary`, value: partnerAccepted ? fmt(p2Salary || 80000) : "Not Connected (🔒)" },
-                  { label: 'Combined Income Pool', value: partnerAccepted ? fmt(totalSalary) : `${fmt(p1Salary || 100000)} (🔒 Solo)` },
-                  { label: 'Consensual Savings Target', value: partnerAccepted ? fmt(snap.budget.investments) : `${fmt((p1Salary || 100000) * (snap.presets ? snap.presets.invest : 0.35))} (🔒 Solo)` }
+                  { label: `${partner2 || 'Partner'}'s Salary`, value: connectionStatus === 'connected' ? fmt(p2Salary || 80000) : "Not Connected (🔒)" },
+                  { label: 'Combined Income Pool', value: connectionStatus === 'connected' ? fmt(totalSalary) : `${fmt(p1Salary || 100000)} (🔒 Solo)` },
+                  { label: 'Consensual Savings Target', value: connectionStatus === 'connected' ? fmt(snap.budget.investments) : `${fmt((p1Salary || 100000) * (snap.presets ? snap.presets.invest : 0.35))} (🔒 Solo)` }
                 ].map((item, idx) => (
                   <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: idx < 3 ? '1px solid var(--border)' : 'none', paddingBottom: idx < 3 ? '10px' : '0' }}>
                     <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{item.label}</span>
-                    <strong style={{ fontSize: '0.88rem', color: idx === 2 && partnerAccepted ? T.rose : 'var(--text)' }}>{item.value}</strong>
+                    <strong style={{ fontSize: '0.88rem', color: idx === 2 && connectionStatus === 'connected' ? T.rose : 'var(--text)' }}>{item.value}</strong>
                   </div>
                 ))}
               </div>
@@ -762,12 +694,12 @@ export function Dashboard() {
                 <h3 style={{ fontFamily: T.fontDisplay, fontSize: '1.3rem', fontWeight: 700, color: 'var(--text)', marginTop: '4px', marginBottom: '16px' }}>Relationship Timeline</h3>
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', flex: 1, paddingLeft: '12px', position: 'relative', marginTop: '10px', filter: !partnerAccepted ? 'blur(1.5px)' : 'none', opacity: !partnerAccepted ? 0.6 : 1 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', flex: 1, paddingLeft: '12px', position: 'relative', marginTop: '10px', filter: connectionStatus !== 'connected' ? 'blur(1.5px)' : 'none', opacity: connectionStatus !== 'connected' ? 0.6 : 1 }}>
                 <div style={{ position: 'absolute', left: '4px', top: '8px', bottom: '8px', width: '1.5px', background: T.rose }} />
 
                 {[
                   { label: 'Sovereign Ledger Synced', date: 'Active Consensus', ok: true },
-                  { label: 'First Shared Goal Acquired', date: 'Projected 2026', ok: milestones.length > 0 && partnerAccepted },
+                  { label: 'First Shared Goal Acquired', date: 'Projected 2026', ok: milestones.length > 0 && connectionStatus === 'connected' },
                   { label: 'Future Home Deposit Met', date: `Projected in ${isFinite(monthsToHome) ? Math.ceil(monthsToHome/12) : 3} Years`, ok: false }
                 ].map((node, idx) => (
                   <div key={idx} style={{ position: 'relative', paddingLeft: '16px' }}>
@@ -786,7 +718,7 @@ export function Dashboard() {
                   </div>
                 ))}
               </div>
-              {!partnerAccepted && (
+              {connectionStatus !== 'connected' && (
                 <div style={{ position: 'absolute', inset: 0, background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(2px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', borderRadius: 'var(--r-lg)', zIndex: 10 }}>
                   <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-mid)', borderRadius: '12px', padding: '10px 14px', textAlign: 'center', boxShadow: 'var(--sh-sm)', maxWidth: '240px' }}>
                     <span style={{ fontSize: '0.74rem', fontWeight: 700, color: 'var(--text-muted)' }}>🔒 Shared Timeline Sync Requires Partner Connection</span>
@@ -872,7 +804,7 @@ export function Dashboard() {
               </div>
             </div>
 
-            {!partnerAccepted && (
+            {connectionStatus !== 'connected' && (
               <div style={{ position: 'absolute', inset: 0, background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(2.5px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', borderRadius: 'var(--r-lg)', zIndex: 10 }}>
                 <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-mid)', borderRadius: '12px', padding: '12px 18px', textAlign: 'center', boxShadow: 'var(--sh-sm)', maxWidth: '280px' }}>
                   <span style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>🔒 Combined Wealth View Locked</span>
@@ -906,7 +838,7 @@ export function Dashboard() {
               </div>
             </div>
 
-            {!partnerAccepted && (
+            {connectionStatus !== 'connected' && (
               <div style={{ position: 'absolute', inset: 0, background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(2.5px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', borderRadius: 'var(--r-lg)', zIndex: 10 }}>
                 <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-mid)', borderRadius: '12px', padding: '12px 18px', textAlign: 'center', boxShadow: 'var(--sh-sm)', maxWidth: '280px' }}>
                   <span style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>🔒 Family Sync Features Locked</span>
@@ -981,575 +913,7 @@ export function Dashboard() {
   return (
     <div className="fade-in" style={{ position: 'relative' }}>
       
-      {/* INVITATION & CONNECTION MODAL */}
-      {isInviteModalOpen && (
-        <div style={{
-          position: 'fixed',
-          inset: 0,
-          zIndex: 3000,
-          background: 'rgba(5, 5, 8, 0.65)',
-          backdropFilter: 'blur(20px) saturate(140%)',
-          WebkitBackdropFilter: 'blur(20px) saturate(140%)',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          padding: '20px',
-          overflowY: 'auto'
-        }}>
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            transition={{ duration: 0.4 }}
-            className="liquid-glass"
-            style={{
-              width: '100%',
-              maxWidth: '560px',
-              padding: '36px',
-              background: 'var(--bg-card)',
-              border: '1px solid var(--border-mid)',
-              boxShadow: 'var(--sh-lg)',
-              borderRadius: '24px',
-              position: 'relative'
-            }}
-          >
-            {/* Close Button */}
-            <button
-              onClick={() => setIsInviteModalOpen(false)}
-              style={{
-                position: 'absolute',
-                top: '20px',
-                right: '20px',
-                background: 'none',
-                border: 'none',
-                color: 'var(--text-faint)',
-                fontSize: '1.2rem',
-                cursor: 'pointer',
-                zIndex: 10
-              }}
-            >
-              ✕
-            </button>
 
-            {/* Status chip */}
-            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
-              {localStep < 4 ? (
-                <div style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  padding: '6px 14px',
-                  borderRadius: '100px',
-                  background: 'var(--gold-pale)',
-                  border: '1px solid var(--gold-border)',
-                  color: T.gold,
-                  fontSize: '0.75rem',
-                  fontWeight: 700,
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.05em'
-                }}>
-                  🟡 Awaiting Partner Acceptance
-                </div>
-              ) : localStep < 7 ? (
-                <div style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  padding: '6px 14px',
-                  borderRadius: '100px',
-                  background: 'rgba(78, 155, 120, 0.1)',
-                  border: `1px solid ${T.sage}40`,
-                  color: T.sage,
-                  fontSize: '0.75rem',
-                  fontWeight: 700,
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.05em'
-                }}>
-                  🟢 Partner Connected
-                </div>
-              ) : (
-                <div style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  padding: '6px 14px',
-                  borderRadius: '100px',
-                  background: 'rgba(78, 155, 120, 0.1)',
-                  border: `1px solid ${T.sage}40`,
-                  color: T.sage,
-                  fontSize: '0.75rem',
-                  fontWeight: 700,
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.05em'
-                }}>
-                  🟢 Couple Verified
-                </div>
-              )}
-            </div>
-
-            {/* Lock messages */}
-            <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-              <div style={{
-                width: '56px',
-                height: '56px',
-                borderRadius: '50%',
-                background: stage === 'Married' ? 'var(--gold-pale)' : 'var(--rose-lt)',
-                color: stage === 'Married' ? T.gold : T.rose,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                margin: '0 auto 16px',
-                boxShadow: 'var(--sh-xs)'
-              }}>
-                <Lock size={24} />
-              </div>
-              <h2 style={{ fontFamily: T.fontDisplay, fontSize: '1.95rem', fontWeight: 700, color: 'var(--text)', marginBottom: '8px' }}>
-                Secure Partnership Sync
-              </h2>
-              <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', lineHeight: 1.5, maxWidth: '400px', margin: '0 auto' }}>
-                {stage === 'Married' 
-                  ? "Connect with your partner to unlock Combined Family Planning." 
-                  : "Connect with your partner to unlock Couple Planning."}
-              </p>
-            </div>
-
-            {/* Progress Bullet Steps */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', gap: '4px', background: 'var(--bg-warm)', padding: '8px 12px', borderRadius: '12px', border: '1.5px solid var(--border)', marginBottom: '28px' }}>
-              {[
-                { s: 1, label: 'Details' },
-                { s: 2, label: 'Code' },
-                { s: 3, label: 'Enter' },
-                { s: 4, label: 'Accept' },
-                { s: 5, label: 'Link' },
-                { s: 6, label: 'Verify' },
-                { s: 7, label: 'Unlock' }
-              ].map(step => (
-                <div key={step.s} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', flex: 1 }}>
-                  <div style={{
-                    width: '20px',
-                    height: '20px',
-                    borderRadius: '50%',
-                    background: localStep === step.s ? T.gold : localStep > step.s ? T.sage : 'var(--bg-muted)',
-                    color: '#fff',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '0.65rem',
-                    fontWeight: 800,
-                    boxShadow: localStep === step.s ? `0 0 8px ${T.gold}50` : 'none'
-                  }}>
-                    {localStep > step.s ? '✓' : step.s}
-                  </div>
-                  <span style={{ fontSize: '0.58rem', fontWeight: 700, color: localStep === step.s ? 'var(--text)' : 'var(--text-faint)', textTransform: 'uppercase' }}>
-                    {step.label}
-                  </span>
-                </div>
-              ))}
-            </div>
-
-            {/* Step Contents */}
-            <AnimatePresence mode="wait">
-              
-              {/* STEP 1: PARTNER DETAILS */}
-              {localStep === 1 && (
-                <motion.form
-                  key="step-1"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  onSubmit={handleGenerateCode}
-                  style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}
-                >
-                  <div>
-                    <label style={{ fontSize: '0.68rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', display: 'block', marginBottom: '6px' }}>
-                      Partner's Name
-                    </label>
-                    <input
-                      type="text"
-                      className="onb-input-glow"
-                      placeholder="Enter partner name..."
-                      value={pName}
-                      onChange={e => setPName(e.target.value)}
-                      required
-                    />
-                  </div>
-
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                    <div>
-                      <label style={{ fontSize: '0.68rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', display: 'block', marginBottom: '6px' }}>
-                        Anniversary Date (Optional)
-                      </label>
-                      <input
-                        type="date"
-                        className="onb-input-glow"
-                        value={anniversary}
-                        onChange={e => setAnniversary(e.target.value)}
-                      />
-                    </div>
-                    <div>
-                      <label style={{ fontSize: '0.68rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', display: 'block', marginBottom: '6px' }}>
-                        Partner ID (Optional)
-                      </label>
-                      <input
-                        type="text"
-                        className="onb-input-glow"
-                        placeholder="E.g., EB-USR-928"
-                        value={pEmail}
-                        onChange={e => setPEmail(e.target.value)}
-                      />
-                    </div>
-                  </div>
-
-                  <button
-                    type="submit"
-                    className="btn-primary"
-                    style={{
-                      background: `linear-gradient(135deg, ${T.goldMid} 0%, ${T.gold} 100%)`,
-                      boxShadow: 'var(--sh-gold)',
-                      marginTop: '8px'
-                    }}
-                    disabled={!pName.trim()}
-                  >
-                    Generate Invitation Code &amp; Proceed
-                  </button>
-                </motion.form>
-              )}
-
-              {/* STEP 2: GENERATED CODE DISPLAY */}
-              {localStep === 2 && (
-                <motion.div
-                  key="step-2"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}
-                >
-                  <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '16px', lineHeight: 1.45 }}>
-                    Provide this invitation key to your partner. They must enter it on their terminal to link your portfolios.
-                  </p>
-
-                  <div style={{
-                    background: 'rgba(184, 144, 42, 0.05)',
-                    border: '1.5px dashed var(--gold-border)',
-                    borderRadius: '16px',
-                    padding: '20px 24px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '16px',
-                    marginBottom: '20px',
-                    boxShadow: 'var(--sh-xs)',
-                    width: '100%',
-                    justifyContent: 'center'
-                  }}>
-                    <span style={{
-                      fontFamily: 'monospace',
-                      fontSize: '1.65rem',
-                      fontWeight: 700,
-                      color: T.gold,
-                      letterSpacing: '0.08em'
-                    }}>
-                      {generatedCode}
-                    </span>
-                    <button
-                      onClick={handleCopyCode}
-                      style={{
-                        background: 'var(--bg-card)',
-                        border: '1.5px solid var(--border-mid)',
-                        borderRadius: '10px',
-                        padding: '8px',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        color: copied ? T.sage : 'var(--text)',
-                        boxShadow: 'var(--sh-xs)'
-                      }}
-                      title="Copy invitation code"
-                    >
-                      {copied ? <Check size={16} /> : <Copy size={16} />}
-                    </button>
-                  </div>
-
-                  <button
-                    className="btn-primary"
-                    style={{
-                      background: 'linear-gradient(135deg, #1c1a16 0%, #111 100%)',
-                      border: '1px solid var(--gold-border)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '8px',
-                      width: '100%'
-                    }}
-                    onClick={() => setLocalStep(3)}
-                  >
-                    <Send size={16} /> Simulate Partner Entry Link
-                  </button>
-                </motion.div>
-              )}
-
-              {/* STEP 3: MOCK PARTNER CODE ENTRY */}
-              {localStep === 3 && (
-                <motion.div
-                  key="step-3"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}
-                >
-                  <div style={{
-                    background: 'rgba(0, 0, 0, 0.85)',
-                    border: '1.5px solid var(--border-mid)',
-                    borderRadius: '14px',
-                    padding: '16px 20px',
-                    fontFamily: 'monospace',
-                    color: '#62ca98',
-                    fontSize: '0.72rem',
-                    textAlign: 'left'
-                  }}>
-                    <div>&gt; INITIATING PARTNER LEDGER WORKSPACE SIMULATOR...</div>
-                    <div style={{ color: 'var(--text-faint)', marginTop: '4px' }}>&gt; Authenticating partner node... SUCCESS</div>
-                    <div style={{ color: T.gold }}>&gt; Enter the generated invitation packet code to establish secure handshake:</div>
-                  </div>
-
-                  <div>
-                    <label style={{ fontSize: '0.68rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', display: 'block', marginBottom: '6px' }}>
-                      Partner Invitation Key (EB-XXX-XXXXX)
-                    </label>
-                    <input
-                      type="text"
-                      className="onb-input-glow"
-                      placeholder="Paste EB-... code here"
-                      value={partnerEnteredCode}
-                      onChange={e => setPartnerEnteredCode(e.target.value.toUpperCase())}
-                      style={{ fontFamily: 'monospace', letterSpacing: '0.05em' }}
-                    />
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '6px' }}>
-                      <button
-                        onClick={() => setPartnerEnteredCode(generatedCode)}
-                        style={{ background: 'none', border: 'none', color: T.gold, fontSize: '0.65rem', fontWeight: 700, textDecoration: 'underline', cursor: 'pointer' }}
-                      >
-                        Auto-fill code for simulation
-                      </button>
-                    </div>
-                  </div>
-
-                  <button
-                    className="btn-primary"
-                    style={{ background: T.sage }}
-                    onClick={handlePartnerSubmitCode}
-                    disabled={!partnerEnteredCode.trim()}
-                  >
-                    Establish Secure Handshake Connection
-                  </button>
-                </motion.div>
-              )}
-
-              {/* STEP 4: MOCK PARTNER ACCEPTANCE */}
-              {localStep === 4 && (
-                <motion.div
-                  key="step-4"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}
-                >
-                  <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(78, 155, 120, 0.1)', color: T.sage, display: 'flex', alignItems: 'center', justifySelf: 'center', justifyContent: 'center', marginBottom: '12px' }}>
-                    <UserCheck size={20} />
-                  </div>
-                  
-                  <h4 style={{ fontSize: '0.98rem', fontWeight: 700, color: 'var(--text)', marginBottom: '6px' }}>
-                    Handshake Link Accepted
-                  </h4>
-                  
-                  <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', lineHeight: 1.45, marginBottom: '20px' }}>
-                    Your partner ({partner2 || pName || 'Beloved'}) has decrypted the packet. Click below to execute the cryptographically signed linkage.
-                  </p>
-
-                  <button
-                    className="btn-primary"
-                    style={{ background: T.sage, width: '100%' }}
-                    onClick={handlePartnerAccept}
-                  >
-                    Accept Handshake &amp; Link Accounts
-                  </button>
-                </motion.div>
-              )}
-
-              {/* STEP 5: LEDGER SYNCHRONIZATION */}
-              {localStep === 5 && (
-                <motion.div
-                  key="step-5"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}
-                >
-                  <div style={{ position: 'relative', width: '160px', height: '80px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
-                    <div style={{
-                      width: '40px',
-                      height: '40px',
-                      borderRadius: '10px',
-                      background: 'var(--bg-muted)',
-                      border: '1.5px solid var(--border-mid)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontWeight: 700,
-                      fontSize: '0.7rem'
-                    }}>
-                      YOU
-                    </div>
-                    
-                    <div style={{ flex: 1, height: '2px', background: `linear-gradient(90deg, ${T.gold}, ${T.sage})`, position: 'relative', overflow: 'hidden', margin: '0 8px' }}>
-                      <div style={{
-                        position: 'absolute',
-                        left: 0,
-                        width: '10px',
-                        height: '100%',
-                        background: '#fff',
-                        boxShadow: '0 0 10px #fff',
-                        animation: 'laserSweep 1s linear infinite'
-                      }} />
-                    </div>
-
-                    <div style={{
-                      width: '40px',
-                      height: '40px',
-                      borderRadius: '10px',
-                      background: 'var(--bg-muted)',
-                      border: '1.5px solid var(--border-mid)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontWeight: 700,
-                      fontSize: '0.7rem'
-                    }}>
-                      PTNR
-                    </div>
-                  </div>
-
-                  <h4 style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--text)', marginBottom: '8px' }}>
-                    Synchronizing Portfolios
-                  </h4>
-
-                  <div style={{ width: '100%', maxWidth: '240px', marginBottom: '16px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', fontWeight: 700, color: T.gold, marginBottom: '6px' }}>
-                      <span>Compiling Ledger Matrix...</span>
-                      <span>{linkingProgress}%</span>
-                    </div>
-                    <div style={{ width: '100%', height: '4px', background: 'var(--onb-border)', borderRadius: '4px', overflow: 'hidden' }}>
-                      <div style={{ width: `${linkingProgress}%`, height: '100%', background: T.gold, transition: 'width 0.2s ease' }} />
-                    </div>
-                  </div>
-
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-faint)', fontStyle: 'italic' }}>
-                    Unifying combined risk parameters and SIP asset split index...
-                  </div>
-                </motion.div>
-              )}
-
-              {/* STEP 6: FUTURE VERIFICATION PREVIEW */}
-              {localStep === 6 && (
-                <motion.div
-                  key="step-6"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  style={{ display: 'flex', flexDirection: 'column' }}
-                >
-                  <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', lineHeight: 1.45, marginBottom: '12px', textAlign: 'center' }}>
-                    Decentralized ledger consolidated. Authenticate dynamic consensus to map estate targets:
-                  </p>
-
-                  <FutureVerification />
-
-                  <button
-                    className="btn-primary"
-                    style={{
-                      background: `linear-gradient(135deg, ${T.sage} 0%, #3e8e68 100%)`,
-                      boxShadow: '0 6px 20px rgba(78, 155, 120, 0.3)',
-                      marginTop: '16px'
-                    }}
-                    onClick={handleCompleteVerification}
-                  >
-                    Finalize Connection &amp; Authenticate
-                  </button>
-                </motion.div>
-              )}
-
-              {/* STEP 7: ALL SYSTEMS ACTIVE */}
-              {localStep === 7 && (
-                <motion.div
-                  key="step-7"
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}
-                >
-                  <div style={{
-                    display: 'inline-flex',
-                    padding: '16px',
-                    borderRadius: '50%',
-                    background: 'rgba(78, 155, 120, 0.1)',
-                    border: `1.5px solid ${T.sage}`,
-                    color: T.sage,
-                    marginBottom: '20px',
-                    position: 'relative'
-                  }}>
-                    <UserCheck size={36} />
-                    <Sparkles size={16} style={{ position: 'absolute', top: 0, right: 0, color: T.gold }} className="animate-bounce" />
-                  </div>
-
-                  <h3 style={{ fontFamily: T.fontDisplay, fontSize: '1.75rem', fontWeight: 700, color: 'var(--text)', marginBottom: '8px' }}>
-                    Handshake Complete!
-                  </h3>
-                  
-                  <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: '24px', maxWidth: '400px' }}>
-                    Ledgers successfully synchronized. Multi-locker system and dynamic SIP profiles are now active.
-                  </p>
-
-                  <div style={{
-                    background: 'var(--bg-warm)',
-                    border: '1px solid var(--border-mid)',
-                    borderRadius: '12px',
-                    padding: '12px 16px',
-                    fontSize: '0.8rem',
-                    textAlign: 'left',
-                    width: '100%',
-                    marginBottom: '24px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '6px'
-                  }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span style={{ color: 'var(--text-faint)' }}>Status:</span>
-                      <strong style={{ color: T.sage }}>🟢 Couple Verified</strong>
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span style={{ color: 'var(--text-faint)' }}>Partner:</span>
-                      <strong style={{ color: 'var(--text)' }}>{partner2 || pName || 'Linked Partner'}</strong>
-                    </div>
-                  </div>
-
-                  <button
-                    className="btn-primary"
-                    style={{
-                      background: 'linear-gradient(135deg, #1c1a16 0%, #111 100%)',
-                      border: '1px solid var(--gold-border)',
-                      boxShadow: 'var(--sh-gold)',
-                      width: '100%'
-                    }}
-                    onClick={handleUnlockWorkspace}
-                  >
-                    Enter Dynamic Shared Workspace →
-                  </button>
-                </motion.div>
-              )}
-
-            </AnimatePresence>
-          </motion.div>
-        </div>
-      )}
 
       {/* DYNAMIC BACKDROP STYLING */}
       <div>

@@ -11,10 +11,12 @@ import { AllocationPage } from './components/allocation/AllocationPage';
 import { GoalsPage }    from './components/goals/GoalsPage';
 import { MilestonePage } from './components/milestones/MilestonePage';
 import { SimulationPage } from './components/simulation/SimulationPage';
+import { PartnerPage } from './components/partner/PartnerPage';
 import { CouplePlanningPage } from './components/welcome/CouplePlanningPage';
 import { FamilyPlanningPage } from './components/welcome/FamilyPlanningPage';
 import { SettingsPage } from './components/settings/SettingsPage';
 import { ThemeToggle } from './components/common/ThemeToggle';
+import { ToastProvider } from './components/common/Toast';
 import './index.css';
 
 /**
@@ -66,8 +68,12 @@ function OnboardingGuard({ children }) {
 
 export default function App() {
   const theme = useFinanceStore(s=>s.theme);
+  const initEverBondId = useFinanceStore(s => s.initEverBondId);
   const [page,setPage] = useState('dashboard');
   const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1024);
+
+  // Initialize EverBond ID on first load
+  useEffect(() => { initEverBondId(); }, []);
 
   // Synchronize HTML data-theme attribute
   useEffect(() => {
@@ -84,30 +90,33 @@ export default function App() {
   const isMobile = windowWidth < 768;
 
   return (
-    <OnboardingGuard>
-      <div className="eb-app">
-        <ThemeToggle />
-        {isMobile && (
-          <div className="eb-mobile-header">
-            <Logo size={32} />
-          </div>
-        )}
-        {!isMobile && <Sidebar page={page} setPage={setPage}/>}
-        <main className="eb-main">
-          <div className="eb-page">
-            {page==='dashboard'  && <Dashboard/>}
-            {page==='income'     && <IncomePage/>}
-            {page==='allocation' && <AllocationPage/>}
-            {page==='goals'      && <GoalsPage/>}
-            {page==='milestones' && <MilestonePage/>}
-            {page==='simulation' && <SimulationPage/>}
-            {page==='couple-planning' && <CouplePlanningPage/>}
-            {page==='family-planning' && <FamilyPlanningPage/>}
-            {page==='settings' && <SettingsPage/>}
-          </div>
-        </main>
-        {isMobile && <MobileNav page={page} setPage={setPage}/>}
-      </div>
-    </OnboardingGuard>
+    <ToastProvider>
+      <OnboardingGuard>
+        <div className="eb-app">
+          <ThemeToggle />
+          {isMobile && (
+            <div className="eb-mobile-header">
+              <Logo size={32} />
+            </div>
+          )}
+          {!isMobile && <Sidebar page={page} setPage={setPage}/>}
+          <main className="eb-main">
+            <div className="eb-page">
+              {page==='dashboard'  && <Dashboard setPage={setPage}/>}
+              {page==='income'     && <IncomePage/>}
+              {page==='allocation' && <AllocationPage/>}
+              {page==='goals'      && <GoalsPage/>}
+              {page==='milestones' && <MilestonePage/>}
+              {page==='simulation' && <SimulationPage/>}
+              {page==='partner'    && <PartnerPage setPage={setPage}/>}
+              {page==='couple-planning' && <CouplePlanningPage/>}
+              {page==='family-planning' && <FamilyPlanningPage/>}
+              {page==='settings' && <SettingsPage/>}
+            </div>
+          </main>
+          {isMobile && <MobileNav page={page} setPage={setPage}/>}
+        </div>
+      </OnboardingGuard>
+    </ToastProvider>
   );
 }

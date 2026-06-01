@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { generateEverBondId } from '../utils/everbondId';
 
 export const useFinanceStore = create(
   persist(
@@ -20,20 +21,27 @@ export const useFinanceStore = create(
       mindset:   'Balanced',
       theme:     'light',
 
-      // Verification states for Committed/Married stage (Standard Upgrade)
+      // ── EverBond ID Partner Linking System ──
+      everBondId:          '',              // User's permanent EB-XXXXXX (generated once, persisted)
+      partnerEverBondId:   '',              // Partner's EverBond ID
+      connectionStatus:    'none',          // 'none' | 'pending' | 'connected'
+      requestSentAt:       null,            // ISO timestamp when request was sent
+      relationshipDate:    '',              // Anniversary / relationship date
+      relationshipId:      '',              // Unique relationship identifier
+
+      // Legacy verification states (kept for backward compat during transition)
       invitationAccepted: false,
       selfieUploaded:     false,
       selfieUrl:          '',
       accountsConnected:  false,
       relationshipVerified: false,
 
-      // New Partner Linking System State
+      // Mapped from legacy → new system
       partnerLinked:      false,
       partnerAccepted:    false,
       verificationStatus: 'unverified', // 'unverified' | 'awaiting' | 'connected' | 'verified'
       invitationCode:     '',
       partnerId:          '',
-      relationshipId:     '',
 
       // Onboarding data splits
       onboardingSingle: {
@@ -79,7 +87,8 @@ export const useFinanceStore = create(
       // Milestones
       milestones: [],
 
-      // Actions
+      // ── Actions ──
+
       setStage: stage => set({ stage, relationshipStage: stage }),
       setMindset: mindset => set({ mindset, mode: mindset }),
       setDreamGoals: dreamGoals => set({ dreamGoals }),
@@ -90,6 +99,63 @@ export const useFinanceStore = create(
       setOnboardingMarried: data => set(s => ({ onboardingMarried: { ...s.onboardingMarried, ...data } })),
 
       setVerificationState: patch => set(patch),
+
+      // ── EverBond ID Actions ──
+
+      /** Generate and persist an EverBond ID if one doesn't exist */
+      initEverBondId: () => {
+        const current = get().everBondId;
+        if (!current) {
+          set({ everBondId: generateEverBondId() });
+        }
+      },
+
+      /** Send a connection request to a partner */
+      sendConnectionRequest: ({ partnerEverBondId, relationshipDate }) => {
+        set({
+          partnerEverBondId,
+          relationshipDate: relationshipDate || '',
+          connectionStatus: 'pending',
+          requestSentAt: new Date().toISOString(),
+          // Also sync legacy fields for backward compat
+          verificationStatus: 'awaiting',
+        });
+      },
+
+      /** Accept/complete the connection (mock — simulates partner accepting) */
+      acceptConnection: ({ partnerName }) => {
+        const relId = `REL-${Math.floor(100000 + Math.random() * 900000)}`;
+        set({
+          connectionStatus: 'connected',
+          partner2: partnerName || 'Partner',
+          partnerName: partnerName || 'Partner',
+          relationshipId: relId,
+          // Sync legacy fields
+          partnerLinked: true,
+          partnerAccepted: true,
+          verificationStatus: 'verified',
+          partnerId: get().partnerEverBondId,
+        });
+      },
+
+      /** Disconnect partner — reset all connection state */
+      disconnectPartner: () => {
+        set({
+          connectionStatus: 'none',
+          partnerEverBondId: '',
+          relationshipDate: '',
+          requestSentAt: null,
+          relationshipId: '',
+          partner2: '',
+          partnerName: '',
+          // Sync legacy fields
+          partnerLinked: false,
+          partnerAccepted: false,
+          verificationStatus: 'unverified',
+          invitationCode: '',
+          partnerId: '',
+        });
+      },
 
       setProfile: ({ 
         partner1, 
@@ -104,7 +170,11 @@ export const useFinanceStore = create(
         verificationStatus,
         invitationCode,
         partnerId,
-        relationshipId
+        relationshipId,
+        everBondId,
+        partnerEverBondId,
+        connectionStatus,
+        relationshipDate,
       }) => {
         const update = { 
           started: true, 
@@ -124,7 +194,13 @@ export const useFinanceStore = create(
         if (p1Salary !== undefined) update.p1Salary = p1Salary;
         if (p2Salary !== undefined) update.p2Salary = p2Salary;
         
-        // Add new partnership linking states to update if present
+        // New EverBond ID fields
+        if (everBondId !== undefined) update.everBondId = everBondId;
+        if (partnerEverBondId !== undefined) update.partnerEverBondId = partnerEverBondId;
+        if (connectionStatus !== undefined) update.connectionStatus = connectionStatus;
+        if (relationshipDate !== undefined) update.relationshipDate = relationshipDate;
+        
+        // Legacy partnership linking states
         if (partnerLinked !== undefined) update.partnerLinked = partnerLinked;
         if (partnerAccepted !== undefined) update.partnerAccepted = partnerAccepted;
         if (verificationStatus !== undefined) update.verificationStatus = verificationStatus;
@@ -164,6 +240,7 @@ export const useFinanceStore = create(
       },
 
       reset: () => {
+        const newId = generateEverBondId();
         set({
           started: false,
           onboardingComplete: false,
@@ -185,13 +262,20 @@ export const useFinanceStore = create(
           accountsConnected: false,
           relationshipVerified: false,
           
-          // Reset partner linking state
+          // Reset EverBond ID system (regenerate fresh ID)
+          everBondId: newId,
+          partnerEverBondId: '',
+          connectionStatus: 'none',
+          requestSentAt: null,
+          relationshipDate: '',
+          relationshipId: '',
+
+          // Reset legacy partner linking state
           partnerLinked: false,
           partnerAccepted: false,
           verificationStatus: 'unverified',
           invitationCode: '',
           partnerId: '',
-          relationshipId: '',
 
           onboardingSingle: {
             name: '',

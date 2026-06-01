@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useFinanceStore } from '../../store/useFinanceStore';
 import { T } from '../../theme/tokens';
@@ -10,6 +10,7 @@ import {
 import { Logo } from '../common/Logo';
 import { Card } from '../common/Card';
 import { formatCurrency } from '../../utils/finance';
+import { useToast } from '../common/Toast';
 
 class SettingsErrorBoundary extends React.Component {
   constructor(props) {
@@ -48,11 +49,16 @@ export function SettingsPage() {
 
 function SettingsPageImpl() {
   const store = useFinanceStore();
+  const toast = useToast();
   const { 
     partner1, partner2, stage, region, mode, currency, 
     verificationStatus, partnerAccepted, onboardingCommitted = {}, theme,
-    setProfile, setStage, setMindset, setTheme, reset, setVerificationState
+    setProfile, setStage, setMindset, setTheme, reset, setVerificationState,
+    everBondId, connectionStatus, partnerEverBondId, disconnectPartner, initEverBondId
   } = store;
+
+  // Initialize EverBond ID on mount
+  useEffect(() => { initEverBondId(); }, []);
 
   // Local state edit fields
   const [nameInput, setNameInput] = useState(partner1 || '');
@@ -60,14 +66,14 @@ function SettingsPageImpl() {
   const [anniversaryInput, setAnniversaryInput] = useState(onboardingCommitted.anniversaryDate || '');
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [copiedId, setCopiedId] = useState(false);
-  const [customId] = useState(() => `EB-${Math.random().toString(36).substring(2, 8).toUpperCase()}`);
   
   // Danger zone modals local state
   const [activeDangerModal, setActiveDangerModal] = useState(null); // 'onboarding' | 'clear' | 'new'
 
   const handleCopyId = () => {
-    navigator.clipboard.writeText(customId);
+    navigator.clipboard.writeText(everBondId);
     setCopiedId(true);
+    toast.success('EverBond ID copied.');
     setTimeout(() => setCopiedId(false), 2000);
   };
 
@@ -94,14 +100,8 @@ function SettingsPageImpl() {
 
   const handleDisconnectPartner = () => {
     if (window.confirm(`Are you sure you want to disconnect from ${partner2 || 'your partner'}? This will reset all shared lockers.`)) {
-      setVerificationState({
-        partnerAccepted: false,
-        partnerLinked: false,
-        verificationStatus: 'unverified',
-        invitationCode: '',
-        partner2: '',
-        partnerName: ''
-      });
+      disconnectPartner();
+      toast.info('Partner disconnected.');
     }
   };
 
@@ -256,8 +256,8 @@ function SettingsPageImpl() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px', borderTop: '1px solid var(--border-mid)', paddingTop: '16px', marginTop: '20px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <Key size={14} style={{ color: T.gold }} />
-                <span style={{ fontSize: '0.76rem', color: 'var(--text-muted)' }}>Sovereign EverBond ID:</span>
-                <strong style={{ fontFamily: 'monospace', fontSize: '0.92rem', color: 'var(--text)' }}>{customId}</strong>
+                <span style={{ fontSize: '0.76rem', color: 'var(--text-muted)' }}>Your EverBond ID:</span>
+                <strong style={{ fontFamily: 'monospace', fontSize: '0.92rem', color: 'var(--text)' }}>{everBondId}</strong>
                 <button 
                   onClick={handleCopyId}
                   style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', color: copiedId ? T.sage : 'var(--text-faint)', display: 'flex', alignItems: 'center' }}
@@ -294,9 +294,9 @@ function SettingsPageImpl() {
                 <strong style={{ color: 'var(--text)' }}>{stage}</strong>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem' }}>
-                <span style={{ color: 'var(--text-faint)' }}>Linkage Status:</span>
-                <strong style={{ color: partnerAccepted ? T.sage : 'var(--text-faint)' }}>
-                  {partnerAccepted ? '🟢 Connected' : '🔴 Inactive'}
+                <span style={{ color: 'var(--text-faint)' }}>Connection:</span>
+                <strong style={{ color: connectionStatus === 'connected' ? T.sage : connectionStatus === 'pending' ? T.goldMid : 'var(--text-faint)' }}>
+                  {connectionStatus === 'connected' ? '🟢 Connected' : connectionStatus === 'pending' ? '🟡 Pending' : '🔴 Not Connected'}
                 </strong>
               </div>
 
@@ -306,6 +306,12 @@ function SettingsPageImpl() {
                     <span style={{ color: 'var(--text-faint)' }}>Partner:</span>
                     <strong style={{ color: 'var(--text)' }}>{partner2 || 'Awaiting Link'}</strong>
                   </div>
+                  {connectionStatus === 'connected' && partnerEverBondId && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem' }}>
+                      <span style={{ color: 'var(--text-faint)' }}>Partner ID:</span>
+                      <strong style={{ fontFamily: 'monospace', color: T.gold, fontSize: '0.78rem' }}>{partnerEverBondId}</strong>
+                    </div>
+                  )}
                   {onboardingCommitted.anniversaryDate && (
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem' }}>
                       <span style={{ color: 'var(--text-faint)' }}>Anniversary:</span>
@@ -317,7 +323,7 @@ function SettingsPageImpl() {
             </div>
 
             <div style={{ marginTop: '20px' }}>
-              {partnerAccepted ? (
+              {connectionStatus === 'connected' ? (
                 <button 
                   onClick={handleDisconnectPartner}
                   className="btn-primary" 
@@ -327,7 +333,7 @@ function SettingsPageImpl() {
                 </button>
               ) : (
                 <button 
-                  onClick={() => alert('Use the Link Partner Ledger widget on the Dashboard to select Committed/Married parameters and initiate connection handshake.')}
+                  onClick={() => alert('Navigate to the Partner page to connect your partner.')}
                   className="btn-primary" 
                   style={{ background: `linear-gradient(135deg, ${T.rose} 0%, #a33b52 100%)`, fontSize: '0.78rem', padding: '8px 12px' }}
                 >

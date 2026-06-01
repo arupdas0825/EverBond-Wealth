@@ -11,6 +11,7 @@ const NAV = [
   { key: 'goals', icon: '🎯', label: 'Goals' },
   { key: 'milestones', icon: '📅', label: 'Milestones' },
   { key: 'simulation', icon: '🚀', label: 'Simulate' },
+  { key: 'partner', icon: '🔗', label: 'Partner' },
   { key: 'couple-planning', icon: '💑', label: 'Couple Plan', lockedAt: 'Single' },
   { key: 'family-planning', icon: '👑', label: 'Family Dynasty', lockedAt: 'Committed' },
   { key: 'settings', icon: '⚙️', label: 'Settings' }
@@ -26,6 +27,8 @@ export function Sidebar({ page, setPage }) {
     setProfile, 
     theme,
     partnerAccepted,
+    connectionStatus,
+    everBondId,
     setVerificationState
   } = useFinanceStore();
 
@@ -37,8 +40,8 @@ export function Sidebar({ page, setPage }) {
     // Dashboard is never locked
     if (n.key === 'dashboard') return false;
 
-    // Lock Couple Planning in Committed Stage if partner not accepted/connected
-    if (n.key === 'couple-planning' && stage === 'Committed' && !partnerAccepted) return true;
+    // Lock Couple Planning in Committed Stage if partner not connected
+    if (n.key === 'couple-planning' && stage === 'Committed' && connectionStatus !== 'connected') return true;
 
     // Standard stage locks
     if (n.lockedAt === 'Single' && stage === 'Single') return true;
@@ -49,9 +52,9 @@ export function Sidebar({ page, setPage }) {
 
   const handleNavClick = (n) => {
     if (isLocked(n)) {
-      if (n.key === 'couple-planning' && stage === 'Committed' && !partnerAccepted) {
-        alert('🔒 Couple Planning requires Partner Connection. Please connect your partner on the Dashboard first.');
-        setPage('dashboard');
+      if (n.key === 'couple-planning' && stage === 'Committed' && connectionStatus !== 'connected') {
+        alert('🔒 Couple Planning requires Partner Connection. Please connect your partner on the Partner page first.');
+        setPage('partner');
         return;
       }
 
@@ -67,7 +70,10 @@ export function Sidebar({ page, setPage }) {
           setPage('dashboard');
         } else {
           // Committed user clicks family dynasty - trigger elegant marriage upgrade
-          if (window.confirm('💍 Upgrade to Married Stage? This will unlock Family Dynasty Planning, children education funds, and family estate reserves.')) {
+          if (connectionStatus !== 'connected') {
+            alert('🔒 Connect your partner first before upgrading to Married stage.');
+            setPage('partner');
+          } else if (window.confirm('💍 Upgrade to Married Stage? This will unlock Family Dynasty Planning, children education funds, and family estate reserves.')) {
             setStage('Married');
             setVerificationState({
               partnerAccepted: false,
@@ -124,12 +130,54 @@ export function Sidebar({ page, setPage }) {
                 <User size={14} style={{ color: T.sky }} />
                 <span className="couple-names" style={{ fontSize: '0.8rem' }}>{partner1 || 'Single Builder'}</span>
               </div>
+              {everBondId && (
+                <span style={{ fontSize: '0.62rem', fontFamily: 'monospace', color: 'var(--text-faint)', letterSpacing: '0.03em' }}>{everBondId}</span>
+              )}
               <button 
-                onClick={() => { setPage('dashboard'); alert('Please use the "Link Partner Ledger" card on the Dashboard to select your stage and start the handshake.'); }}
+                onClick={() => setPage('partner')}
                 style={{ background: 'none', border: 'none', color: T.sky, fontSize: '0.68rem', fontWeight: 700, padding: 0, cursor: 'pointer', textAlign: 'left' }}
               >
-                🔗 Connect Partner Engine
+                🔗 Connect Partner
               </button>
+            </div>
+          ) : connectionStatus === 'pending' ? (
+            <div className="couple-chip" style={{ border: '1.5px dashed var(--gold-border)', background: 'var(--gold-pale)', flexDirection: 'column', alignItems: 'flex-start', gap: '6px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <RefreshCw size={12} className="animate-spin" style={{ color: T.goldMid }} />
+                <span style={{ fontSize: '0.72rem', fontWeight: 800, textTransform: 'uppercase', color: T.goldMid }}>Request Pending</span>
+              </div>
+              <div className="couple-names" style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+                {partner1} → {partner2 || 'Partner'}
+              </div>
+              {everBondId && (
+                <span style={{ fontSize: '0.6rem', fontFamily: 'monospace', color: 'var(--text-faint)' }}>{everBondId}</span>
+              )}
+            </div>
+          ) : connectionStatus === 'connected' && stage === 'Committed' ? (
+            <div className="couple-chip" style={{ border: `1.5px solid ${T.sage}`, background: 'var(--sage-lt)', flexDirection: 'column', alignItems: 'flex-start' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Heart size={14} fill={T.sage} style={{ color: T.sage }} />
+                <div>
+                  <div className="couple-label" style={{ color: T.sage }}>Couple Verified</div>
+                  <div className="couple-names">{partner1} ❤ {partner2}</div>
+                </div>
+              </div>
+              {everBondId && (
+                <span style={{ fontSize: '0.58rem', fontFamily: 'monospace', color: 'var(--text-faint)', marginTop: '2px', display: 'block' }}>{everBondId}</span>
+              )}
+            </div>
+          ) : connectionStatus === 'connected' ? (
+            <div className="couple-chip" style={{ border: `1.5px solid ${T.gold}`, background: 'var(--gold-pale)', flexDirection: 'column', alignItems: 'flex-start' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Crown size={14} style={{ color: T.gold }} />
+                <div>
+                  <div className="couple-label" style={{ color: T.gold }}>Partner Verified</div>
+                  <div className="couple-names">{partner1} & {partner2}</div>
+                </div>
+              </div>
+              {everBondId && (
+                <span style={{ fontSize: '0.58rem', fontFamily: 'monospace', color: 'var(--text-faint)', marginTop: '2px', display: 'block' }}>{everBondId}</span>
+              )}
             </div>
           ) : !partnerAccepted ? (
             <div className="couple-chip" style={{ border: '1.5px dashed var(--gold-border)', background: 'var(--gold-pale)', flexDirection: 'column', alignItems: 'flex-start', gap: '6px' }}>
@@ -154,7 +202,7 @@ export function Sidebar({ page, setPage }) {
               <Crown size={14} style={{ color: T.gold }} />
               <div>
                 <div className="couple-label" style={{ color: T.gold }}>Partner Verified</div>
-                <div className="couple-names">{partner1} &amp; {partner2}</div>
+                <div className="couple-names">{partner1} & {partner2}</div>
               </div>
             </div>
           )}
@@ -175,6 +223,8 @@ export function MobileNav({ page, setPage }) {
     setStage, 
     setProfile,
     partnerAccepted,
+    connectionStatus,
+    everBondId,
     setVerificationState
   } = useFinanceStore();
   const [open, setOpen] = useState(false);
@@ -186,8 +236,8 @@ export function MobileNav({ page, setPage }) {
   const isLocked = (n) => {
     if (n.key === 'dashboard') return false;
 
-    // Lock Couple Planning in Committed Stage if partner not accepted/connected
-    if (n.key === 'couple-planning' && stage === 'Committed' && !partnerAccepted) return true;
+    // Lock Couple Planning in Committed Stage if partner not connected
+    if (n.key === 'couple-planning' && stage === 'Committed' && connectionStatus !== 'connected') return true;
 
     if (n.lockedAt === 'Single' && stage === 'Single') return true;
     if (n.lockedAt === 'Committed' && (stage === 'Single' || stage === 'Committed')) return true;
@@ -197,9 +247,9 @@ export function MobileNav({ page, setPage }) {
 
   const handleNavClick = (n) => {
     if (isLocked(n)) {
-      if (n.key === 'couple-planning' && stage === 'Committed' && !partnerAccepted) {
-        alert('🔒 Couple Planning requires Partner Connection. Please connect your partner on the Dashboard first.');
-        setPage('dashboard');
+      if (n.key === 'couple-planning' && stage === 'Committed' && connectionStatus !== 'connected') {
+        alert('🔒 Couple Planning requires Partner Connection. Please connect your partner on the Partner page first.');
+        setPage('partner');
         return;
       }
 
@@ -214,7 +264,10 @@ export function MobileNav({ page, setPage }) {
           alert('🔒 Unlocks in Married stage. Upgrade stage and link partner to unlock Family Dynasty.');
           setPage('dashboard');
         } else {
-          if (window.confirm('💍 Upgrade to Married Stage? This will unlock Family Dynasty Planning.')) {
+          if (connectionStatus !== 'connected') {
+            alert('🔒 Connect your partner first before upgrading to Married stage.');
+            setPage('partner');
+          } else if (window.confirm('💍 Upgrade to Married Stage? This will unlock Family Dynasty Planning.')) {
             setStage('Married');
             setVerificationState({
               partnerAccepted: false,
@@ -260,12 +313,51 @@ export function MobileNav({ page, setPage }) {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: '8px 0 14px', borderBottom: '1px solid var(--border)', marginBottom: 14 }}>
                 <div style={{ fontSize: '.7rem', fontWeight: 700, textTransform: 'uppercase', color: T.sky }}>Independent builder</div>
                 <div style={{ fontSize: '.88rem', fontWeight: 600, color: 'var(--text)' }}>{partner1 || 'Solo Builder'}</div>
+                {everBondId && (
+                  <div style={{ fontSize: '.62rem', fontFamily: 'monospace', color: 'var(--text-faint)', marginTop: '2px' }}>{everBondId}</div>
+                )}
                 <button 
-                  onClick={() => { setPage('dashboard'); setOpen(false); alert('Link your partner via the Dashboard workspace upgrade selector.'); }}
+                  onClick={() => { setPage('partner'); setOpen(false); }}
                   style={{ width: '100%', padding: '10px', background: T.sky, border: 'none', borderRadius: 10, color: '#fff', fontWeight: 600, cursor: 'pointer', fontSize: '0.8rem' }}
                 >
-                  🔗 Sync Partner Ledger
+                  🔗 Connect Partner
                 </button>
+              </div>
+            ) : connectionStatus === 'pending' ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6, padding: '8px 0 14px', borderBottom: '1px solid var(--border)', marginBottom: 14 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ fontSize: '1.4rem' }}>⏳</span>
+                  <div>
+                    <div style={{ fontSize: '.63rem', fontWeight: 700, textTransform: 'uppercase', color: T.goldMid, marginBottom: 2 }}>Request Pending</div>
+                    <div style={{ fontSize: '.9rem', fontWeight: 600, color: 'var(--text)' }}>
+                      {partner1} → {partner2 || 'Partner'}
+                    </div>
+                  </div>
+                </div>
+                {everBondId && (
+                  <div style={{ fontSize: '.62rem', fontFamily: 'monospace', color: 'var(--text-faint)', marginTop: '2px' }}>{everBondId}</div>
+                )}
+              </div>
+            ) : connectionStatus === 'connected' ? (
+              <div style={{
+                display: 'flex', flexDirection: 'column', gap: 4,
+                padding: '8px 0 14px', borderBottom: '1px solid var(--border)', marginBottom: 14
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ fontSize: '1.4rem' }}>{stage === 'Married' ? '👑' : '💑'}</span>
+                  <div>
+                    <div style={{
+                      fontSize: '.63rem', fontWeight: 700, textTransform: 'uppercase',
+                      letterSpacing: '.08em', color: stage === 'Married' ? T.gold : T.sage, marginBottom: 2
+                    }}>{stage === 'Married' ? 'Partner Verified' : 'Couple Verified'}</div>
+                    <div style={{ fontSize: '.9rem', fontWeight: 600, color: 'var(--text)' }}>
+                      {partner1} {stage === 'Married' ? '&' : '❤'} {partner2}
+                    </div>
+                  </div>
+                </div>
+                {everBondId && (
+                  <div style={{ fontSize: '.62rem', fontFamily: 'monospace', color: 'var(--text-faint)', marginTop: '2px' }}>{everBondId}</div>
+                )}
               </div>
             ) : !partnerAccepted ? (
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 0 14px', borderBottom: '1px solid var(--border)', marginBottom: 14 }}>
