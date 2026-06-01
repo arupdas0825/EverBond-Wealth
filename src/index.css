@@ -215,6 +215,7 @@ input,select{font-family:var(--fb)}
 .sb-brand{
   display:flex;align-items:center;gap:10px;
   padding:0 6px;margin-bottom:40px;
+  flex-shrink:0;
 }
 .sb-icon{
   width:34px;height:34px;border-radius:10px;flex-shrink:0;
@@ -228,7 +229,17 @@ input,select{font-family:var(--fb)}
 }
 .sb-name span{color:var(--gold-mid)}
 
-.nav-group{display:flex;flex-direction:column;gap:2px;flex:1}
+.nav-group{
+  display:flex;flex-direction:column;gap:2px;flex:1;
+  overflow-y:auto;overflow-x:hidden;
+  padding-right:4px;
+  scrollbar-width:thin;
+  scrollbar-color:var(--border-mid) transparent;
+}
+.nav-group::-webkit-scrollbar{width:4px}
+.nav-group::-webkit-scrollbar-track{background:transparent}
+.nav-group::-webkit-scrollbar-thumb{background:var(--border-mid);border-radius:4px}
+
 .nav-item{
   display:flex;align-items:center;gap:12px;
   padding:11px 13px;border-radius:var(--r-sm);
@@ -259,7 +270,7 @@ input,select{font-family:var(--fb)}
 }
 .nav-item.active .nav-icon-w{opacity:1 !important;}
 
-.sb-footer{border-top:1px solid var(--border);padding-top:18px;margin-top:12px}
+.sb-footer{border-top:1px solid var(--border);padding-top:18px;margin-top:12px;flex-shrink:0}
 .couple-chip{
   display:flex;align-items:center;gap:8px;
   padding:11px 13px;border-radius:var(--r-sm);
