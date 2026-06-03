@@ -2205,3 +2205,92 @@ input,select{font-family:var(--fb)}
     box-shadow: 0 0 0 1px var(--gold-border), 0 0 0 2px rgba(184, 144, 42, 0.05);
   }
 }
+
+/* ── PREMIUM NOTIFICATION CENTER ─────────────────────────── */
+
+.eb-notif-bell-btn {
+  transition: background 0.4s ease, border-color 0.4s ease, color 0.4s ease, transform 0.2s ease !important;
+}
+
+.eb-notif-bell-btn:hover {
+  border-color: rgba(184, 144, 42, 0.45) !important;
+  color: var(--gold) !important;
+}
+
+[data-theme='dark'] .eb-notif-bell-btn:hover {
+  border-color: rgba(255, 255, 255, 0.22) !important;
+  color: #fff !important;
+}
+
+.notif-close-btn:hover {
+  background: var(--border-mid) !important;
+  color: var(--text) !important;
+  transform: rotate(90deg) scale(1.05);
+}
+
+.eb-notif-card {
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.eb-notif-card.unread:hover {
+  box-shadow: var(--sh-sm) !important;
+}
+
+.eb-notif-card.read {
+  opacity: 0.72;
+}
+
+.eb-notif-card.read:hover {
+  opacity: 1;
+  background: rgba(26, 23, 20, 0.02) !important;
+}
+
+[data-theme='dark'] .eb-notif-card.read:hover {
+  background: rgba(255, 255, 255, 0.02) !important;
+}
+
+.eb-notif-list-container::-webkit-scrollbar {
+  width: 4px;
+}
+
+.eb-notif-list-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.eb-notif-list-container::-webkit-scrollbar-thumb {
+  background: var(--border-mid);
+  border-radius: 10px;
+}
+
+/* Adjust ThemeToggle on Desktop to give space for NotificationBell */
+@media (min-width: 768px) {
+  /* No special override needed since bell is positioned at right: 76px and theme toggle is at right: 20px */
+}
+
+/* On Mobile, reposition ThemeToggle and Bell to stay aligned nicely */
+@media (max-width: 767px) {
+  .eb-notif-bell-btn {
+    top: 12px !important;
+    right: 64px !important;
+    width: 40px !important;
+    height: 40px !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    border: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+  
+  /* ThemeToggle position adjustment for mobile header */
+  button[aria-label="Toggle Theme"] {
+    top: 12px !important;
+    right: 16px !important;
+    width: 40px !important;
+    height: 40px !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    border: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+}

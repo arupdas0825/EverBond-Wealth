@@ -21,6 +21,50 @@ export const useFinanceStore = create(
       mindset:   'Balanced',
       theme:     'light',
 
+      // Notifications System
+      notifications: [
+        {
+          id: 'welcome-init',
+          type: 'system',
+          title: 'Welcome to EverBond Wealth',
+          description: 'Your premium shared financial journey starts here. Explore milestones, set goals, and connect your nodes.',
+          isRead: false,
+          createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString()
+        },
+        {
+          id: 'partner-request-sent',
+          type: 'partner',
+          title: 'Partner Connection Request Sent',
+          description: 'An invitation code has been generated. Share it with your partner to link dashboards.',
+          isRead: false,
+          createdAt: new Date(Date.now() - 60 * 60 * 1000).toISOString()
+        },
+        {
+          id: 'income-added-init',
+          type: 'financial',
+          title: 'Income Added Successfully',
+          description: 'Primary income node recorded. Your allocation splits are computed automatically.',
+          isRead: true,
+          createdAt: new Date(Date.now() - 30 * 60 * 1000).toISOString()
+        },
+        {
+          id: 'goal-created-init',
+          type: 'financial',
+          title: 'Financial Goal Created',
+          description: 'A new Retirement target has been initialized under your wealth blueprint.',
+          isRead: true,
+          createdAt: new Date(Date.now() - 15 * 60 * 1000).toISOString()
+        },
+        {
+          id: 'relationship-journey-updated',
+          type: 'relationship',
+          title: 'Relationship Journey Updated',
+          description: 'Unlock Couple and Family Dynasty dashboards by progressing through life stages.',
+          isRead: true,
+          createdAt: new Date(Date.now() - 5 * 60 * 1000).toISOString()
+        }
+      ],
+
       // ── EverBond ID Partner Linking System ──
       everBondId:          '',              // User's permanent EB-[NAME_4]-[HEX_4] (generated on profile save)
       coupleId:            '',              // Permanent Couple ID (EB-COUPLE-XXXX-XXXX)
@@ -103,11 +147,30 @@ export const useFinanceStore = create(
         if (stage === 'Married' && !currentFamilyId) {
           patch.familyId = generateFamilyId(get().partner1, get().partner2);
         }
+
+        const stageNames = {
+          Single: 'Single Builder',
+          Committed: 'Committed Couple',
+          Married: 'Married Dynasty'
+        };
+        get().addNotification({
+          type: 'relationship',
+          title: stage === 'Married' ? 'Family Dashboard Activated' : 'Shared Journey Activated',
+          description: `Stage upgraded to ${stageNames[stage] || stage}. New planning tools are now unlocked.`
+        });
+
         set(patch);
       },
       setMindset: mindset => set({ mindset, mode: mindset }),
       setDreamGoals: dreamGoals => set({ dreamGoals }),
-      setTheme: theme => set({ theme }),
+      setTheme: theme => {
+        get().addNotification({
+          type: 'system',
+          title: 'Theme Updated',
+          description: `Visual appearance changed to ${theme === 'light' ? 'Light Theme' : 'Dark Theme'}.`
+        });
+        set({ theme });
+      },
       
       setOnboardingSingle: data => set(s => ({ onboardingSingle: { ...s.onboardingSingle, ...data } })),
       setOnboardingCommitted: data => set(s => ({ onboardingCommitted: { ...s.onboardingCommitted, ...data } })),
@@ -128,6 +191,11 @@ export const useFinanceStore = create(
 
       /** Send a connection request to a partner */
       sendConnectionRequest: ({ partnerEverBondId, relationshipDate }) => {
+        get().addNotification({
+          type: 'partner',
+          title: 'Partner Connection Request Sent',
+          description: `Invitation sent to ID: ${partnerEverBondId}. Share it to link dashboards.`
+        });
         set({
           partnerEverBondId,
           relationshipDate: relationshipDate || '',
@@ -143,6 +211,11 @@ export const useFinanceStore = create(
       /** Simulate an incoming request from another user (for testing received state) */
       simulateIncomingRequest: ({ senderEverBondId, senderName, relationshipDate }) => {
         const dateVal = relationshipDate || '2025-02-15';
+        get().addNotification({
+          type: 'partner',
+          title: 'Partner Connection Request Received',
+          description: `${senderName} wants to link financial nodes with you. Review and accept the invitation.`
+        });
         set({
           connectionStatus: 'received',
           requestSent: false,
@@ -164,6 +237,11 @@ export const useFinanceStore = create(
 
       /** Decline an incoming request */
       declineRequest: () => {
+        get().addNotification({
+          type: 'partner',
+          title: 'Connection Request Declined',
+          description: `The incoming partner invitation has been declined.`
+        });
         set({
           connectionStatus: 'none',
           requestSent: false,
@@ -194,6 +272,18 @@ export const useFinanceStore = create(
           resolvedCoupleId = generateCoupleId();
         }
 
+        get().addNotification({
+          type: 'partner',
+          title: 'Partner Connected Successfully',
+          description: `Connected to ${resolvedName}. Your shared financial nodes are now active.`
+        });
+
+        get().addNotification({
+          type: 'relationship',
+          title: 'Couple Dashboard Unlocked',
+          description: 'Shared allocations, milestone planning, and combined income streams are now active.'
+        });
+
         set({
           connectionStatus: 'connected',
           partner2: resolvedName,
@@ -217,6 +307,11 @@ export const useFinanceStore = create(
 
       /** Disconnect partner — reset all connection state */
       disconnectPartner: () => {
+        get().addNotification({
+          type: 'partner',
+          title: 'Partner Disconnected',
+          description: 'Your financial dashboard has been unlinked from your partner node.'
+        });
         set({
           connectionStatus: 'none',
           partnerEverBondId: '',
@@ -240,6 +335,30 @@ export const useFinanceStore = create(
         });
       },
 
+      addNotification: ({ type, title, description }) => {
+        const newNotif = {
+          id: `nt-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
+          type,
+          title,
+          description,
+          isRead: false,
+          createdAt: new Date().toISOString()
+        };
+        set(s => ({
+          notifications: [newNotif, ...s.notifications].slice(0, 50)
+        }));
+      },
+      markAsRead: (id) => set(s => ({
+        notifications: s.notifications.map(n => n.id === id ? { ...n, isRead: true } : n)
+      })),
+      markAllRead: () => set(s => ({
+        notifications: s.notifications.map(n => ({ ...n, isRead: true }))
+      })),
+      clearAll: () => set({ notifications: [] }),
+      deleteNotification: (id) => set(s => ({
+        notifications: s.notifications.filter(n => n.id !== id)
+      })),
+
       setProfile: (profileData) => {
         const { 
           partner1, 
@@ -260,6 +379,8 @@ export const useFinanceStore = create(
           connectionStatus,
           relationshipDate,
         } = profileData;
+
+        const wasCompleted = get().onboardingComplete;
 
         const update = { 
           started: true, 
@@ -304,29 +425,151 @@ export const useFinanceStore = create(
         if (partnerId !== undefined) update.partnerId = partnerId;
         if (relationshipId !== undefined) update.relationshipId = relationshipId;
         
+        if (!wasCompleted) {
+          get().addNotification({
+            type: 'system',
+            title: 'Welcome to EverBond Wealth',
+            description: `Dashboard initialized for ${partner1 || 'User'}. Start monitoring and planning your capital splits.`
+          });
+        } else {
+          get().addNotification({
+            type: 'system',
+            title: 'Profile Updated',
+            description: 'Your user profile details have been saved.'
+          });
+        }
+
         set(update);
       },
 
-      setP1Salary: v => set({ p1Salary: v }),
-      setP2Salary: v => set({ p2Salary: v }),
-      setMode:     v => set({ mode: v }),
-      setCurrency: v => set({ currency: v }),
+      setP1Salary: v => {
+        const old = get().p1Salary;
+        if (v !== old) {
+          get().addNotification({
+            type: 'financial',
+            title: 'Income Added',
+            description: `Primary salary updated to ${get().currency} ${v.toLocaleString()}.`
+          });
+        }
+        set({ p1Salary: v });
+      },
+      setP2Salary: v => {
+        const old = get().p2Salary;
+        if (v !== old && v > 0) {
+          get().addNotification({
+            type: 'financial',
+            title: 'Income Added',
+            description: `Partner salary updated to ${get().currency} ${v.toLocaleString()}.`
+          });
+        }
+        set({ p2Salary: v });
+      },
+      setMode:     v => {
+        const old = get().mode;
+        if (v !== old) {
+          get().addNotification({
+            type: 'system',
+            title: 'Settings Saved',
+            description: `Financial allocation mindset set to ${v}.`
+          });
+        }
+        set({ mode: v, mindset: v });
+      },
+      setCurrency: v => {
+        const old = get().currency;
+        if (v !== old) {
+          get().addNotification({
+            type: 'system',
+            title: 'Settings Saved',
+            description: `Currency preferences updated to ${v}.`
+          });
+        }
+        set({ currency: v });
+      },
       setSimYears: v => set({ simYears: v }),
       setSimReturn:v => set({ simReturn: v }),
-      setGoalTargets: t => set({ goalTargets: t }),
+      setGoalTargets: t => {
+        const oldTargets = get().goalTargets;
+        Object.keys(t).forEach(key => {
+          if (t[key] !== oldTargets[key]) {
+            const names = {
+              child: 'Child Education',
+              retirement: 'Retirement Corpus',
+              house: 'Home Purchase',
+              vacation: 'Vacation / Travel'
+            };
+            const name = names[key] || key;
+            if (oldTargets[key] === undefined || oldTargets[key] === 0) {
+              if (t[key] > 0) {
+                get().addNotification({
+                  type: 'financial',
+                  title: 'Goal Created',
+                  description: `Created a new target of ${get().currency} ${t[key].toLocaleString()} for ${name}.`
+                });
+              }
+            } else if (t[key] !== oldTargets[key]) {
+              get().addNotification({
+                type: 'financial',
+                title: 'Goal Updated',
+                description: `Updated target for ${name} to ${get().currency} ${t[key].toLocaleString()}.`
+              });
+            }
+          }
+        });
+        set({ goalTargets: t });
+      },
 
       // Milestone Actions
-      addMilestone: (m) => set(s => ({
-        milestones: [...s.milestones, { ...m, id: Date.now(), createdAt: new Date().toISOString() }]
-      })),
+      addMilestone: (m) => {
+        const newMilestone = { ...m, id: Date.now(), createdAt: new Date().toISOString() };
+        get().addNotification({
+          type: 'financial',
+          title: 'Milestone Created',
+          description: `New financial milestone created: "${m.name || 'Untitled'}".`
+        });
+        set(s => ({ milestones: [...s.milestones, newMilestone] }));
+      },
 
-      updateMilestone: (id, patch) => set(s => ({
-        milestones: s.milestones.map(m => m.id === id ? { ...m, ...patch } : m)
-      })),
+      updateMilestone: (id, patch) => {
+        const oldMilestones = get().milestones;
+        const oldM = oldMilestones.find(m => m.id === id);
+        
+        if (oldM) {
+          const wasAchieved = oldM.monthlySaved >= oldM.targetCost;
+          const isNowAchieved = patch.monthlySaved !== undefined && patch.monthlySaved >= oldM.targetCost;
+          
+          if (!wasAchieved && isNowAchieved) {
+            get().addNotification({
+              type: 'financial',
+              title: 'Milestone Achieved!',
+              description: `Congratulations! You've achieved your target of ${get().currency} ${oldM.targetCost.toLocaleString()} for "${oldM.name}".`
+            });
+          } else if (patch.monthlySaved !== undefined && patch.monthlySaved !== oldM.monthlySaved) {
+            get().addNotification({
+              type: 'financial',
+              title: 'Milestone Updated',
+              description: `Saved amount for "${oldM.name}" updated to ${get().currency} ${patch.monthlySaved.toLocaleString()}.`
+            });
+          }
+        }
+        set(s => ({
+          milestones: s.milestones.map(m => m.id === id ? { ...m, ...patch } : m)
+        }));
+      },
 
-      removeMilestone: (id) => set(s => ({
-        milestones: s.milestones.filter(m => m.id !== id)
-      })),
+      removeMilestone: (id) => {
+        const m = get().milestones.find(mil => mil.id === id);
+        if (m) {
+          get().addNotification({
+            type: 'financial',
+            title: 'Milestone Removed',
+            description: `Milestone "${m.name}" has been deleted.`
+          });
+        }
+        set(s => ({
+          milestones: s.milestones.filter(mil => mil.id !== id)
+        }));
+      },
 
       getTotalSalary: () => {
         const { p1Salary, p2Salary, stage } = get();
@@ -378,6 +621,49 @@ export const useFinanceStore = create(
           verificationStatus: 'unverified',
           invitationCode: '',
           partnerId: '',
+
+          notifications: [
+            {
+              id: 'welcome-init',
+              type: 'system',
+              title: 'Welcome to EverBond Wealth',
+              description: 'Your premium shared financial journey starts here. Explore milestones, set goals, and connect your nodes.',
+              isRead: false,
+              createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString()
+            },
+            {
+              id: 'partner-request-sent',
+              type: 'partner',
+              title: 'Partner Connection Request Sent',
+              description: 'An invitation code has been generated. Share it with your partner to link dashboards.',
+              isRead: false,
+              createdAt: new Date(Date.now() - 60 * 60 * 1000).toISOString()
+            },
+            {
+              id: 'income-added-init',
+              type: 'financial',
+              title: 'Income Added Successfully',
+              description: 'Primary income node recorded. Your allocation splits are computed automatically.',
+              isRead: true,
+              createdAt: new Date(Date.now() - 30 * 60 * 1000).toISOString()
+            },
+            {
+              id: 'goal-created-init',
+              type: 'financial',
+              title: 'Financial Goal Created',
+              description: 'A new Retirement target has been initialized under your wealth blueprint.',
+              isRead: true,
+              createdAt: new Date(Date.now() - 15 * 60 * 1000).toISOString()
+            },
+            {
+              id: 'relationship-journey-updated',
+              type: 'relationship',
+              title: 'Relationship Journey Updated',
+              description: 'Unlock Couple and Family Dynasty dashboards by progressing through life stages.',
+              isRead: true,
+              createdAt: new Date(Date.now() - 5 * 60 * 1000).toISOString()
+            }
+          ],
 
           onboardingSingle: {
             name: '',

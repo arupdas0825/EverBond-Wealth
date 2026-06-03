@@ -16,6 +16,7 @@ import { CouplePlanningPage } from './components/welcome/CouplePlanningPage';
 import { FamilyPlanningPage } from './components/welcome/FamilyPlanningPage';
 import { SettingsPage } from './components/settings/SettingsPage';
 import { ThemeToggle } from './components/common/ThemeToggle';
+import { NotificationCenter } from './components/layout/NotificationCenter';
 import { ToastProvider } from './components/common/Toast';
 import { CookieConsent } from './components/common/CookieConsent';
 import { PrivacyDrawer } from './components/common/PrivacyDrawer';
@@ -156,6 +157,7 @@ export default function App() {
       <OnboardingGuard>
         <div className="eb-app">
           <ThemeToggle />
+          <NotificationCenter />
           {isMobile && (
             <div className="eb-mobile-header">
               <Logo size={32} />
