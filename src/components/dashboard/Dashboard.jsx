@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { Logo } from '../common/Logo';
 import { useToast } from '../common/Toast';
+import { JourneyTimeline } from './JourneyTimeline';
 
 const TT = {
   borderRadius: '14px',
@@ -994,6 +995,11 @@ export function Dashboard({ setPage }) {
         {stage === 'Single' && renderSingleWorkspace()}
         {stage === 'Committed' && renderCommittedWorkspace()}
         {stage === 'Married' && renderMarriedWorkspace()}
+
+        {/* Dedicated Shared Journey Timeline Widget */}
+        <div style={{ marginTop: '24px' }}>
+          <JourneyTimeline />
+        </div>
 
       </div>
 

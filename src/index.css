@@ -2294,3 +2294,25 @@ input,select{font-family:var(--fb)}
     -webkit-backdrop-filter: none !important;
   }
 }
+
+/* ── JOURNEY TIMELINE WIDGET ──────────────────────────────── */
+
+.eb-timeline-card {
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.28s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.28s ease !important;
+}
+
+.eb-timeline-card:hover {
+  transform: translateY(-2px) scale(1.005);
+  box-shadow: var(--sh-md) !important;
+  border-color: var(--border-str) !important;
+}
+
+.eb-timeline-card.milestone-card:hover {
+  box-shadow: 0 15px 40px rgba(184, 144, 42, 0.20), 0 5px 12px rgba(184, 144, 42, 0.08) !important;
+  border-color: var(--gold-mid) !important;
+}
+
+.sim-action-btn:hover {
+  background: var(--bg-warm) !important;
+  color: var(--text) !important;
+}

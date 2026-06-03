@@ -65,6 +65,55 @@ export const useFinanceStore = create(
         }
       ],
 
+      // Journey Timeline System
+      timelineEvents: [
+        {
+          eventId: 'ev-welcome',
+          type: 'system',
+          title: 'Welcome to EverBond Wealth',
+          description: 'Your premium wealth planning workspace has been initialized.',
+          createdBy: 'System',
+          isMilestone: false,
+          createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString()
+        },
+        {
+          eventId: 'ev-profile',
+          type: 'profile',
+          title: 'Profile Created',
+          description: 'Identity parameters established for your EverBond node.',
+          createdBy: 'System',
+          isMilestone: false,
+          createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString()
+        },
+        {
+          eventId: 'ev-income',
+          type: 'financial',
+          title: 'Income Added',
+          description: 'Primary income node recorded. Allocation engine active.',
+          createdBy: 'Solo Builder',
+          isMilestone: false,
+          createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString()
+        },
+        {
+          eventId: 'ev-goal',
+          type: 'goal',
+          title: 'Goal Created',
+          description: 'Retirement Corpus goal added to wealth blueprint.',
+          createdBy: 'Solo Builder',
+          isMilestone: false,
+          createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+        },
+        {
+          eventId: 'ev-partner-req',
+          type: 'relationship',
+          title: 'Partner Connection Request Sent',
+          description: 'Cryptographic invite generated. Waiting for partner ledger handshake.',
+          createdBy: 'Solo Builder',
+          isMilestone: false,
+          createdAt: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString()
+        }
+      ],
+
       // ── EverBond ID Partner Linking System ──
       everBondId:          '',              // User's permanent EB-[NAME_4]-[HEX_4] (generated on profile save)
       coupleId:            '',              // Permanent Couple ID (EB-COUPLE-XXXX-XXXX)
@@ -153,10 +202,18 @@ export const useFinanceStore = create(
           Committed: 'Committed Couple',
           Married: 'Married Dynasty'
         };
+        
         get().addNotification({
           type: 'relationship',
           title: stage === 'Married' ? 'Family Dashboard Activated' : 'Shared Journey Activated',
           description: `Stage upgraded to ${stageNames[stage] || stage}. New planning tools are now unlocked.`
+        });
+
+        get().addTimelineEvent({
+          type: 'profile',
+          title: 'Relationship Stage Updated',
+          description: `Stage set to ${stageNames[stage] || stage}. Dashboard systems calibrated.`,
+          isMilestone: stage === 'Married' || stage === 'Committed'
         });
 
         set(patch);
@@ -169,6 +226,14 @@ export const useFinanceStore = create(
           title: 'Theme Updated',
           description: `Visual appearance changed to ${theme === 'light' ? 'Light Theme' : 'Dark Theme'}.`
         });
+        
+        get().addTimelineEvent({
+          type: 'system',
+          title: 'Theme Changed',
+          description: `User interface set to ${theme === 'light' ? 'Light Mode' : 'Dark Mode'}.`,
+          createdBy: 'System'
+        });
+
         set({ theme });
       },
       
@@ -196,6 +261,13 @@ export const useFinanceStore = create(
           title: 'Partner Connection Request Sent',
           description: `Invitation sent to ID: ${partnerEverBondId}. Share it to link dashboards.`
         });
+        
+        get().addTimelineEvent({
+          type: 'relationship',
+          title: 'Partner Connection Request Sent',
+          description: `Cryptographic linkage code generated for partner ID: ${partnerEverBondId}.`
+        });
+
         set({
           partnerEverBondId,
           relationshipDate: relationshipDate || '',
@@ -216,6 +288,13 @@ export const useFinanceStore = create(
           title: 'Partner Connection Request Received',
           description: `${senderName} wants to link financial nodes with you. Review and accept the invitation.`
         });
+        
+        get().addTimelineEvent({
+          type: 'relationship',
+          title: 'Partner Connection Request Received',
+          description: `${senderName} requested to connect dashboards. Handshake pending.`
+        });
+
         set({
           connectionStatus: 'received',
           requestSent: false,
@@ -242,6 +321,13 @@ export const useFinanceStore = create(
           title: 'Connection Request Declined',
           description: `The incoming partner invitation has been declined.`
         });
+        
+        get().addTimelineEvent({
+          type: 'relationship',
+          title: 'Connection Request Declined',
+          description: `Handshake request was declined by the user.`
+        });
+
         set({
           connectionStatus: 'none',
           requestSent: false,
@@ -284,6 +370,26 @@ export const useFinanceStore = create(
           description: 'Shared allocations, milestone planning, and combined income streams are now active.'
         });
 
+        get().addTimelineEvent({
+          type: 'relationship',
+          title: 'Partner Accepted Connection',
+          description: `Consensual handshake completed with ${resolvedName}. Dual ledgers synced.`
+        });
+        
+        get().addTimelineEvent({
+          type: 'relationship',
+          title: 'Shared Journey Activated',
+          description: `Secure couple planning channel established between ${get().partner1 || 'User'} and ${resolvedName}.`,
+          isMilestone: true
+        });
+        
+        get().addTimelineEvent({
+          type: 'relationship',
+          title: 'Couple Dashboard Unlocked',
+          description: `Consolidated allocations, joint target setting, and savings splits are now active.`,
+          isMilestone: true
+        });
+
         set({
           connectionStatus: 'connected',
           partner2: resolvedName,
@@ -312,6 +418,14 @@ export const useFinanceStore = create(
           title: 'Partner Disconnected',
           description: 'Your financial dashboard has been unlinked from your partner node.'
         });
+        
+        get().addTimelineEvent({
+          type: 'profile',
+          title: 'Partner Disconnected',
+          description: `Cryptographic unlinking complete. Shared folders unmounted.`,
+          isMilestone: true
+        });
+
         set({
           connectionStatus: 'none',
           partnerEverBondId: '',
@@ -358,6 +472,69 @@ export const useFinanceStore = create(
       deleteNotification: (id) => set(s => ({
         notifications: s.notifications.filter(n => n.id !== id)
       })),
+
+      addTimelineEvent: ({ type, title, description, createdBy, isMilestone }) => {
+        const user = createdBy || get().partner1 || 'User';
+        const relId = get().relationshipId || get().coupleId || 'single-node';
+        const newEvent = {
+          eventId: `ev-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
+          type,
+          title,
+          description,
+          createdBy: user,
+          relationshipId: relId,
+          isMilestone: !!isMilestone,
+          createdAt: new Date().toISOString()
+        };
+        set(s => ({
+          timelineEvents: [newEvent, ...s.timelineEvents].slice(0, 80)
+        }));
+      },
+
+      simulatePartnerActivity: (activityType) => {
+        if (get().connectionStatus !== 'connected') return;
+        const p2 = get().partner2 || 'Partner';
+        let patch = {};
+        
+        switch (activityType) {
+          case 'profile_updated':
+            patch = {
+              type: 'profile',
+              title: 'Partner Updated Profile',
+              description: `${p2} updated their profile settings and career indices.`
+            };
+            break;
+          case 'goal_added':
+            patch = {
+              type: 'goal',
+              title: 'Partner Added Goal',
+              description: `${p2} added a new shared goal: "Dream Vacation / Travel".`
+            };
+            break;
+          case 'allocation_updated':
+            patch = {
+              type: 'financial',
+              title: 'Partner Updated Allocation',
+              description: `${p2} modified allocation compromises towards a more aggressive mindset.`
+            };
+            break;
+          case 'milestone_completed':
+            patch = {
+              type: 'financial',
+              title: 'Partner Completed Milestone',
+              description: `${p2} marked the "Tech / Gadget upgrades" milestone as Achieved!`,
+              isMilestone: true
+            };
+            break;
+          default:
+            return;
+        }
+        
+        get().addTimelineEvent({
+          ...patch,
+          createdBy: p2
+        });
+      },
 
       setProfile: (profileData) => {
         const { 
@@ -431,11 +608,24 @@ export const useFinanceStore = create(
             title: 'Welcome to EverBond Wealth',
             description: `Dashboard initialized for ${partner1 || 'User'}. Start monitoring and planning your capital splits.`
           });
+          
+          get().addTimelineEvent({
+            type: 'profile',
+            title: 'Profile Created',
+            description: `Identity nodes created under the name: ${partner1 || 'User'}.`,
+            createdBy: 'System'
+          });
         } else {
           get().addNotification({
             type: 'system',
             title: 'Profile Updated',
             description: 'Your user profile details have been saved.'
+          });
+
+          get().addTimelineEvent({
+            type: 'system',
+            title: 'Profile Updated',
+            description: `Personal information and region parameters updated.`
           });
         }
 
@@ -446,6 +636,11 @@ export const useFinanceStore = create(
         const old = get().p1Salary;
         if (v !== old) {
           get().addNotification({
+            type: 'financial',
+            title: 'Income Added',
+            description: `Primary salary updated to ${get().currency} ${v.toLocaleString()}.`
+          });
+          get().addTimelineEvent({
             type: 'financial',
             title: 'Income Added',
             description: `Primary salary updated to ${get().currency} ${v.toLocaleString()}.`
@@ -461,6 +656,11 @@ export const useFinanceStore = create(
             title: 'Income Added',
             description: `Partner salary updated to ${get().currency} ${v.toLocaleString()}.`
           });
+          get().addTimelineEvent({
+            type: 'financial',
+            title: 'Income Added',
+            description: `Partner salary updated to ${get().currency} ${v.toLocaleString()}.`
+          });
         }
         set({ p2Salary: v });
       },
@@ -471,6 +671,11 @@ export const useFinanceStore = create(
             type: 'system',
             title: 'Settings Saved',
             description: `Financial allocation mindset set to ${v}.`
+          });
+          get().addTimelineEvent({
+            type: 'system',
+            title: 'Settings Updated',
+            description: `Financial allocation split mindset adjusted to "${v}".`
           });
         }
         set({ mode: v, mindset: v });
@@ -483,10 +688,25 @@ export const useFinanceStore = create(
             title: 'Settings Saved',
             description: `Currency preferences updated to ${v}.`
           });
+          get().addTimelineEvent({
+            type: 'system',
+            title: 'Settings Updated',
+            description: `System presentation currency changed to "${v}".`
+          });
         }
         set({ currency: v });
       },
-      setSimYears: v => set({ simYears: v }),
+      setSimYears: v => {
+        const old = get().simYears;
+        if (v !== old) {
+          get().addTimelineEvent({
+            type: 'system',
+            title: 'Simulation Generated',
+            description: `Wealth projection range calibrated to ${v} Years.`
+          });
+        }
+        set({ simYears: v });
+      },
       setSimReturn:v => set({ simReturn: v }),
       setGoalTargets: t => {
         const oldTargets = get().goalTargets;
@@ -506,12 +726,22 @@ export const useFinanceStore = create(
                   title: 'Goal Created',
                   description: `Created a new target of ${get().currency} ${t[key].toLocaleString()} for ${name}.`
                 });
+                get().addTimelineEvent({
+                  type: 'goal',
+                  title: 'Goal Created',
+                  description: `Dream target for "${name}" established at ${get().currency} ${t[key].toLocaleString()}.`
+                });
               }
             } else if (t[key] !== oldTargets[key]) {
               get().addNotification({
                 type: 'financial',
                 title: 'Goal Updated',
                 description: `Updated target for ${name} to ${get().currency} ${t[key].toLocaleString()}.`
+              });
+              get().addTimelineEvent({
+                type: 'goal',
+                title: 'Goal Updated',
+                description: `Target parameter for "${name}" updated to ${get().currency} ${t[key].toLocaleString()}.`
               });
             }
           }
@@ -526,6 +756,11 @@ export const useFinanceStore = create(
           type: 'financial',
           title: 'Milestone Created',
           description: `New financial milestone created: "${m.name || 'Untitled'}".`
+        });
+        get().addTimelineEvent({
+          type: 'financial',
+          title: 'Goal Created',
+          description: `Linear milestone goal "${m.name || 'Untitled'}" scheduled for ${m.targetDate}.`
         });
         set(s => ({ milestones: [...s.milestones, newMilestone] }));
       },
@@ -543,6 +778,18 @@ export const useFinanceStore = create(
               type: 'financial',
               title: 'Milestone Achieved!',
               description: `Congratulations! You've achieved your target of ${get().currency} ${oldM.targetCost.toLocaleString()} for "${oldM.name}".`
+            });
+            get().addTimelineEvent({
+              type: 'financial',
+              title: 'Goal Completed',
+              description: `Target of ${get().currency} ${oldM.targetCost.toLocaleString()} met for "${oldM.name}"!`,
+              isMilestone: true
+            });
+            get().addTimelineEvent({
+              type: 'financial',
+              title: 'Milestone Achieved',
+              description: `Successfully indexed 100% savings for "${oldM.name}".`,
+              isMilestone: true
             });
           } else if (patch.monthlySaved !== undefined && patch.monthlySaved !== oldM.monthlySaved) {
             get().addNotification({
@@ -564,6 +811,11 @@ export const useFinanceStore = create(
             type: 'financial',
             title: 'Milestone Removed',
             description: `Milestone "${m.name}" has been deleted.`
+          });
+          get().addTimelineEvent({
+            type: 'financial',
+            title: 'Settings Updated',
+            description: `Milestone "${m.name}" removed from planning blueprint.`
           });
         }
         set(s => ({
@@ -662,6 +914,54 @@ export const useFinanceStore = create(
               description: 'Unlock Couple and Family Dynasty dashboards by progressing through life stages.',
               isRead: true,
               createdAt: new Date(Date.now() - 5 * 60 * 1000).toISOString()
+            }
+          ],
+
+          timelineEvents: [
+            {
+              eventId: 'ev-welcome',
+              type: 'system',
+              title: 'Welcome to EverBond Wealth',
+              description: 'Your premium wealth planning workspace has been initialized.',
+              createdBy: 'System',
+              isMilestone: false,
+              createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString()
+            },
+            {
+              eventId: 'ev-profile',
+              type: 'profile',
+              title: 'Profile Created',
+              description: 'Identity parameters established for your EverBond node.',
+              createdBy: 'System',
+              isMilestone: false,
+              createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString()
+            },
+            {
+              eventId: 'ev-income',
+              type: 'financial',
+              title: 'Income Added',
+              description: 'Primary income node recorded. Allocation engine active.',
+              createdBy: 'Solo Builder',
+              isMilestone: false,
+              createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString()
+            },
+            {
+              eventId: 'ev-goal',
+              type: 'goal',
+              title: 'Goal Created',
+              description: 'Retirement Corpus goal added to wealth blueprint.',
+              createdBy: 'Solo Builder',
+              isMilestone: false,
+              createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+            },
+            {
+              eventId: 'ev-partner-req',
+              type: 'relationship',
+              title: 'Partner Connection Request Sent',
+              description: 'Cryptographic invite generated. Waiting for partner ledger handshake.',
+              createdBy: 'Solo Builder',
+              isMilestone: false,
+              createdAt: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString()
             }
           ],
 
