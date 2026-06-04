@@ -11,6 +11,7 @@ import { IncomePage }   from './components/income/IncomePage';
 import { AllocationPage } from './components/allocation/AllocationPage';
 import { GoalsPage }    from './components/goals/GoalsPage';
 import { MilestonePage } from './components/milestones/MilestonePage';
+import { AchievementsPage } from './components/achievements/AchievementsPage';
 import { SimulationPage } from './components/simulation/SimulationPage';
 import { PartnerPage } from './components/partner/PartnerPage';
 import { CouplePlanningPage } from './components/welcome/CouplePlanningPage';
@@ -173,6 +174,7 @@ export default function App() {
               {page==='allocation' && <AllocationPage/>}
               {page==='goals'      && <GoalsPage/>}
               {page==='milestones' && <MilestonePage/>}
+              {page==='achievements' && <AchievementsPage/>}
               {page==='simulation' && <SimulationPage/>}
               {page==='partner'    && <PartnerPage setPage={setPage}/>}
               {page==='couple-planning' && <CouplePlanningPage/>}

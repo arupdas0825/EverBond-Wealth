@@ -22,6 +22,8 @@ import {
 import { Logo } from '../common/Logo';
 import { useToast } from '../common/Toast';
 import { JourneyTimeline } from './JourneyTimeline';
+import { ACHIEVEMENTS } from '../../constants/achievements';
+import { Badge } from '../achievements/Badge';
 
 const TT = {
   borderRadius: '14px',
@@ -426,6 +428,35 @@ export function Dashboard({ setPage }) {
             </button>
           </div>
         )}
+      </div>
+    );
+  };
+
+  const RecentAchievementsWidget = () => {
+    const achievementsList = useFinanceStore(s => s.achievements);
+    if (!achievementsList || achievementsList.length === 0) return null;
+    
+    // Sort by unlockedAt desc, take top 3
+    const recentUnlocks = [...achievementsList].sort((a,b) => new Date(b.unlockedAt) - new Date(a.unlockedAt)).slice(0, 3);
+    
+    return (
+      <div style={{ marginBottom: '24px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+          <h3 style={{ fontSize: '1.2rem', fontFamily: T.fontDisplay, fontWeight: 700, margin: 0, color: 'var(--text)' }}>Recent Achievements</h3>
+          <button 
+            onClick={() => setPage('achievements')}
+            style={{ background: 'none', border: 'none', color: T.gold, fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer' }}
+          >
+            View All →
+          </button>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
+          {recentUnlocks.map(u => {
+            const data = ACHIEVEMENTS.find(a => a.id === u.id);
+            if (!data) return null;
+            return <Badge key={data.id} achievement={data} isUnlocked={true} />;
+          })}
+        </div>
       </div>
     );
   };
@@ -998,6 +1029,7 @@ export function Dashboard({ setPage }) {
 
         {/* Dedicated Shared Journey Timeline Widget */}
         <div style={{ marginTop: '24px' }}>
+          <RecentAchievementsWidget />
           <JourneyTimeline />
         </div>
 

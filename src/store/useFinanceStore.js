@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { generatePersonalId, generateCoupleId, generateFamilyId, generateEverBondId } from '../utils/everbondId';
 import { generateInsightsData } from '../utils/insightsData';
+import { getAchievementData, calculateJourneyLevel } from '../constants/achievements';
 
 export const useFinanceStore = create(
   persist(
@@ -30,6 +31,11 @@ export const useFinanceStore = create(
       wealthForecast: [],
       savingsRate: null,
       partnerWealthData: null,
+
+      // Achievements & Journey Rewards
+      achievements: [],
+      userLevel: 1,
+      totalXP: 0,
 
       // Notifications System
       notifications: [
@@ -205,6 +211,38 @@ export const useFinanceStore = create(
         set(data);
       },
 
+      unlockAchievement: (id) => {
+        const { achievements, totalXP } = get();
+        if (achievements.find(a => a.id === id)) return;
+        
+        const achievementData = getAchievementData(id);
+        if (!achievementData) return;
+
+        const newXP = totalXP + achievementData.xp;
+        const newLevel = calculateJourneyLevel(newXP);
+        const oldLevel = get().userLevel;
+        
+        get().addNotification({
+          type: 'system',
+          title: `Achievement Unlocked: ${achievementData.title}`,
+          description: `You earned ${achievementData.xp} XP! ${achievementData.description}`
+        });
+
+        if (newLevel > oldLevel) {
+          get().addNotification({
+            type: 'system',
+            title: `Level Up!`,
+            description: `Congratulations! You reached Journey Level ${newLevel}.`
+          });
+        }
+
+        set({
+          achievements: [...achievements, { id, unlockedAt: new Date().toISOString(), progress: 100 }],
+          totalXP: newXP,
+          userLevel: newLevel
+        });
+      },
+
       setStage: stage => {
         const currentFamilyId = get().familyId;
         const patch = { stage, relationshipStage: stage };
@@ -230,6 +268,10 @@ export const useFinanceStore = create(
           description: `Stage set to ${stageNames[stage] || stage}. Dashboard systems calibrated.`,
           isMilestone: stage === 'Married' || stage === 'Committed'
         });
+
+        if (stage === 'Married') {
+          get().unlockAchievement('dynasty');
+        }
 
         set(patch);
         get().syncInsightsData();
@@ -283,6 +325,8 @@ export const useFinanceStore = create(
           title: 'Partner Connection Request Sent',
           description: `Cryptographic linkage code generated for partner ID: ${partnerEverBondId}.`
         });
+
+        get().unlockAchievement('connection-sent');
 
         set({
           partnerEverBondId,
@@ -405,6 +449,8 @@ export const useFinanceStore = create(
           description: `Consolidated allocations, joint target setting, and savings splits are now active.`,
           isMilestone: true
         });
+
+        get().unlockAchievement('bonded');
 
         set({
           connectionStatus: 'connected',
@@ -647,6 +693,11 @@ export const useFinanceStore = create(
           });
         }
 
+        if (!wasCompleted) {
+          get().unlockAchievement('first-step');
+        }
+        get().unlockAchievement('profile-builder');
+
         set(update);
         get().syncInsightsData();
       },
@@ -664,6 +715,7 @@ export const useFinanceStore = create(
             title: 'Income Added',
             description: `Primary salary updated to ${get().currency} ${v.toLocaleString()}.`
           });
+          get().unlockAchievement('income-creator');
         }
         set({ p1Salary: v });
         get().syncInsightsData();
@@ -755,6 +807,7 @@ export const useFinanceStore = create(
                   title: 'Goal Created',
                   description: `Dream target for "${name}" established at ${get().currency} ${t[key].toLocaleString()}.`
                 });
+                get().unlockAchievement('journey-started');
               }
             } else if (t[key] !== oldTargets[key]) {
               get().addNotification({
@@ -787,6 +840,7 @@ export const useFinanceStore = create(
           title: 'Goal Created',
           description: `Linear milestone goal "${m.name || 'Untitled'}" scheduled for ${m.targetDate}.`
         });
+        get().unlockAchievement('milestone-maker');
         set(s => ({ milestones: [...s.milestones, newMilestone] }));
         get().syncInsightsData();
       },

@@ -11,6 +11,7 @@ const NAV = [
   { key: 'allocation', icon: '📊', label: 'Allocation' },
   { key: 'goals', icon: '🎯', label: 'Goals' },
   { key: 'milestones', icon: '📅', label: 'Milestones' },
+  { key: 'achievements', icon: '🏆', label: 'Journey Rewards' },
   { key: 'simulation', icon: '🚀', label: 'Simulate' },
   { key: 'partner', icon: '🔗', label: 'Partner' },
   { key: 'couple-planning', icon: '💑', label: 'Couple Plan', lockedAt: 'Single' },
