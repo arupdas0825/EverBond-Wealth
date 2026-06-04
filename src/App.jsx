@@ -6,6 +6,7 @@ import { Sidebar } from './components/layout/Sidebar';
 import { MobileNav } from './components/layout/MobileNav';
 import { Logo } from './components/common/Logo';
 import { Dashboard }    from './components/dashboard/Dashboard';
+import { WealthInsightsPage } from './components/insights/WealthInsightsPage';
 import { IncomePage }   from './components/income/IncomePage';
 import { AllocationPage } from './components/allocation/AllocationPage';
 import { GoalsPage }    from './components/goals/GoalsPage';
@@ -167,6 +168,7 @@ export default function App() {
           <main className="eb-main">
             <div className="eb-page">
               {page==='dashboard'  && <Dashboard setPage={setPage}/>}
+              {page==='insights'   && <WealthInsightsPage/>}
               {page==='income'     && <IncomePage/>}
               {page==='allocation' && <AllocationPage/>}
               {page==='goals'      && <GoalsPage/>}

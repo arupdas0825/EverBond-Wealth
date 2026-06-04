@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { LayoutDashboard, Wallet, BarChart3, Target, Settings } from 'lucide-react';
+import { LayoutDashboard, Wallet, BarChart3, Target, Settings, LineChart } from 'lucide-react';
 import { useFinanceStore } from '../../store/useFinanceStore';
 import { T } from '../../theme/tokens';
 
@@ -9,6 +9,7 @@ export function MobileNav({ page, setPage }) {
   
   const navItems = [
     { key: "dashboard", icon: LayoutDashboard, label: "Dashboard" },
+    { key: "insights", icon: LineChart, label: "Insights" },
     { key: "income", icon: Wallet, label: "Income" },
     { key: "allocation", icon: BarChart3, label: "Allocation" },
     { key: "goals", icon: Target, label: "Goals" },

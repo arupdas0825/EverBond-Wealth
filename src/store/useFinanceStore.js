@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { generatePersonalId, generateCoupleId, generateFamilyId, generateEverBondId } from '../utils/everbondId';
+import { generateInsightsData } from '../utils/insightsData';
 
 export const useFinanceStore = create(
   persist(
@@ -20,6 +21,15 @@ export const useFinanceStore = create(
       dreamGoals: [],
       mindset:   'Balanced',
       theme:     'light',
+
+      // Visual Wealth Insights Center State
+      historicalNetWorth: [],
+      incomeHistory: [],
+      expenseHistory: [],
+      goalProgress: [],
+      wealthForecast: [],
+      savingsRate: null,
+      partnerWealthData: null,
 
       // Notifications System
       notifications: [
@@ -190,6 +200,11 @@ export const useFinanceStore = create(
 
       // ── Actions ──
 
+      syncInsightsData: () => {
+        const data = generateInsightsData(get());
+        set(data);
+      },
+
       setStage: stage => {
         const currentFamilyId = get().familyId;
         const patch = { stage, relationshipStage: stage };
@@ -217,9 +232,10 @@ export const useFinanceStore = create(
         });
 
         set(patch);
+        get().syncInsightsData();
       },
-      setMindset: mindset => set({ mindset, mode: mindset }),
-      setDreamGoals: dreamGoals => set({ dreamGoals }),
+      setMindset: mindset => { set({ mindset, mode: mindset }); get().syncInsightsData(); },
+      setDreamGoals: dreamGoals => { set({ dreamGoals }); get().syncInsightsData(); },
       setTheme: theme => {
         get().addNotification({
           type: 'system',
@@ -409,6 +425,7 @@ export const useFinanceStore = create(
           verificationStatus: 'verified',
           partnerId: resolvedId,
         });
+        get().syncInsightsData();
       },
 
       /** Disconnect partner — reset all connection state */
@@ -447,6 +464,7 @@ export const useFinanceStore = create(
           invitationCode: '',
           partnerId: '',
         });
+        get().syncInsightsData();
       },
 
       addNotification: ({ type, title, description }) => {
@@ -630,6 +648,7 @@ export const useFinanceStore = create(
         }
 
         set(update);
+        get().syncInsightsData();
       },
 
       setP1Salary: v => {
@@ -647,6 +666,7 @@ export const useFinanceStore = create(
           });
         }
         set({ p1Salary: v });
+        get().syncInsightsData();
       },
       setP2Salary: v => {
         const old = get().p2Salary;
@@ -663,6 +683,7 @@ export const useFinanceStore = create(
           });
         }
         set({ p2Salary: v });
+        get().syncInsightsData();
       },
       setMode:     v => {
         const old = get().mode;
@@ -679,6 +700,7 @@ export const useFinanceStore = create(
           });
         }
         set({ mode: v, mindset: v });
+        get().syncInsightsData();
       },
       setCurrency: v => {
         const old = get().currency;
@@ -695,6 +717,7 @@ export const useFinanceStore = create(
           });
         }
         set({ currency: v });
+        get().syncInsightsData();
       },
       setSimYears: v => {
         const old = get().simYears;
@@ -706,8 +729,9 @@ export const useFinanceStore = create(
           });
         }
         set({ simYears: v });
+        get().syncInsightsData();
       },
-      setSimReturn:v => set({ simReturn: v }),
+      setSimReturn:v => { set({ simReturn: v }); get().syncInsightsData(); },
       setGoalTargets: t => {
         const oldTargets = get().goalTargets;
         Object.keys(t).forEach(key => {
@@ -747,6 +771,7 @@ export const useFinanceStore = create(
           }
         });
         set({ goalTargets: t });
+        get().syncInsightsData();
       },
 
       // Milestone Actions
@@ -763,6 +788,7 @@ export const useFinanceStore = create(
           description: `Linear milestone goal "${m.name || 'Untitled'}" scheduled for ${m.targetDate}.`
         });
         set(s => ({ milestones: [...s.milestones, newMilestone] }));
+        get().syncInsightsData();
       },
 
       updateMilestone: (id, patch) => {
@@ -802,6 +828,7 @@ export const useFinanceStore = create(
         set(s => ({
           milestones: s.milestones.map(m => m.id === id ? { ...m, ...patch } : m)
         }));
+        get().syncInsightsData();
       },
 
       removeMilestone: (id) => {
@@ -821,6 +848,7 @@ export const useFinanceStore = create(
         set(s => ({
           milestones: s.milestones.filter(mil => mil.id !== id)
         }));
+        get().syncInsightsData();
       },
 
       getTotalSalary: () => {
@@ -998,6 +1026,13 @@ export const useFinanceStore = create(
             house: 8000000,
             vacation: 500000,
           },
+          historicalNetWorth: [],
+          incomeHistory: [],
+          expenseHistory: [],
+          goalProgress: [],
+          wealthForecast: [],
+          savingsRate: null,
+          partnerWealthData: null,
         });
       },
     }),
