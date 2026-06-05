@@ -2316,3 +2316,13 @@ input,select{font-family:var(--fb)}
   background: var(--bg-warm) !important;
   color: var(--text) !important;
 }
+
+/* ── UTILITIES ────────────────────────────────────────────── */
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.hide-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}

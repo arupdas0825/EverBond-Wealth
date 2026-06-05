@@ -14,6 +14,7 @@ import { MilestonePage } from './components/milestones/MilestonePage';
 import { AchievementsPage } from './components/achievements/AchievementsPage';
 import { SimulationPage } from './components/simulation/SimulationPage';
 import { PartnerPage } from './components/partner/PartnerPage';
+import { WorkspacePage } from './components/workspace/WorkspacePage';
 import { CouplePlanningPage } from './components/welcome/CouplePlanningPage';
 import { FamilyPlanningPage } from './components/welcome/FamilyPlanningPage';
 import { SettingsPage } from './components/settings/SettingsPage';
@@ -177,6 +178,7 @@ export default function App() {
               {page==='achievements' && <AchievementsPage/>}
               {page==='simulation' && <SimulationPage/>}
               {page==='partner'    && <PartnerPage setPage={setPage}/>}
+              {page==='workspace'  && <WorkspacePage/>}
               {page==='couple-planning' && <CouplePlanningPage/>}
               {page==='family-planning' && <FamilyPlanningPage/>}
               {page==='settings' && <SettingsPage setActivePolicyDoc={setActivePolicyDoc} />}

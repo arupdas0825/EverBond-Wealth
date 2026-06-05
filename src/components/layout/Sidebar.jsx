@@ -6,6 +6,7 @@ import { T } from '../../theme/tokens';
 
 const NAV = [
   { key: 'dashboard', icon: '◉', label: 'Dashboard' },
+  { key: 'workspace', icon: '📝', label: 'Workspace' },
   { key: 'insights', icon: '📈', label: 'Wealth Insights' },
   { key: 'income', icon: '💰', label: 'Income' },
   { key: 'allocation', icon: '📊', label: 'Allocation' },
