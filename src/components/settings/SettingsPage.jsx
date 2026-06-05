@@ -11,6 +11,7 @@ import { Logo } from '../common/Logo';
 import { Card } from '../common/Card';
 import { formatCurrency } from '../../utils/finance';
 import { useToast } from '../common/Toast';
+import { DocumentationModal } from '../docs/DocumentationModal';
 
 class SettingsErrorBoundary extends React.Component {
   constructor(props) {
@@ -70,6 +71,7 @@ function SettingsPageImpl({ setActivePolicyDoc }) {
   
   // Danger zone modals local state
   const [activeDangerModal, setActiveDangerModal] = useState(null); // 'onboarding' | 'clear' | 'new'
+  const [isDocsOpen, setIsDocsOpen] = useState(false);
 
   const handleCopyId = () => {
     navigator.clipboard.writeText(everBondId);
@@ -980,6 +982,9 @@ function SettingsPageImpl({ setActivePolicyDoc }) {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--border)', paddingTop: '14px', marginTop: '16px' }}>
               <span style={{ fontSize: '0.7rem', color: 'var(--text-faint)' }}>Created by <strong>Arup Das</strong> · Version 2.0</span>
               <div style={{ display: 'flex', gap: '12px' }}>
+                <button onClick={() => setIsDocsOpen(true)} style={{ background: 'transparent', border: 'none', fontSize: '0.72rem', fontWeight: 700, color: T.gold, display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
+                  <FileText size={12} /> Documentation
+                </button>
                 <a href="https://github.com/arupdas0825/EverBond-Wealth" target="_blank" rel="noreferrer" style={{ fontSize: '0.72rem', fontWeight: 700, color: T.gold, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px' }}>
                   GitHub <ExternalLink size={10} />
                 </a>
@@ -1231,6 +1236,7 @@ function SettingsPageImpl({ setActivePolicyDoc }) {
         )}
       </AnimatePresence>
 
+      <DocumentationModal isOpen={isDocsOpen} onClose={() => setIsDocsOpen(false)} />
     </div>
   );
 }
