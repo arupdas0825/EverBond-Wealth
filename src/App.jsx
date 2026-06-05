@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useFinanceStore } from './store/useFinanceStore';
 import { WelcomeScreen } from './components/welcome/WelcomeScreen';
-import { Sidebar } from './components/layout/Sidebar';
+import { FloatingNav } from './components/layout/FloatingNav';
+import { ProfileChip } from './components/layout/ProfileChip';
 import { MobileNav } from './components/layout/MobileNav';
 import { Logo } from './components/common/Logo';
 import { Dashboard }    from './components/dashboard/Dashboard';
@@ -166,7 +167,12 @@ export default function App() {
               <Logo size={32} />
             </div>
           )}
-          {!isMobile && <Sidebar page={page} setPage={setPage} onReset={() => setShowResetModal(true)}/>}
+          {!isMobile && (
+            <>
+              <FloatingNav page={page} setPage={setPage} />
+              <ProfileChip setPage={setPage} onReset={() => setShowResetModal(true)} />
+            </>
+          )}
           <main className="eb-main">
             <div className="eb-page">
               {page==='dashboard'  && <Dashboard setPage={setPage}/>}
