@@ -2408,7 +2408,28 @@ input,select{font-family:var(--fb)}
 }
 
 .doc-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08), 0 0 16px rgba(201, 168, 76, 0.18);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05), 0 0 12px rgba(201, 168, 76, 0.1);
   border-color: var(--gold-mid);
+}
+
+/* Shifting CSS gradient background with GPU acceleration and zero blur recalculations */
+.premium-bg-shift {
+  background: linear-gradient(135deg, var(--bg) 0%, var(--bg-warm) 50%, var(--bg-muted) 100%);
+  background-size: 200% 200%;
+  animation: premiumBgShift 35s ease infinite;
+  transform: translateZ(0);
+  will-change: background-position;
+}
+
+@keyframes premiumBgShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }

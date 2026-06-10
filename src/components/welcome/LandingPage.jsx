@@ -35,94 +35,53 @@ const titleLineVariants = {
 };
 
 const sectionScrollVariants = {
-  hidden: { opacity: 0, y: 32 },
+  hidden: { opacity: 0, y: 12 },
   visible: {
     opacity: 1,
     y: 0,
     transition: {
-      duration: 0.7,
+      duration: 0.5,
       ease: [0.16, 1, 0.3, 1]
     }
   }
 };
 
-// Letter reveal animation component for headings
-const letterVariants = {
-  hidden: { opacity: 0, y: 15 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] }
-  }
-};
-
-const AnimatedText = ({ text }) => {
-  const words = text.split(" ");
-  return (
-    <span style={{ display: 'inline-block' }}>
-      {words.map((word, wordIdx) => (
-        <span key={wordIdx} style={{ display: 'inline-block', whiteSpace: 'nowrap', marginRight: '0.25em' }}>
-          {Array.from(word).map((char, charIdx) => (
-            <motion.span
-              key={charIdx}
-              variants={letterVariants}
-              style={{ display: 'inline-block' }}
-            >
-              {char}
-            </motion.span>
-          ))}
-        </span>
-      ))}
-    </span>
-  );
-};
-
-// Subtle character reveal component for quotes
+// Simplified reveal component for quotes to prevent heavy DOM rendering
 const QuoteReveal = ({ text }) => {
-  const letters = Array.from(text);
-  
-  const container = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: { staggerChildren: 0.012 }
-    }
-  };
-  
-  const child = {
-    hidden: { opacity: 0 },
-    visible: { opacity: 1, transition: { duration: 0.2 } }
-  };
-  
   return (
-    <motion.span variants={container} initial="hidden" whileInView="visible" viewport={{ once: true }}>
-      {letters.map((char, index) => (
-        <motion.span key={index} variants={child}>
-          {char}
-        </motion.span>
-      ))}
+    <motion.span
+      initial={{ opacity: 0, y: 8 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-50px" }}
+      transition={{ duration: 0.5, ease: 'easeOut' }}
+    >
+      {text}
     </motion.span>
   );
 };
 
 const line1Variants = {
-  hidden: { opacity: 0 },
+  hidden: { opacity: 0, y: 12 },
   visible: {
     opacity: 1,
+    y: 0,
     transition: {
-      staggerChildren: 0.03,
-      delayChildren: 0.1
+      duration: 0.5,
+      ease: [0.16, 1, 0.3, 1],
+      delay: 0.1
     }
   }
 };
 
 const line2Variants = {
-  hidden: { opacity: 0 },
+  hidden: { opacity: 0, y: 12 },
   visible: {
     opacity: 1,
+    y: 0,
     transition: {
-      staggerChildren: 0.03,
-      delayChildren: 0.25
+      duration: 0.5,
+      ease: [0.16, 1, 0.3, 1],
+      delay: 0.25
     }
   }
 };
@@ -130,32 +89,18 @@ const line2Variants = {
 export function LandingPage({ onStartJourney }) {
   const theme = useFinanceStore(s => s.theme);
   const [activeStage, setActiveStage] = useState('Single');
-  const [particles, setParticles] = useState([]);
   const [imgFailed, setImgFailed] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Setup Framer Motion scroll hook for Hero parallax
+  // Setup Framer Motion scroll hook for Hero parallax (reduced by 80% for scroll performance)
   const { scrollY } = useScroll();
-  const heroY = useTransform(scrollY, [0, 600], [0, 150]);
+  const heroY = useTransform(scrollY, [0, 600], [0, 30]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsLoading(false);
-    }, 1000); // 1-second loading screen
+    }, 500); // 500ms loading screen for fast interaction
     return () => clearTimeout(timer);
-  }, []);
-
-  // Generate drift particles
-  useEffect(() => {
-    const generated = Array.from({ length: 20 }).map((_, i) => ({
-      id: i,
-      left: `${Math.random() * 100}%`,
-      top: `${Math.random() * 100}%`,
-      delay: Math.random() * 5,
-      duration: 10 + Math.random() * 15,
-      size: 2 + Math.random() * 6
-    }));
-    setParticles(generated);
   }, []);
 
   const stagesInfo = {
@@ -286,8 +231,7 @@ export function LandingPage({ onStartJourney }) {
             initial={{ opacity: 1 }}
             exit={{ 
               opacity: 0,
-              filter: 'blur(10px)',
-              transition: { duration: 0.45, ease: [0.16, 1, 0.3, 1] }
+              transition: { duration: 0.35, ease: 'easeInOut' }
             }}
             style={{
               position: 'fixed',
@@ -304,7 +248,7 @@ export function LandingPage({ onStartJourney }) {
             <motion.div
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              transition={{ duration: 0.5, ease: 'easeOut' }}
+              transition={{ duration: 0.4, ease: 'easeOut' }}
             >
               <Logo size={80} showText={false} />
             </motion.div>
@@ -312,7 +256,7 @@ export function LandingPage({ onStartJourney }) {
               <motion.div
                 initial={{ left: '-100%' }}
                 animate={{ left: '0%' }}
-                transition={{ duration: 1.0, ease: 'easeInOut' }}
+                transition={{ duration: 0.5, ease: 'easeInOut' }}
                 style={{
                   position: 'absolute',
                   top: 0,
@@ -329,10 +273,9 @@ export function LandingPage({ onStartJourney }) {
       <motion.div 
         initial={{ opacity: 0 }}
         animate={!isLoading ? { opacity: 1 } : { opacity: 0 }}
-        transition={{ duration: 0.6 }}
-        className="lp-container" 
+        transition={{ duration: 0.4 }}
+        className="lp-container premium-bg-shift" 
         style={{
-          background: 'var(--bg)',
           color: 'var(--text)',
           width: '100%',
           minHeight: '100vh',
@@ -341,110 +284,6 @@ export function LandingPage({ onStartJourney }) {
           overflowX: 'hidden'
         }}
       >
-      
-      {/* ── Floating Particle Canvas ── */}
-      <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none', zIndex: 0 }}>
-        {particles.map(p => (
-          <motion.div
-            key={p.id}
-            animate={{
-              y: ['0px', '-80px', '0px'],
-              x: ['0px', '40px', '0px'],
-              opacity: [0.15, 0.4, 0.15]
-            }}
-            transition={{
-              duration: p.duration,
-              repeat: Infinity,
-              ease: 'easeInOut',
-              delay: p.delay
-            }}
-            style={{
-              position: 'absolute',
-              left: p.left,
-              top: p.top,
-              width: p.size,
-              height: p.size,
-              borderRadius: '50%',
-              background: theme === 'dark' ? 'rgba(201, 168, 76, 0.25)' : 'rgba(184, 144, 42, 0.15)',
-              filter: 'blur(1px)'
-            }}
-          />
-        ))}
-      </div>
-
-      {/* ── Cinematic Glowing Nodes (Subtle Animated Drift Canvas) ── */}
-      <motion.div
-        animate={{
-          x: [0, 50, -30, 0],
-          y: [0, -40, 30, 0],
-          scale: [1, 1.05, 0.95, 1]
-        }}
-        transition={{
-          repeat: Infinity,
-          duration: 15,
-          ease: "easeInOut"
-        }}
-        style={{
-          position: 'absolute',
-          top: '-15%',
-          right: '-10%',
-          width: '65vw',
-          height: '65vw',
-          borderRadius: '50%',
-          background: theme === 'dark' ? 'radial-gradient(circle, rgba(184, 144, 42, 0.05) 0%, transparent 70%)' : 'radial-gradient(circle, rgba(184, 144, 42, 0.03) 0%, transparent 70%)',
-          filter: 'blur(120px)',
-          pointerEvents: 'none',
-          zIndex: 0
-        }}
-      />
-      <motion.div
-        animate={{
-          x: [0, -40, 40, 0],
-          y: [0, 50, -40, 0],
-          scale: [1, 0.95, 1.05, 1]
-        }}
-        transition={{
-          repeat: Infinity,
-          duration: 18,
-          ease: "easeInOut"
-        }}
-        style={{
-          position: 'absolute',
-          top: '30%',
-          left: '-15%',
-          width: '60vw',
-          height: '60vw',
-          borderRadius: '50%',
-          background: theme === 'dark' ? 'radial-gradient(circle, rgba(220, 200, 160, 0.04) 0%, transparent 70%)' : 'radial-gradient(circle, rgba(220, 200, 160, 0.015) 0%, transparent 70%)',
-          filter: 'blur(130px)',
-          pointerEvents: 'none',
-          zIndex: 0
-        }}
-      />
-      <motion.div
-        animate={{
-          x: [0, 30, -30, 0],
-          y: [0, 30, -30, 0],
-          scale: [1, 1.08, 0.92, 1]
-        }}
-        transition={{
-          repeat: Infinity,
-          duration: 20,
-          ease: "easeInOut"
-        }}
-        style={{
-          position: 'absolute',
-          bottom: '10%',
-          right: '-10%',
-          width: '50vw',
-          height: '50vw',
-          borderRadius: '50%',
-          background: theme === 'dark' ? 'radial-gradient(circle, rgba(201, 168, 76, 0.03) 0%, transparent 70%)' : 'radial-gradient(circle, rgba(201, 168, 76, 0.01) 0%, transparent 70%)',
-          filter: 'blur(110px)',
-          pointerEvents: 'none',
-          zIndex: 0
-        }}
-      />
 
       {/* ── SECTION 1: HERO SECTION ── */}
       <motion.section 
@@ -471,15 +310,10 @@ export function LandingPage({ onStartJourney }) {
           transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
           style={{ marginBottom: '60px' }}
         >
-          <motion.div
-            animate={{ y: [0, -4, 0] }}
-            transition={{ repeat: Infinity, duration: 5, ease: "easeInOut", delay: 0.8 }}
-          >
-            <Logo size={48} showText={true} />
-          </motion.div>
+          <Logo size={48} showText={true} />
         </motion.div>
 
-        {/* Headline — Premium Staggered Luxury Line-by-Line Character Reveal */}
+        {/* Headline — Premium Staggered Luxury Line-by-Line Reveal */}
         <h1 
           style={{
             fontFamily: T.fontDisplay,
@@ -498,7 +332,7 @@ export function LandingPage({ onStartJourney }) {
             animate={!isLoading ? "visible" : "hidden"} 
             style={{ display: 'block' }}
           >
-            <AnimatedText text="Build Wealth Through" />
+            Build Wealth Through
           </motion.span>
           <motion.span 
             variants={line2Variants} 
@@ -506,9 +340,9 @@ export function LandingPage({ onStartJourney }) {
             animate={!isLoading ? "visible" : "hidden"} 
             style={{ display: 'block' }}
           >
-            <AnimatedText text="Every Stage of " />
+            Every Stage of{" "}
             <span style={{ position: 'relative', display: 'inline-block', fontStyle: 'italic', fontWeight: '400', fontFamily: T.fontDisplay }}>
-              <AnimatedText text="Life" />
+              Life
               <svg style={{ position: 'absolute', bottom: '-4px', left: 0, width: '100%', height: '12px' }} viewBox="0 0 100 10" preserveAspectRatio="none">
                 <motion.path 
                   d="M0,7 C30,2 70,2 100,7" 
@@ -518,7 +352,7 @@ export function LandingPage({ onStartJourney }) {
                   strokeLinecap="round" 
                   initial={{ pathLength: 0 }}
                   animate={!isLoading ? { pathLength: 1 } : { pathLength: 0 }}
-                  transition={{ delay: 1.2, duration: 0.8, ease: "easeOut" }}
+                  transition={{ delay: 0.5, duration: 0.6, ease: "easeOut" }}
                 />
               </svg>
             </span>
@@ -553,8 +387,8 @@ export function LandingPage({ onStartJourney }) {
                 onClick={() => setActiveStage(stageName)}
                 className={isActive ? "stage-badge-selected" : ""}
                 whileHover={{ 
-                  scale: 1.05,
-                  boxShadow: `0 4px 15px rgba(201, 168, 76, 0.25)`,
+                  scale: 1.02,
+                  boxShadow: `0 2px 8px rgba(201, 168, 76, 0.1)`,
                   borderColor: T.goldMid
                 }}
                 whileTap={{ scale: 0.98 }}
@@ -615,12 +449,12 @@ export function LandingPage({ onStartJourney }) {
           <motion.button 
             onClick={onStartJourney}
             className="btn-primary"
-            initial={{ opacity: 0, y: 20 }}
-            animate={!isLoading ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 12 }}
+            animate={!isLoading ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
             transition={{ duration: 0.5, ease: 'easeOut', delay: 1.0 }}
             whileHover={{
-              scale: 1.03,
-              boxShadow: '0 12px 30px rgba(184, 144, 42, 0.45)'
+              scale: 1.02,
+              boxShadow: '0 6px 15px rgba(184, 144, 42, 0.15)'
             }}
             whileTap={{ 
               scale: 0.97, 
@@ -647,14 +481,13 @@ export function LandingPage({ onStartJourney }) {
           
           <motion.a 
             href="#features"
-            initial={{ opacity: 0, y: 20 }}
-            animate={!isLoading ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 12 }}
+            animate={!isLoading ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
             transition={{ duration: 0.5, ease: 'easeOut', delay: 1.15 }}
             whileHover={{
               scale: 1.02,
-              y: -2,
               borderColor: T.goldMid,
-              boxShadow: '0 8px 20px rgba(184, 144, 42, 0.2)',
+              boxShadow: '0 4px 10px rgba(184, 144, 42, 0.1)',
               background: 'var(--bg-warm)'
             }}
             whileTap={{ scale: 0.98 }}
@@ -809,7 +642,7 @@ export function LandingPage({ onStartJourney }) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -15 }}
             transition={{ duration: 0.4 }}
-            whileHover={{ y: -3, scale: 1.01, boxShadow: 'var(--sh-lg)' }}
+            whileHover={{ y: -2, scale: 1.01, boxShadow: 'var(--sh-lg)' }}
             style={{
               background: 'var(--bg-card)',
               border: '1px solid var(--border-mid)',
@@ -914,7 +747,7 @@ export function LandingPage({ onStartJourney }) {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px' }}>
             {stepDetails.map((step, idx) => (
               <motion.div
-                whileHover={{ y: -6, scale: 1.01, boxShadow: 'var(--sh-md)' }}
+                whileHover={{ y: -2, scale: 1.01, boxShadow: 'var(--sh-md)' }}
                 key={idx}
                 style={{
                   background: 'var(--bg-card)',
@@ -1008,11 +841,11 @@ export function LandingPage({ onStartJourney }) {
         }}>
           {/* Card 1: Wealth Dashboard (Double Width) */}
           <motion.div 
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 12 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
-            whileHover={{ y: -4, scale: 1.01, boxShadow: 'var(--sh-md)' }}
+            whileHover={{ y: -2, scale: 1.01, boxShadow: 'var(--sh-md)' }}
             style={{
               gridColumn: 'span 8',
               minHeight: '260px',
@@ -1066,11 +899,11 @@ export function LandingPage({ onStartJourney }) {
 
           {/* Card 2: Goal Tracking */}
           <motion.div 
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 12 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
-            whileHover={{ y: -4, scale: 1.01, boxShadow: 'var(--sh-md)' }}
+            whileHover={{ y: -2, scale: 1.01, boxShadow: 'var(--sh-md)' }}
             style={{
               gridColumn: 'span 4',
               background: 'var(--bg-card)',
@@ -1097,11 +930,11 @@ export function LandingPage({ onStartJourney }) {
 
           {/* Card 3: Milestone Planning */}
           <motion.div 
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 12 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.3 }}
-            whileHover={{ y: -4, scale: 1.01, boxShadow: 'var(--sh-md)' }}
+            whileHover={{ y: -2, scale: 1.01, boxShadow: 'var(--sh-md)' }}
             style={{
               gridColumn: 'span 4',
               background: 'var(--bg-card)',
@@ -1128,11 +961,11 @@ export function LandingPage({ onStartJourney }) {
 
           {/* Card 4: Investment Simulation (Double Width) */}
           <motion.div 
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 12 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.4 }}
-            whileHover={{ y: -4, scale: 1.01, boxShadow: 'var(--sh-md)' }}
+            whileHover={{ y: -2, scale: 1.01, boxShadow: 'var(--sh-md)' }}
             style={{
               gridColumn: 'span 8',
               background: 'var(--bg-card)',
@@ -1185,11 +1018,11 @@ export function LandingPage({ onStartJourney }) {
 
           {/* Card 5: Relationship Timeline */}
           <motion.div 
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 12 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
-            whileHover={{ y: -4, scale: 1.01, boxShadow: 'var(--sh-md)' }}
+            whileHover={{ y: -2, scale: 1.01, boxShadow: 'var(--sh-md)' }}
             style={{
               gridColumn: 'span 3',
               background: 'var(--bg-card)',
@@ -1209,11 +1042,11 @@ export function LandingPage({ onStartJourney }) {
 
           {/* Card 6: Partner Connection */}
           <motion.div 
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 12 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
-            whileHover={{ y: -4, scale: 1.01, boxShadow: 'var(--sh-md)' }}
+            whileHover={{ y: -2, scale: 1.01, boxShadow: 'var(--sh-md)' }}
             style={{
               gridColumn: 'span 3',
               background: 'var(--bg-card)',
@@ -1233,11 +1066,11 @@ export function LandingPage({ onStartJourney }) {
 
           {/* Card 7: Family Wealth Planning */}
           <motion.div 
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 12 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.3 }}
-            whileHover={{ y: -4, scale: 1.01, boxShadow: 'var(--sh-md)' }}
+            whileHover={{ y: -2, scale: 1.01, boxShadow: 'var(--sh-md)' }}
             style={{
               gridColumn: 'span 3',
               background: 'var(--bg-card)',
@@ -1257,11 +1090,11 @@ export function LandingPage({ onStartJourney }) {
 
           {/* Card 8: Financial Growth Tracking */}
           <motion.div 
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 12 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.4 }}
-            whileHover={{ y: -4, scale: 1.01, boxShadow: 'var(--sh-md)' }}
+            whileHover={{ y: -2, scale: 1.01, boxShadow: 'var(--sh-md)' }}
             style={{
               gridColumn: 'span 3',
               background: 'var(--bg-card)',
@@ -1320,7 +1153,7 @@ export function LandingPage({ onStartJourney }) {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.1fr', gap: '30px', alignItems: 'stretch' }}>
             {/* Traditional Apps Column */}
             <motion.div 
-              whileHover={{ y: -4, scale: 1.005, boxShadow: 'var(--sh-md)' }}
+              whileHover={{ y: -2, scale: 1.005, boxShadow: 'var(--sh-md)' }}
               style={{
                 background: 'var(--bg-card)',
                 border: '1.5px solid var(--border)',
@@ -1363,7 +1196,7 @@ export function LandingPage({ onStartJourney }) {
 
             {/* EverBond Wealth Column */}
             <motion.div 
-              whileHover={{ y: -6, scale: 1.01, boxShadow: '0 20px 56px rgba(184,144,42,0.2), 0 6px 16px rgba(184,144,42,0.08)' }}
+              whileHover={{ y: -2, scale: 1.01, boxShadow: '0 8px 20px rgba(184,144,42,0.1)' }}
               style={{
                 background: 'var(--bg-card)',
                 border: `2px solid ${T.goldMid}`,
@@ -1461,7 +1294,7 @@ export function LandingPage({ onStartJourney }) {
           {futurePreviews.map((item, idx) => (
             <motion.div
               key={idx}
-              whileHover={{ y: -4, scale: 1.01, boxShadow: 'var(--sh-md)' }}
+              whileHover={{ y: -2, scale: 1.01, boxShadow: 'var(--sh-md)' }}
               style={{
                 background: 'var(--bg-card)',
                 border: '1px solid var(--border)',
@@ -1516,11 +1349,11 @@ export function LandingPage({ onStartJourney }) {
           </div>
 
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 12 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-            whileHover={{ y: -3, scale: 1.01, boxShadow: 'var(--sh-lg)' }}
+            whileHover={{ y: -2, scale: 1.01, boxShadow: 'var(--sh-lg)' }}
             style={{
               background: 'var(--bg-card)',
               border: '1px solid var(--border-mid)',
@@ -1659,11 +1492,10 @@ export function LandingPage({ onStartJourney }) {
           onClick={onStartJourney}
           className="btn-primary"
           whileHover={{
-            y: -3,
             scale: 1.02,
-            boxShadow: '0 12px 30px rgba(184, 144, 42, 0.45)'
+            boxShadow: '0 6px 15px rgba(184, 144, 42, 0.15)'
           }}
-          whileTap={{ scale: 0.97, y: 0 }}
+          whileTap={{ scale: 0.97 }}
           style={{
             padding: '16px 40px',
             fontSize: '1.05rem',
