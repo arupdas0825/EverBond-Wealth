@@ -11,18 +11,18 @@ import { useFinanceStore } from '../../store/useFinanceStore';
 const MAIN_TABS = [
   { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard size={16} /> },
   { id: 'income',    label: 'Income',    icon: <Wallet size={16} /> },
-  { id: 'allocation',label: 'Allocation',icon: <PieChart size={16} /> },
   { id: 'insights',  label: 'Insights',  icon: <LineChart size={16} /> },
   { id: 'partner',   label: 'Partner',   icon: <Heart size={16} /> }
 ];
 
 const MORE_TABS = [
+  { id: 'allocation',      label: 'Allocation',      icon: <PieChart size={14} /> },
   { id: 'goals',           label: 'Goals',           icon: <Target size={14} /> },
   { id: 'milestones',      label: 'Milestones',      icon: <Flag size={14} /> },
-  { id: 'achievements',    label: 'Journey Rewards', icon: <Award size={14} /> },
   { id: 'simulation',      label: 'Simulation',      icon: <Activity size={14} /> },
   { id: 'couple-planning', label: 'Couple Plan',     icon: <Map size={14} /> },
   { id: 'family-planning', label: 'Family Dynasty',  icon: <Shield size={14} /> },
+  { id: 'achievements',    label: 'Journey Rewards', icon: <Award size={14} /> },
   { id: 'settings',        label: 'Documentation',   icon: <FileText size={14} /> }
 ];
 
@@ -35,13 +35,11 @@ export function FloatingNav({ page, setPage }) {
 
   // Smart hover state management
   const handleMouseEnter = () => {
-    // Clear closing timer if user returns cursor
     if (closeTimeout.current) {
       clearTimeout(closeTimeout.current);
       closeTimeout.current = null;
     }
     
-    // Set opening timer with 150ms delay
     if (!isMoreOpen && !openTimeout.current) {
       openTimeout.current = setTimeout(() => {
         setIsMoreOpen(true);
@@ -51,13 +49,11 @@ export function FloatingNav({ page, setPage }) {
   };
 
   const handleMouseLeave = () => {
-    // Clear opening timer if cursor leaves before opening
     if (openTimeout.current) {
       clearTimeout(openTimeout.current);
       openTimeout.current = null;
     }
     
-    // Set closing timer with 200ms delay
     if (!closeTimeout.current) {
       closeTimeout.current = setTimeout(() => {
         setIsMoreOpen(false);
@@ -105,11 +101,13 @@ export function FloatingNav({ page, setPage }) {
       opacity: 1, 
       y: 0,
       transition: {
-        duration: 0.22, // 220ms opening
+        duration: 0.18, // 180ms opening (Apple-style fast transition)
         ease: 'easeOut'
       }
     }
   };
+
+  const isLight = theme === 'light';
 
   return (
     <div className="hide-on-mobile" style={{
@@ -131,11 +129,11 @@ export function FloatingNav({ page, setPage }) {
           gap: '4px',
           padding: '6px 8px',
           borderRadius: '999px',
-          background: theme === 'dark' ? 'rgba(30,30,30,0.6)' : 'rgba(255,255,255,0.7)',
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
-          border: theme === 'dark' ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(255,255,255,0.3)',
-          boxShadow: '0 12px 40px rgba(0,0,0,0.08)'
+          background: theme === 'dark' ? 'rgba(15, 20, 30, 0.65)' : 'rgba(255, 255, 255, 0.65)',
+          backdropFilter: 'blur(20px) saturate(180%)',
+          WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+          border: theme === 'dark' ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid rgba(255, 255, 255, 0.25)',
+          boxShadow: theme === 'dark' ? '0 10px 40px rgba(0, 0, 0, 0.35)' : '0 10px 40px rgba(0, 0, 0, 0.08)'
         }}
       >
         {MAIN_TABS.map(tab => {
@@ -144,7 +142,7 @@ export function FloatingNav({ page, setPage }) {
             <motion.button
               key={tab.id}
               onClick={() => handleNav(tab.id)}
-              whileHover={{ scale: 1.04 }}
+              whileHover={{ scale: 1.02 }}
               transition={{ duration: 0.2 }}
               style={{
                 display: 'flex',
@@ -157,13 +155,29 @@ export function FloatingNav({ page, setPage }) {
                 fontSize: '0.85rem',
                 fontWeight: isActive ? 700 : 600,
                 color: isActive ? '#fff' : 'var(--text-muted)',
-                background: isActive ? `linear-gradient(135deg, ${T.gold} 0%, #d4a017 100%)` : 'transparent',
-                boxShadow: isActive ? `0 4px 14px ${T.gold}40` : 'none',
-                transition: 'all 0.3s ease'
+                background: 'transparent',
+                position: 'relative',
+                outline: 'none'
               }}
             >
-              {tab.icon}
-              {tab.label}
+              {isActive && (
+                <motion.div
+                  layoutId="activeTabPill"
+                  style={{
+                    position: 'absolute',
+                    inset: 0,
+                    borderRadius: '999px',
+                    background: `linear-gradient(135deg, ${T.gold} 0%, #d4a017 100%)`,
+                    zIndex: 0,
+                    boxShadow: `0 4px 14px ${T.gold}40`
+                  }}
+                  transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                />
+              )}
+              <span style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                {tab.icon}
+                {tab.label}
+              </span>
             </motion.button>
           );
         })}
@@ -176,7 +190,7 @@ export function FloatingNav({ page, setPage }) {
           onMouseLeave={handleMouseLeave}
         >
           <motion.button
-            whileHover={{ scale: 1.04 }}
+            whileHover={{ scale: 1.02 }}
             transition={{ duration: 0.2 }}
             style={{
               display: 'flex',
@@ -189,12 +203,28 @@ export function FloatingNav({ page, setPage }) {
               fontSize: '0.85rem',
               fontWeight: activeInMore ? 700 : 600,
               color: activeInMore ? '#fff' : 'var(--text-muted)',
-              background: activeInMore ? `linear-gradient(135deg, ${T.gold} 0%, #d4a017 100%)` : 'transparent',
-              boxShadow: activeInMore ? `0 4px 14px ${T.gold}40` : 'none',
-              transition: 'all 0.3s ease'
+              background: 'transparent',
+              position: 'relative',
+              outline: 'none'
             }}
           >
-            More <ChevronDown size={14} style={{ transform: isMoreOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
+            {activeInMore && (
+              <motion.div
+                layoutId="activeTabPill"
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  borderRadius: '999px',
+                  background: `linear-gradient(135deg, ${T.gold} 0%, #d4a017 100%)`,
+                  zIndex: 0,
+                  boxShadow: `0 4px 14px ${T.gold}40`
+                }}
+                transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+              />
+            )}
+            <span style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', gap: '6px' }}>
+              More <ChevronDown size={14} style={{ transform: isMoreOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
+            </span>
           </motion.button>
 
           <AnimatePresence>
@@ -204,7 +234,7 @@ export function FloatingNav({ page, setPage }) {
                 initial="hidden"
                 animate="visible"
                 exit="hidden"
-                className="eb-more-dropdown"
+                className="eb-glass-dropdown"
               >
                 {MORE_TABS.map(tab => {
                   const isItemActive = page === tab.id;
@@ -212,14 +242,14 @@ export function FloatingNav({ page, setPage }) {
                     <button
                       key={tab.id}
                       onClick={() => handleNav(tab.id)}
-                      className="eb-more-item"
+                      className="eb-dropdown-item"
                       style={{
                         background: isItemActive ? 'var(--gold-pale)' : 'transparent',
                         color: isItemActive ? T.gold : 'var(--text-muted)',
                         fontWeight: isItemActive ? 700 : 600
                       }}
                     >
-                      <span className="eb-more-item-icon">{tab.icon}</span>
+                      <span className="eb-dropdown-item-icon">{tab.icon}</span>
                       {tab.label}
                     </button>
                   );

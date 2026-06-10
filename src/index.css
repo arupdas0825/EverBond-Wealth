@@ -2186,78 +2186,111 @@ input,select{font-family:var(--fb)}
   right: 24px;
   display: flex;
   align-items: center;
-  gap: 16px; /* Spacing between elements: 16px–20px */
+  gap: 16px; /* Spacing: 16px */
   padding: 6px 12px;
   border-radius: 999px;
   z-index: 9999;
   
-  /* Glassmorphism styling */
+  /* Apple Liquid Glass styling */
   background: rgba(255, 255, 255, 0.65);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
   
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 [data-theme="dark"] .eb-top-actions {
   background: rgba(15, 20, 30, 0.65);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
 }
 
-/* Theme Toggle Button Reset (flow inside flex) */
+/* Theme Toggle Glass Button (relative positioning to lock absolute badges if added) */
 .eb-top-actions button.eb-theme-btn-reset,
 .eb-top-actions button[aria-label="Toggle Theme"] {
-  position: static !important;
+  position: relative !important; /* Lock children */
   width: 38px !important;
   height: 38px !important;
-  box-shadow: none !important;
-  background: transparent !important;
-  border: none !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  color: var(--text-muted) !important;
   border-radius: 50% !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-}
-.eb-top-actions button.eb-theme-btn-reset:hover,
-.eb-top-actions button[aria-label="Toggle Theme"]:hover {
-  color: var(--gold) !important;
-  background: rgba(0, 0, 0, 0.04) !important;
-}
-[data-theme="dark"] .eb-top-actions button.eb-theme-btn-reset:hover,
-[data-theme="dark"] .eb-top-actions button[aria-label="Toggle Theme"]:hover {
-  color: #fff !important;
-  background: rgba(255, 255, 255, 0.06) !important;
+  cursor: pointer !important;
+  outline: none !important;
+  color: var(--text) !important;
+  
+  /* Glass button style */
+  background: rgba(255, 255, 255, 0.25) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02) !important;
+  transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease !important;
 }
 
-/* Notification Bell Button Reset */
+.eb-top-actions button.eb-theme-btn-reset:hover,
+.eb-top-actions button[aria-label="Toggle Theme"]:hover {
+  transform: scale(1.05) !important; /* Hover: scale(1.05) */
+  background: rgba(255, 255, 255, 0.45) !important;
+  border-color: rgba(255, 255, 255, 0.4) !important;
+}
+
+[data-theme="dark"] .eb-top-actions button.eb-theme-btn-reset,
+[data-theme="dark"] .eb-top-actions button[aria-label="Toggle Theme"] {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.05) !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1) !important;
+  color: #fff !important;
+}
+
+[data-theme="dark"] .eb-top-actions button.eb-theme-btn-reset:hover,
+[data-theme="dark"] .eb-top-actions button[aria-label="Toggle Theme"]:hover {
+  transform: scale(1.05) !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+/* Notification Bell Glass Button (relative positioning to lock absolute count badge) */
 .eb-top-actions button.eb-notif-bell-btn {
-  position: static !important;
+  position: relative !important; /* Critical to lock absolute child badge */
   width: 38px !important;
   height: 38px !important;
-  box-shadow: none !important;
-  background: transparent !important;
-  border: none !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  color: var(--text-muted) !important;
   border-radius: 50% !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
+  cursor: pointer !important;
+  outline: none !important;
+  color: var(--text) !important;
+  
+  /* Glass button style */
+  background: rgba(255, 255, 255, 0.25) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02) !important;
+  transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease !important;
 }
+
 .eb-top-actions button.eb-notif-bell-btn:hover {
-  color: var(--gold) !important;
-  background: rgba(0, 0, 0, 0.04) !important;
+  transform: scale(1.05) !important; /* Hover: scale(1.05) */
+  background: rgba(255, 255, 255, 0.45) !important;
+  border-color: rgba(255, 255, 255, 0.4) !important;
 }
-[data-theme="dark"] .eb-top-actions button.eb-notif-bell-btn:hover {
+
+[data-theme="dark"] .eb-top-actions button.eb-notif-bell-btn {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.05) !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1) !important;
   color: #fff !important;
-  background: rgba(255, 255, 255, 0.06) !important;
+}
+
+[data-theme="dark"] .eb-top-actions button.eb-notif-bell-btn:hover {
+  transform: scale(1.05) !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
 }
 
 /* Profile Chip Button Reset */
@@ -2266,6 +2299,7 @@ input,select{font-family:var(--fb)}
   top: auto !important;
   right: auto !important;
 }
+
 .eb-top-actions button.eb-profile-chip-btn {
   background: transparent !important;
   border: none !important;
@@ -2281,12 +2315,16 @@ input,select{font-family:var(--fb)}
   gap: 8px !important;
   border-radius: 999px !important;
   cursor: pointer !important;
+  transition: transform 0.2s ease !important;
 }
+
 .eb-top-actions button.eb-profile-chip-btn:hover {
-  background: rgba(0, 0, 0, 0.04) !important;
+  transform: scale(1.02) !important;
+  background: rgba(0, 0, 0, 0.03) !important;
 }
+
 [data-theme="dark"] .eb-top-actions button.eb-profile-chip-btn:hover {
-  background: rgba(255, 255, 255, 0.06) !important;
+  background: rgba(255, 255, 255, 0.04) !important;
 }
 
 /* Text Truncation for profile name */
@@ -2326,8 +2364,11 @@ input,select{font-family:var(--fb)}
     display: none !important; /* Mobile: hide username and chevron */
   }
   
-  .eb-top-actions button.eb-profile-chip-btn {
-    padding: 0 !important; /* mobile padding reset */
+  .eb-top-actions button.eb-profile-chip-btn,
+  .eb-top-actions button.eb-theme-btn-reset,
+  .eb-top-actions button[aria-label="Toggle Theme"],
+  .eb-top-actions button.eb-notif-bell-btn {
+    padding: 0 !important;
     width: 32px !important;
     height: 32px !important;
   }
@@ -2556,37 +2597,37 @@ input,select{font-family:var(--fb)}
   }
 }
 
-/* ── GLASSMORPHISM MORE DROPDOWN ────────────────────────── */
+/* ── GLASSMORPHISM GLASS DROPDOWN ────────────────────────── */
 
-.eb-more-dropdown {
+.eb-glass-dropdown {
   position: absolute;
   top: calc(100% + 12px);
   right: 0;
   width: 220px;
-  border-radius: 24px;
-  padding: 10px;
+  border-radius: 24px; /* Radius: 24px */
+  padding: 8px;
   display: flex;
   flex-direction: column;
   gap: 4px;
   z-index: 10000;
   
   /* Glassmorphism styling */
-  background: rgba(255, 255, 255, 0.65);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.08);
+  background: rgba(255, 255, 255, 0.7); /* Background: rgba(255,255,255,0.7) */
+  backdrop-filter: blur(24px); /* Backdrop Blur: 24px */
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.3); /* Border: 1px solid rgba(255,255,255,0.3) */
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12); /* Shadow: 0 20px 60px rgba(0,0,0,0.12) */
   
   transition: background 0.4s ease, border-color 0.4s ease;
 }
 
-[data-theme="dark"] .eb-more-dropdown {
-  background: rgba(15, 20, 30, 0.65);
+[data-theme="dark"] .eb-glass-dropdown {
+  background: rgba(15, 20, 30, 0.7);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
 }
 
-.eb-more-item {
+.eb-dropdown-item {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -2600,49 +2641,30 @@ input,select{font-family:var(--fb)}
   cursor: pointer;
   text-align: left;
   position: relative;
-  transition: transform 200ms ease, background 200ms ease, color 200ms ease;
+  transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1), background 180ms ease, color 180ms ease; /* Duration: 180ms */
   width: 100%;
   outline: none;
 }
 
-.eb-more-item:hover {
-  transform: translateX(6px);
+.eb-dropdown-item:hover {
+  transform: translateX(8px); /* Translate X: 0 -> 8px */
   background: rgba(0, 0, 0, 0.04) !important;
   color: var(--text) !important;
 }
 
-[data-theme="dark"] .eb-more-item:hover {
+[data-theme="dark"] .eb-dropdown-item:hover {
   background: rgba(255, 255, 255, 0.06) !important;
 }
 
-.eb-more-item-icon {
+.eb-dropdown-item-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  transition: transform 200ms ease;
+  transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1);
   color: inherit;
+  flex-shrink: 0;
 }
 
-.eb-more-item:hover .eb-more-item-icon {
-  transform: scale(1.12); /* icon slightly scales */
-}
-
-/* Left indicator gold line slides in */
-.eb-more-item::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 25%;
-  bottom: 25%;
-  width: 3px;
-  background: var(--gold);
-  border-radius: 999px;
-  opacity: 0;
-  transform: scaleY(0);
-  transition: transform 200ms ease, opacity 200ms ease;
-}
-
-.eb-more-item:hover::before {
-  opacity: 1;
-  transform: scaleY(1);
+.eb-dropdown-item:hover .eb-dropdown-item-icon {
+  transform: scale(1.08); /* Icon scales: 1 -> 1.08 */
 }
