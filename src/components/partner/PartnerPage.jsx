@@ -13,6 +13,7 @@ import {
   QrCode as QrCodeIcon, ScanLine, Camera, Download, Upload, AlertCircle, FileText, Activity
 } from 'lucide-react';
 import * as QRCodeModule from 'react-qr-code';
+import jsQR from 'jsqr';
 
 // Safe resolution for Vite CommonJS bundling:
 const QRCode = QRCodeModule.QRCode || QRCodeModule.default || QRCodeModule;
@@ -22,7 +23,7 @@ const containerVariants = {
   hidden: { opacity: 0 },
   show: {
     opacity: 1,
-    transition: { staggerChildren: 0.1 }
+    transition: { staggerChildren: 0.08 }
   }
 };
 
@@ -68,8 +69,21 @@ const partnerStyles = `
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 9999;
+  z-index: 9998;
   padding: 24px;
+}
+.camera-laser {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: ${T.gold};
+  box-shadow: 0 0 12px ${T.gold};
+  animation: scannerLaserSweep 2s ease-in-out infinite alternate;
+}
+@keyframes scannerLaserSweep {
+  0% { top: 10%; }
+  100% { top: 90%; }
 }
 `;
 
@@ -245,87 +259,210 @@ function PartnerPageContent({ setPage }) {
   const [partnerIdInput, setPartnerIdInput] = useState('');
   const [partnerNameInput, setPartnerNameInput] = useState('');
   const [dateInput, setDateInput] = useState('');
+
+  // QR connection connection modal / camera scanning states
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
+  const [isDesktopModalOpen, setIsDesktopModalOpen] = useState(false);
   const [scannedPartner, setScannedPartner] = useState(null);
+  const [scanError, setScanError] = useState('');
+
+  // Confetti particles & animations overlays
   const [isSimulatingAccept, setIsSimulatingAccept] = useState(false);
   const [simulateProgress, setSimulateProgress] = useState(0);
   const [showDisconnectConfirm, setShowDisconnectConfirm] = useState(false);
   const [showSuccessOverlay, setShowSuccessOverlay] = useState(false);
   const [confettiParticles, setConfettiParticles] = useState([]);
   const [showTimelineModal, setShowTimelineModal] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
 
-  // Auto-format partner ID input as EB-XXXXXX
-  const handleIdInputChange = (e) => {
-    let val = e.target.value.toUpperCase();
-    // Auto-prepend EB- if not present, and handle formatting
-    if (val && !val.startsWith('EB-') && val.length > 2) {
-      val = 'EB-' + val;
-    }
-    setPartnerIdInput(val);
+  // References for Media/Canvas capture loop
+  const videoRef = useRef(null);
+  const offscreenCanvasRef = useRef(null);
+  const streamRef = useRef(null);
+  const scanLoopRef = useRef(null);
+
+  // Responsive device checks
+  const isMobileDevice = () => {
+    if (typeof window === 'undefined') return false;
+    const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    const isSmallScreen = window.innerWidth < 768;
+    return isSmallScreen || isTouch;
   };
 
-  // Clipboard Paste ID
-  const handlePasteId = async () => {
-    try {
-      const text = await navigator.clipboard.readText();
-      if (text) {
-        let cleanText = text.trim().toUpperCase();
-        if (!cleanText.startsWith('EB-') && cleanText.length > 2) {
-          cleanText = 'EB-' + cleanText;
-        }
-        setPartnerIdInput(cleanText);
-        toast.success('EverBond ID pasted from clipboard');
-      } else {
-        toast.error('Clipboard is empty');
-      }
-    } catch (err) {
-      toast.error('Unable to access clipboard. Please type manually.');
-    }
+  // Generate strict, compliant JSON QR Payload
+  const generateQRValue = () => {
+    return JSON.stringify({
+      userId: everBondId || 'EB-PENDING',
+      type: 'partner_connect',
+      version: '2.0'
+    });
   };
 
-  // Copy personal invite link
-  const handleCopyInviteLink = () => {
-    const inviteLink = `https://everbond.wealth/connect?id=${everBondId || 'EB-PENDING'}`;
-    navigator.clipboard.writeText(inviteLink);
-    toast.success('Invite link copied successfully!');
-  };
-
-  // Mock Download QR Code
-  const handleDownloadQR = () => {
-    toast.success('Downloaded personal connection QR Code (Mock).');
-  };
-
-  // Simulate scanning of partner QR
-  const handleStartQRScan = () => {
-    setIsScannerOpen(true);
-    setIsScanning(true);
+  // Start browser camera scan cycle
+  const handleStartScanWorkflow = async (forceMobileOverride = false) => {
+    setScanError('');
     setScannedPartner(null);
 
-    setTimeout(() => {
-      setIsScanning(false);
-      setScannedPartner({
-        everBondId: 'EB-COUPLE-AS22-7K9X',
-        name: 'Taylor',
-        stage: 'Single'
+    // Desktop Check
+    if (!forceMobileOverride && !isMobileDevice()) {
+      setIsDesktopModalOpen(true);
+      return;
+    }
+
+    setIsScannerOpen(true);
+    setIsScanning(true);
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'environment' }
       });
-    }, 2000);
+      streamRef.current = stream;
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        videoRef.current.setAttribute('playsinline', 'true');
+        videoRef.current.play();
+      }
+      scanLoopRef.current = requestAnimationFrame(tickCameraScan);
+    } catch (err) {
+      console.error('Camera streaming permission error:', err);
+      toast.error('Unable to access camera.');
+      setIsScanning(false);
+      setScanError('Camera access denied. Ensure browser permissions are allowed.');
+    }
   };
 
-  const handleConfirmScannedConnection = () => {
+  // Frame processing loop
+  const tickCameraScan = () => {
+    if (!videoRef.current || !offscreenCanvasRef.current || !isScanning) {
+      if (isScanning) {
+        scanLoopRef.current = requestAnimationFrame(tickCameraScan);
+      }
+      return;
+    }
+
+    const video = videoRef.current;
+    const canvas = offscreenCanvasRef.current;
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+
+    if (video.readyState === video.HAVE_ENOUGH_DATA) {
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const code = jsQR(imageData.data, imageData.width, imageData.height, {
+        inversionAttempts: 'dontInvert'
+      });
+
+      if (code) {
+        handleQRDecoded(code.data);
+        return; // Break scan loop
+      }
+    }
+    scanLoopRef.current = requestAnimationFrame(tickCameraScan);
+  };
+
+  // Decode validation & security filters (Step 8 & 9)
+  const handleQRDecoded = (data) => {
+    handleStopCamera();
+
+    let payload = null;
+    try {
+      payload = JSON.parse(data);
+    } catch (err) {
+      // JSON syntax parsing error ( WiFi QR, payment QRs, URLs )
+      setScanError('Invalid EverBond QR: Scanned code contains non-JSON data.');
+      toast.error('Invalid EverBond QR');
+      return;
+    }
+
+    // JSON Validation
+    if (!payload || payload.type !== 'partner_connect') {
+      setScanError('Invalid EverBond QR: Missing or incorrect application connect metadata.');
+      toast.error('Invalid EverBond QR');
+      return;
+    }
+
+    const scannedUserId = payload.userId;
+    if (!scannedUserId || !isValidEverBondId(formatEverBondId(scannedUserId))) {
+      setScanError('Invalid EverBond QR: Scanned EverBond User ID is formatted incorrectly.');
+      toast.error('Invalid EverBond QR');
+      return;
+    }
+
+    // Security constraints
+    if (scannedUserId === everBondId) {
+      setScanError('Self Scanning Blocked: You cannot scan your own connection QR.');
+      toast.error('Cannot connect to your own ID');
+      return;
+    }
+
+    if (scannedUserId === partnerEverBondId && connectionStatus === 'connected') {
+      setScanError('Duplicate Link Blocked: This partner is already connected.');
+      toast.error('Partner already connected');
+      return;
+    }
+
+    // Mock partner information retrieval based on User ID
+    const namePart = scannedUserId.split('-')[1] || 'Partner';
+    const cleanName = namePart.charAt(0) + namePart.slice(1).toLowerCase();
+
+    setScannedPartner({
+      everBondId: scannedUserId,
+      name: cleanName,
+      stage: 'Single'
+    });
+    toast.success('Partner Found!');
+  };
+
+  const handleStopCamera = () => {
+    setIsScanning(false);
+    if (scanLoopRef.current) {
+      cancelAnimationFrame(scanLoopRef.current);
+      scanLoopRef.current = null;
+    }
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
+  };
+
+  const handleCloseScanner = () => {
+    handleStopCamera();
+    setIsScannerOpen(false);
+    setScannedPartner(null);
+    setScanError('');
+  };
+
+  // Submit scanned partner link request
+  const handleConfirmQRConnection = () => {
     setIsScannerOpen(false);
     sendConnectionRequest({
       partnerEverBondId: scannedPartner.everBondId,
       relationshipDate: new Date().toISOString().split('T')[0]
     });
+    // Store resolved partner name globally
     useFinanceStore.setState({ partner2: scannedPartner.name, partnerName: scannedPartner.name });
-    toast.success('Connection request sent via QR scan!');
+    toast.success('Partner connection request sent!');
     setScannedPartner(null);
   };
 
-  // Handle Manual Send Request
-  const handleSendRequest = () => {
+  // Format anniv dates
+  const formatDate = (iso) => {
+    if (!iso) return '—';
+    try {
+      return new Date(iso).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      });
+    } catch {
+      return iso;
+    }
+  };
+
+  // Manual ID connect forms
+  const handleSendManualRequest = () => {
     if (!partnerIdInput.trim()) {
       toast.error('Please enter a valid EverBond ID.');
       return;
@@ -338,7 +475,7 @@ function PartnerPageContent({ setPage }) {
     }
 
     if (formattedId === everBondId) {
-      toast.error('You cannot connect to your own EverBond ID.');
+      toast.error('Cannot connect to your own EverBond ID.');
       return;
     }
 
@@ -354,24 +491,42 @@ function PartnerPageContent({ setPage }) {
     useFinanceStore.setState({ partner2: partnerNameInput.trim(), partnerName: partnerNameInput.trim() });
     toast.success('Connection request sent!');
     
-    // Reset form
+    // Clear forms
     setPartnerIdInput('');
     setPartnerNameInput('');
     setDateInput('');
   };
 
-  // Simulate receiving incoming request
-  const handleSimulateReceive = () => {
+  // Clipboard Paste ID
+  const handlePasteClipboardId = async () => {
+    try {
+      const text = await navigator.clipboard.readText();
+      if (text) {
+        let cleanText = text.trim().toUpperCase();
+        if (!cleanText.startsWith('EB-') && cleanText.length > 2) {
+          cleanText = 'EB-' + cleanText;
+        }
+        setPartnerIdInput(cleanText);
+        toast.success('Pasted EverBond ID from clipboard.');
+      } else {
+        toast.error('Clipboard is empty.');
+      }
+    } catch (err) {
+      toast.error('Unable to read clipboard. Type ID manually.');
+    }
+  };
+
+  // Simulation buttons
+  const handleSimulateIncomingInvite = () => {
     simulateIncomingRequest({
       senderEverBondId: 'EB-ARUP-7K92',
       senderName: 'Arup',
       relationshipDate: '2025-02-15'
     });
-    toast.info('Simulated connection request received from Arup!');
+    toast.info('Simulated connection request received!');
   };
 
-  // Simulate partner accepting outgoing request
-  const handleSimulatePartnerAccept = () => {
+  const handleSimulatePartnerHandshake = () => {
     setIsSimulatingAccept(true);
     setSimulateProgress(0);
 
@@ -384,15 +539,13 @@ function PartnerPageContent({ setPage }) {
         requestAnimationFrame(tick);
       } else {
         setIsSimulatingAccept(false);
-        triggerSuccessCelebration();
+        triggerSuccessConfetti();
       }
     };
     requestAnimationFrame(tick);
   };
 
-  // Trigger Acceptance celebration
-  const triggerSuccessCelebration = () => {
-    // Generate confetti particles
+  const triggerSuccessConfetti = () => {
     const particles = Array.from({ length: 120 }).map((_, i) => ({
       id: i,
       x: Math.random() * 100,
@@ -413,24 +566,25 @@ function PartnerPageContent({ setPage }) {
       acceptConnection({ partnerName: incoming?.senderName || partner2 || 'Partner' });
       if (stage === 'Single') setStage('Committed');
       setShowSuccessOverlay(false);
-      toast.success('Connection handshake complete!');
+      toast.success('Workspace connected successfully!');
     }, 3200);
   };
 
-  const handleDisconnectPartner = () => {
+  // Disconnect Handshake
+  const handleDisconnectNode = () => {
     disconnectPartner();
     setShowDisconnectConfirm(false);
-    toast.info('Partner disconnected. Ledger returned to solo mode.');
+    toast.info('Partner disconnected.');
   };
 
-  // Init EverBond ID on mount
+  // Trigger ID generation on mount
   useEffect(() => {
     initEverBondId();
   }, [initEverBondId]);
 
-  // Inject CSS Keyframes
+  // Inject styles
   useEffect(() => {
-    const styleId = 'partner-custom-styles';
+    const styleId = 'partner-connect-system-styles';
     if (!document.getElementById(styleId)) {
       const el = document.createElement('style');
       el.id = styleId;
@@ -439,40 +593,21 @@ function PartnerPageContent({ setPage }) {
     }
   }, []);
 
-  // Format Anniversaries
-  const formatDate = (iso) => {
-    if (!iso) return '—';
-    try {
-      return new Date(iso).toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-      });
-    } catch {
-      return iso;
-    }
-  };
+  // Cleanup media loops
+  useEffect(() => {
+    return () => {
+      handleStopCamera();
+    };
+  }, []);
 
-  // Loading skeleton state renderer
-  if (isLoading) {
-    return (
-      <div className="fade-in" style={{ padding: '24px', width: '100%' }}>
-        <div className="skeleton-pulse" style={{ width: '150px', height: '14px', background: 'var(--border-mid)', borderRadius: '4px', marginBottom: '12px' }} />
-        <div className="skeleton-pulse" style={{ width: '300px', height: '36px', background: 'var(--border-mid)', borderRadius: '4px', marginBottom: '24px' }} />
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
-          <div className="skeleton-pulse" style={{ height: '240px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '24px' }} />
-          <div className="skeleton-pulse" style={{ height: '240px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '24px' }} />
-        </div>
-      </div>
-    );
-  }
-
-  // Check if ID matches requirements
-  const isInputIdValid = isValidEverBondId(formatEverBondId(partnerIdInput));
+  const isManualIdValid = isValidEverBondId(formatEverBondId(partnerIdInput));
 
   return (
     <div className="fade-in" style={{ position: 'relative', width: '100%' }}>
       
+      {/* Offscreen Canvas for jsQR processing */}
+      <canvas ref={offscreenCanvasRef} style={{ display: 'none' }} />
+
       {/* ── Page Header ── */}
       <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px', marginBottom: '32px' }}>
         <div>
@@ -543,7 +678,7 @@ function PartnerPageContent({ setPage }) {
         </motion.div>
 
         {/* ══════════════════════════════════════════════════
-           UNCONNECTED INTERFACES (Form, QR, Pending Requests)
+           STATE 1 & 2: NOT CONNECTED (Empty state with responsive buttons)
         ══════════════════════════════════════════════════ */}
         {connectionStatus !== 'connected' && (
           <>
@@ -562,6 +697,8 @@ function PartnerPageContent({ setPage }) {
                 <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)', maxWidth: '420px', margin: '0 auto 24px', lineHeight: 1.55 }}>
                   Connect with your partner to unlock shared financial planning, synchronise savings, and co-plan lifetime goals.
                 </p>
+                
+                {/* SECTION A LAYOUT BUTTONS (Step 1 buttons alignment) */}
                 <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
                   <button
                     onClick={() => {
@@ -608,6 +745,25 @@ function PartnerPageContent({ setPage }) {
                   >
                     <QrCodeIcon size={16} /> Generate QR
                   </button>
+                  <button
+                    onClick={() => handleStartScanWorkflow(false)}
+                    className="btn-secondary"
+                    style={{
+                      padding: '12px 28px',
+                      borderRadius: '100px',
+                      fontSize: '0.85rem',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      border: '1px solid var(--border-mid)',
+                      background: 'transparent',
+                      color: 'var(--text)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px'
+                    }}
+                  >
+                    <ScanLine size={16} /> Scan QR
+                  </button>
                 </div>
               </Card>
             </motion.div>
@@ -640,7 +796,7 @@ function PartnerPageContent({ setPage }) {
                             style={{ flex: 1, padding: '10px 14px', fontSize: '0.88rem' }}
                           />
                           <button
-                            onClick={handlePasteId}
+                            onClick={handlePasteClipboardId}
                             className="btn-secondary"
                             title="Paste Clipboard"
                             style={{ padding: '0 12px', border: '1px solid var(--border-mid)', background: 'var(--bg-warm)', borderRadius: '10px', color: 'var(--text)' }}
@@ -650,7 +806,7 @@ function PartnerPageContent({ setPage }) {
                         </div>
                         {partnerIdInput && (
                           <div style={{ marginTop: '6px', fontSize: '0.7rem', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                            {isInputIdValid ? (
+                            {isManualIdValid ? (
                               <span style={{ color: T.sage, fontWeight: 600 }}>✓ Correct ID Format</span>
                             ) : (
                               <span style={{ color: T.rose, fontWeight: 600 }}>✗ ID must start with EB- (6+ characters)</span>
@@ -686,8 +842,8 @@ function PartnerPageContent({ setPage }) {
 
                   <div style={{ display: 'flex', gap: '10px', marginTop: '12px' }}>
                     <button
-                      onClick={handleSendRequest}
-                      disabled={!isInputIdValid || !partnerNameInput.trim()}
+                      onClick={handleSendManualRequest}
+                      disabled={!isManualIdValid || !partnerNameInput.trim()}
                       className="btn-primary"
                       style={{
                         flex: 2,
@@ -695,10 +851,10 @@ function PartnerPageContent({ setPage }) {
                         fontSize: '0.82rem',
                         fontWeight: 700,
                         borderRadius: '10px',
-                        background: (isInputIdValid && partnerNameInput.trim()) ? `linear-gradient(135deg, ${T.goldMid} 0%, ${T.gold} 100%)` : 'var(--bg-muted)',
+                        background: (isManualIdValid && partnerNameInput.trim()) ? `linear-gradient(135deg, ${T.goldMid} 0%, ${T.gold} 100%)` : 'var(--bg-muted)',
                         border: 'none',
-                        color: (isInputIdValid && partnerNameInput.trim()) ? '#fff' : 'var(--text-faint)',
-                        cursor: (isInputIdValid && partnerNameInput.trim()) ? 'pointer' : 'not-allowed',
+                        color: (isManualIdValid && partnerNameInput.trim()) ? '#fff' : 'var(--text-faint)',
+                        cursor: (isManualIdValid && partnerNameInput.trim()) ? 'pointer' : 'not-allowed',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -708,7 +864,7 @@ function PartnerPageContent({ setPage }) {
                       <Sparkles size={14} /> Send Request
                     </button>
                     <button
-                      onClick={handleStartQRScan}
+                      onClick={() => handleStartScanWorkflow(false)}
                       className="btn-secondary"
                       style={{
                         flex: 1,
@@ -737,30 +893,35 @@ function PartnerPageContent({ setPage }) {
                   <div style={{ width: '100%' }}>
                     <GoldLabel>SECTION C: QR CONNECT</GoldLabel>
                     <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '16px', lineHeight: 1.45, textAlign: 'center' }}>
-                      Share your personal code with your partner for instant biometric synchronization.
+                      Share your personal code containing your secure EverBond connection payload.
                     </p>
                   </div>
 
                   {/* Dynamic QR Code Canvas */}
-                  <div style={{
-                    padding: '14px',
-                    background: '#fff',
-                    borderRadius: '20px',
-                    border: `1.5px solid ${T.gold}30`,
-                    boxShadow: '0 10px 30px rgba(184, 144, 42, 0.12)',
-                    marginBottom: '18px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                  }}>
+                  <motion.div 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.5 }}
+                    style={{
+                      padding: '14px',
+                      background: '#fff',
+                      borderRadius: '20px',
+                      border: `1.5px solid ${T.gold}30`,
+                      boxShadow: '0 10px 30px rgba(184, 144, 42, 0.12)',
+                      marginBottom: '18px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}
+                  >
                     <QRCode
-                      value={everBondId || 'EB-PENDING'}
+                      value={generateQRValue()}
                       size={120}
                       fgColor="#1A1714"
                       bgColor="#ffffff"
                       level="H"
                     />
-                  </div>
+                  </motion.div>
 
                   <div style={{ display: 'flex', gap: '8px', width: '100%' }}>
                     <button
@@ -831,7 +992,7 @@ function PartnerPageContent({ setPage }) {
                       <div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
                           <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: T.gold, animation: 'dotPulse 1.5s infinite' }} />
-                          <strong style={{ fontSize: '0.88rem', color: 'var(--text)' }}>Outgoing Invitation</strong>
+                          <strong style={{ fontSize: '0.88rem', color: 'var(--text)' }}>Waiting For Acceptance</strong>
                         </div>
                         <span style={{ fontSize: '0.75rem', color: 'var(--text-faint)' }}>Sent to Partner: </span>
                         <strong style={{ fontFamily: 'monospace', fontSize: '0.75rem', color: 'var(--text)' }}>{partnerEverBondId}</strong>
@@ -844,7 +1005,7 @@ function PartnerPageContent({ setPage }) {
 
                       <div style={{ display: 'flex', gap: '8px' }}>
                         <button
-                          onClick={handleSimulatePartnerAccept}
+                          onClick={handleSimulatePartnerHandshake}
                           disabled={isSimulatingAccept}
                           className="btn-primary"
                           style={{
@@ -908,7 +1069,7 @@ function PartnerPageContent({ setPage }) {
 
                       <div style={{ display: 'flex', gap: '8px' }}>
                         <button
-                          onClick={triggerSuccessCelebration}
+                          onClick={triggerSuccessConfetti}
                           className="btn-primary"
                           style={{
                             padding: '8px 16px',
@@ -960,7 +1121,7 @@ function PartnerPageContent({ setPage }) {
                   {connectionStatus === 'none' && (
                     <div style={{ borderTop: '1px dashed var(--border-mid)', paddingTop: '16px', marginTop: '4px', display: 'flex', justifyContent: 'flex-end' }}>
                       <button
-                        onClick={handleSimulateReceive}
+                        onClick={handleSimulateIncomingInvite}
                         className="btn-secondary"
                         style={{ fontSize: '0.72rem', padding: '6px 12px', border: '1px solid var(--border-mid)', borderRadius: '100px', color: T.gold }}
                       >
@@ -976,18 +1137,16 @@ function PartnerPageContent({ setPage }) {
         )}
 
         {/* ══════════════════════════════════════════════════
-           CONNECTED INTERFACES (Profile, Features, Disconnect)
+           STATE 3: CONNECTED WORKSPACE (Profile Card replaces Empty State)
         ══════════════════════════════════════════════════ */}
         {connectionStatus === 'connected' && (
           <>
-            
-            {/* Grid for Section E (Partner Profile) and Section F (Shared Features) */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.6fr', gap: '24px', alignItems: 'start' }} className="responsive-split">
               
-              {/* SECTION E: Connected Partner Card */}
+              {/* Connected View - Partner Profile Card */}
               <motion.div variants={itemVariants}>
                 <Card style={{ padding: '28px', background: 'radial-gradient(circle at 100% 0%, rgba(184,144,42,0.06) 0%, transparent 60%), var(--bg-card)' }}>
-                  <GoldLabel>SECTION E: CONNECTED PARTNER</GoldLabel>
+                  <GoldLabel>Partner Profile</GoldLabel>
                   
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', margin: '12px 0 24px' }}>
                     <div style={{
@@ -1018,24 +1177,41 @@ function PartnerPageContent({ setPage }) {
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', borderTop: '1px solid var(--border)', paddingTop: '20px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem' }}>
-                      <span style={{ color: 'var(--text-faint)', fontWeight: 600 }}>Partner EverBond ID</span>
+                      <span style={{ color: 'var(--text-faint)', fontWeight: 600 }}>Partner ID</span>
                       <strong style={{ fontFamily: 'monospace', color: 'var(--text)', letterSpacing: '0.04em' }}>{partnerEverBondId}</strong>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem' }}>
                       <span style={{ color: 'var(--text-faint)', fontWeight: 600 }}>Relationship Stage</span>
                       <strong style={{ color: T.gold, fontWeight: 700 }}>{stage}</strong>
                     </div>
-                    {relationshipDate && (
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem' }}>
-                        <span style={{ color: 'var(--text-faint)', fontWeight: 600 }}>Relationship Date</span>
-                        <strong style={{ color: 'var(--text)' }}>{formatDate(relationshipDate)}</strong>
-                      </div>
-                    )}
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem' }}>
-                      <span style={{ color: 'var(--text-faint)', fontWeight: 600 }}>Connection Anniversary</span>
+                      <span style={{ color: 'var(--text-faint)', fontWeight: 600 }}>Connected Since</span>
                       <strong style={{ color: 'var(--text)' }}>{formatDate(requestSentAt || new Date().toISOString())}</strong>
                     </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem' }}>
+                      <span style={{ color: 'var(--text-faint)', fontWeight: 600 }}>Shared Workspace</span>
+                      <strong style={{ color: T.sage, fontWeight: 700 }}>Active Synced</strong>
+                    </div>
                   </div>
+
+                  <button
+                    onClick={() => setShowDisconnectConfirm(true)}
+                    className="btn-reset"
+                    style={{
+                      width: '100%',
+                      marginTop: '24px',
+                      padding: '12px',
+                      borderRadius: '12px',
+                      background: 'var(--rose-lt, rgba(208,92,114,0.1))',
+                      border: '1.5px solid var(--rose-border)',
+                      color: T.rose,
+                      fontSize: '0.82rem',
+                      fontWeight: 700,
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Disconnect Partner
+                  </button>
                 </Card>
               </motion.div>
 
@@ -1147,55 +1323,22 @@ function PartnerPageContent({ setPage }) {
               </motion.div>
 
             </div>
-
-            {/* SECTION G: Danger Zone (Disconnect) */}
-            <motion.div variants={itemVariants}>
-              <Card style={{ border: '1.5px solid var(--rose-border)', background: 'radial-gradient(circle at 0% 0%, rgba(208,92,114,0.03) 0%, transparent 60%), var(--bg-card)' }}>
-                <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.rose, display: 'block', marginBottom: '14px' }}>
-                  SECTION G: DANGER ZONE
-                </span>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
-                  <div>
-                    <h4 style={{ margin: '0 0 4px', fontSize: '0.9rem', fontWeight: 700, color: 'var(--text)' }}>Disconnect Partner Ledger</h4>
-                    <p style={{ margin: 0, fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-                      This will revoke cryptographic node access, unmerge joint ledgers, and return your workspace to single mode.
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => setShowDisconnectConfirm(true)}
-                    className="btn-reset"
-                    style={{
-                      padding: '12px 24px',
-                      borderRadius: '100px',
-                      background: 'var(--rose-lt, rgba(208,92,114,0.1))',
-                      border: '1.5px solid var(--rose-border)',
-                      color: T.rose,
-                      fontSize: '0.82rem',
-                      fontWeight: 700,
-                      cursor: 'pointer'
-                    }}
-                  >
-                    Disconnect Node
-                  </button>
-                </div>
-              </Card>
-            </motion.div>
           </>
         )}
 
       </motion.div>
 
-      {/* ── Scan QR Modal (Portal) ── */}
+      {/* ── DESKTOP BEHAVIOUR: QR Scanner Unavailable Modal ── */}
       {createPortal(
         <AnimatePresence>
-          {isScannerOpen && (
+          {isDesktopModalOpen && (
             <motion.div
               variants={modalOverlayVariants}
               initial="hidden"
               animate="visible"
               exit="exit"
               className="eb-premium-overlay"
-              onClick={() => setIsScannerOpen(false)}
+              onClick={() => setIsDesktopModalOpen(false)}
             >
               <motion.div
                 initial={{ scale: 0.95, opacity: 0 }}
@@ -1207,89 +1350,302 @@ function PartnerPageContent({ setPage }) {
                   background: 'var(--bg-card)',
                   border: '1.5px solid var(--gold-border)',
                   borderRadius: '24px',
-                  padding: '32px',
-                  boxShadow: '0 20px 60px rgba(0,0,0,0.25)',
+                  padding: '36px',
+                  boxShadow: '0 25px 60px rgba(0,0,0,0.18)',
                   position: 'relative'
                 }}
                 onClick={(e) => e.stopPropagation()}
               >
+                {/* Close Button */}
                 <button
                   className="eb-modal-close"
-                  onClick={() => setIsScannerOpen(false)}
+                  onClick={() => setIsDesktopModalOpen(false)}
                   style={{ top: '16px', right: '16px' }}
                 >
                   <X size={16} />
                 </button>
 
                 <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-                  <h3 style={{ fontFamily: T.fontDisplay, fontSize: '1.4rem', fontWeight: 700, color: 'var(--text)', margin: '0 0 6px' }}>Scan Partner QR</h3>
-                  <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', margin: 0 }}>Align the partner's QR code in the viewfinder to link nodes.</p>
+                  <div style={{
+                    width: '56px',
+                    height: '56px',
+                    borderRadius: '50%',
+                    background: 'var(--gold-pale, rgba(184, 144, 42, 0.08))',
+                    color: T.gold,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    margin: '0 auto 16px'
+                  }}>
+                    <QrCodeIcon size={24} />
+                  </div>
+                  <h3 style={{ fontFamily: T.fontDisplay, fontSize: '1.35rem', fontWeight: 800, color: 'var(--text)', margin: '0 0 6px' }}>
+                    QR Scanner Unavailable
+                  </h3>
+                  <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', margin: 0, lineHeight: 1.5 }}>
+                    Use the EverBond mobile experience to scan a partner QR code. You can also send your QR to your partner or continue using manual connection.
+                  </p>
                 </div>
 
-                <div style={{
-                  width: '200px',
-                  height: '200px',
-                  borderRadius: '16px',
-                  border: '2.5px dashed var(--gold-border)',
-                  margin: '0 auto 24px',
-                  position: 'relative',
-                  overflow: 'hidden',
-                  background: 'var(--bg-warm)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}>
-                  {isScanning ? (
-                    <>
-                      <motion.div
-                        animate={{ y: [-90, 90, -90] }}
-                        transition={{ repeat: Infinity, duration: 2, ease: 'linear' }}
-                        style={{ position: 'absolute', left: 0, width: '100%', height: '3px', background: T.gold, boxShadow: `0 0 10px ${T.gold}` }}
-                      />
-                      <Camera size={44} style={{ color: 'var(--text-faint)', opacity: 0.4 }} />
-                    </>
-                  ) : scannedPartner ? (
-                    <div style={{ textAlign: 'center', padding: '12px' }}>
-                      <Check size={36} style={{ color: T.sage, marginBottom: '6px' }} />
-                      <strong style={{ fontSize: '0.88rem', display: 'block', color: 'var(--text)' }}>QR Scanned!</strong>
-                      <span style={{ fontSize: '0.78rem', color: T.gold }}>{scannedPartner.name}</span>
-                    </div>
-                  ) : null}
-                </div>
-
-                {scannedPartner && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <button
+                    onClick={handleOpenMobileVersionSim}
+                    className="btn-primary"
                     style={{
-                      background: 'var(--bg-warm, rgba(0,0,0,0.015))',
+                      width: '100%',
+                      padding: '12px',
+                      borderRadius: '100px',
+                      background: `linear-gradient(135deg, ${T.goldMid} 0%, ${T.gold} 100%)`,
+                      border: 'none',
+                      color: '#fff',
+                      fontSize: '0.85rem',
+                      fontWeight: 700,
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Open Mobile Version
+                  </button>
+                  <button
+                    onClick={() => {
+                      setIsDesktopModalOpen(false);
+                      const element = document.getElementById('connect-form-section');
+                      element?.scrollIntoView({ behavior: 'smooth' });
+                    }}
+                    className="btn-secondary"
+                    style={{
+                      width: '100%',
+                      padding: '12px',
+                      borderRadius: '100px',
                       border: '1px solid var(--border-mid)',
-                      borderRadius: '16px',
-                      padding: '16px',
-                      marginBottom: '24px',
+                      background: 'transparent',
+                      color: 'var(--text)',
+                      fontSize: '0.85rem',
+                      fontWeight: 700,
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Manual Connect
+                  </button>
+                  <button
+                    onClick={() => setIsDesktopModalOpen(false)}
+                    className="btn-reset"
+                    style={{
+                      width: '100%',
+                      padding: '10px',
+                      fontSize: '0.8rem',
+                      color: 'var(--text-faint)',
+                      cursor: 'pointer',
                       textAlign: 'center'
                     }}
                   >
-                    <span style={{ fontSize: '0.7rem', color: 'var(--text-faint)', display: 'block', marginBottom: '2px' }}>Scanned Node ID</span>
-                    <strong style={{ fontFamily: 'monospace', fontSize: '0.92rem', color: 'var(--text)' }}>{scannedPartner.everBondId}</strong>
+                    Close
+                  </button>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
+
+      {/* ── MOBILE BEHAVIOUR: Real-time Camera Scanner Modal ── */}
+      {createPortal(
+        <AnimatePresence>
+          {isScannerOpen && (
+            <motion.div
+              variants={modalOverlayVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              className="eb-premium-overlay"
+              style={{ zIndex: 10000 }}
+              onClick={handleCloseScanner}
+            >
+              <motion.div
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.95, opacity: 0 }}
+                style={{
+                  width: '100%',
+                  maxWidth: '480px',
+                  background: 'var(--bg-card)',
+                  border: '1.5px solid var(--gold-border)',
+                  borderRadius: '24px',
+                  padding: '28px',
+                  boxShadow: '0 20px 60px rgba(0,0,0,0.25)',
+                  position: 'relative'
+                }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* Close Button */}
+                <button
+                  className="eb-modal-close"
+                  onClick={handleCloseScanner}
+                  style={{ top: '16px', right: '16px' }}
+                >
+                  <X size={16} />
+                </button>
+
+                <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+                  <h3 style={{ fontFamily: T.fontDisplay, fontSize: '1.3rem', fontWeight: 800, color: 'var(--text)', margin: '0 0 4px' }}>
+                    Scan Partner QR
+                  </h3>
+                  <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', margin: 0 }}>
+                    Align the partner's EverBond QR inside the viewport brackets to synchronize nodes.
+                  </p>
+                </div>
+
+                {/* Camera Viewfinder Area */}
+                <div style={{
+                  width: '260px',
+                  height: '260px',
+                  borderRadius: '20px',
+                  border: '3px solid var(--gold-border)',
+                  margin: '0 auto 20px',
+                  position: 'relative',
+                  overflow: 'hidden',
+                  background: '#000',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: 'inset 0 0 30px rgba(0,0,0,0.8)'
+                }}>
+                  {isScanning ? (
+                    <>
+                      {/* Sweep Laser */}
+                      <div className="camera-laser" />
+                      
+                      {/* Viewfinder brackets */}
+                      <div style={{ position: 'absolute', top: '20px', left: '20px', width: '20px', height: '20px', borderTop: `3px solid ${T.gold}`, borderLeft: `3px solid ${T.gold}` }} />
+                      <div style={{ position: 'absolute', top: '20px', right: '20px', width: '20px', height: '20px', borderTop: `3px solid ${T.gold}`, borderRight: `3px solid ${T.gold}` }} />
+                      <div style={{ position: 'absolute', bottom: '20px', left: '20px', width: '20px', height: '20px', borderBottom: `3px solid ${T.gold}`, borderLeft: `3px solid ${T.gold}` }} />
+                      <div style={{ position: 'absolute', bottom: '20px', right: '20px', width: '20px', height: '20px', borderBottom: `3px solid ${T.gold}`, borderRight: `3px solid ${T.gold}` }} />
+
+                      <video
+                        ref={videoRef}
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                      />
+                    </>
+                  ) : scannedPartner ? (
+                    // Scale + Checkmark success animation (Step 10)
+                    <motion.div
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ type: 'spring', stiffness: 220, damping: 15 }}
+                      style={{
+                        width: '72px',
+                        height: '72px',
+                        borderRadius: '50%',
+                        background: T.sage,
+                        color: '#fff',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        boxShadow: '0 8px 20px rgba(78, 155, 120, 0.4)'
+                      }}
+                    >
+                      <Check size={36} className="eb-check-pop" />
+                    </motion.div>
+                  ) : (
+                    <div style={{ textAlign: 'center', padding: '16px' }}>
+                      <Camera size={44} style={{ color: 'var(--text-faint)', opacity: 0.3, marginBottom: '8px' }} />
+                      <span style={{ fontSize: '0.78rem', color: 'var(--text-faint)', display: 'block' }}>Camera stopped.</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Error Validation State (Step 8) */}
+                {scanError && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    style={{
+                      background: 'var(--rose-lt, rgba(208,92,114,0.08))',
+                      border: '1px solid var(--rose-border)',
+                      borderRadius: '12px',
+                      padding: '12px',
+                      marginBottom: '20px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      color: T.rose
+                    }}
+                  >
+                    <AlertCircle size={16} style={{ flexShrink: 0 }} />
+                    <span style={{ fontSize: '0.75rem', fontWeight: 600 }}>{scanError}</span>
                   </motion.div>
                 )}
 
-                <div style={{ display: 'flex', gap: '12px' }}>
+                {/* Confirmation Modal: Partner Found (Step 9) */}
+                {scannedPartner && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    style={{
+                      background: 'radial-gradient(circle at 100% 0%, rgba(184,144,42,0.03) 0%, transparent 60%), var(--bg-card)',
+                      border: '1px solid var(--gold-border)',
+                      borderRadius: '16px',
+                      padding: '16px 20px',
+                      marginBottom: '20px'
+                    }}
+                  >
+                    <h4 style={{ margin: '0 0 10px', fontSize: '0.85rem', color: T.gold, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                      Partner Found
+                    </h4>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', textAlign: 'left' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem' }}>
+                        <span style={{ color: 'var(--text-faint)', fontWeight: 500 }}>User ID</span>
+                        <strong style={{ fontFamily: 'monospace', color: 'var(--text)' }}>{scannedPartner.everBondId}</strong>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem' }}>
+                        <span style={{ color: 'var(--text-faint)', fontWeight: 500 }}>Partner Name</span>
+                        <strong style={{ color: 'var(--text)' }}>{scannedPartner.name}</strong>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem' }}>
+                        <span style={{ color: 'var(--text-faint)', fontWeight: 500 }}>Relationship Stage</span>
+                        <strong style={{ color: 'var(--text)' }}>{scannedPartner.stage}</strong>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* Scanner Controls */}
+                <div style={{ display: 'flex', gap: '10px' }}>
                   <button
-                    onClick={() => setIsScannerOpen(false)}
+                    onClick={handleCloseScanner}
                     className="btn-secondary"
-                    style={{ flex: 1, padding: '12px', borderRadius: '100px', border: '1px solid var(--border-mid)', background: 'transparent', color: 'var(--text)', cursor: 'pointer' }}
+                    style={{
+                      flex: 1,
+                      padding: '12px',
+                      borderRadius: '100px',
+                      border: '1px solid var(--border-mid)',
+                      background: 'transparent',
+                      color: 'var(--text)',
+                      fontSize: '0.82rem',
+                      fontWeight: 700,
+                      cursor: 'pointer'
+                    }}
                   >
                     Cancel
                   </button>
                   {scannedPartner && (
                     <button
-                      onClick={handleConfirmScannedConnection}
+                      onClick={handleConfirmQRConnection}
                       className="btn-primary"
-                      style={{ flex: 1, padding: '12px', borderRadius: '100px', background: `linear-gradient(135deg, ${T.goldMid} 0%, ${T.gold} 100%)`, border: 'none', color: '#fff', cursor: 'pointer', fontWeight: 700 }}
+                      style={{
+                        flex: 1,
+                        padding: '12px',
+                        borderRadius: '100px',
+                        background: `linear-gradient(135deg, ${T.goldMid} 0%, ${T.gold} 100%)`,
+                        border: 'none',
+                        color: '#fff',
+                        fontSize: '0.82rem',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        boxShadow: '0 6px 15px rgba(184,144,42,0.2)'
+                      }}
                     >
-                      Connect Node
+                      Connect Partner
                     </button>
                   )}
                 </div>
@@ -1300,7 +1656,7 @@ function PartnerPageContent({ setPage }) {
         document.body
       )}
 
-      {/* ── Disconnect Confirmation Modal (Portal) ── */}
+      {/* ── Disconnect Confirmation Modal ── */}
       {createPortal(
         <AnimatePresence>
           {showDisconnectConfirm && (
@@ -1310,6 +1666,7 @@ function PartnerPageContent({ setPage }) {
               animate="visible"
               exit="exit"
               className="eb-premium-overlay"
+              style={{ zIndex: 10000 }}
               onClick={() => setShowDisconnectConfirm(false)}
             >
               <motion.div
@@ -1366,7 +1723,7 @@ function PartnerPageContent({ setPage }) {
                     Cancel
                   </button>
                   <button
-                    onClick={handleDisconnectPartner}
+                    onClick={handleDisconnectNode}
                     className="btn-primary"
                     style={{
                       flex: 1,
@@ -1529,7 +1886,7 @@ function PartnerPageContent({ setPage }) {
         )}
       </AnimatePresence>
 
-      {/* ── Timeline Events Slide-over Modal (Portal) ── */}
+      {/* ── Timeline Events Slide-over Modal ── */}
       {createPortal(
         <AnimatePresence>
           {showTimelineModal && (
@@ -1539,6 +1896,7 @@ function PartnerPageContent({ setPage }) {
               animate="visible"
               exit="exit"
               className="eb-premium-overlay"
+              style={{ zIndex: 10000 }}
               onClick={() => setShowTimelineModal(false)}
             >
               <motion.div

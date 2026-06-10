@@ -544,12 +544,20 @@ export const useFinanceStore = create(
           requestSent: false,
           requestReceived: false,
           incomingRequest: null,
+          p2Salary: 85000,
+          dreamGoals: ['house', 'retirement', 'vacation', 'child'],
+          goalTargets: {
+            child: 7500000,
+            retirement: 30000000,
+            house: 15000000,
+            vacation: 1000000
+          },
           sharedWorkspace: {
             unlocked: true,
             syncedAt: new Date().toISOString(),
-            goals: [],
-            notesCount: get().workspaceNotes?.length || 0,
-            tasksCount: get().workspaceTasks?.length || 0
+            goals: ['house', 'retirement', 'vacation', 'child'],
+            notesCount: get().workspaceNotes?.length || 3,
+            tasksCount: get().workspaceTasks?.length || 2
           },
           
           // Sync legacy fields
