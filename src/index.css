@@ -2790,3 +2790,56 @@ input,select{font-family:var(--fb)}
   border: 1px solid rgba(255, 255, 255, 0.15);
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.28);
 }
+
+/* Apple Card Style for Dashboard V3 Refocus */
+.apple-card {
+  background: var(--bg-card);
+  border-radius: 24px !important;
+  padding: 24px;
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1), background 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+[data-theme="dark"] .apple-card {
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
+}
+
+.apple-card:hover {
+  transform: translateY(-4px) scale(1.01);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="dark"] .apple-card:hover {
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+}
+
+/* Apple Gold card for Net Worth Hero panel */
+.apple-card-gold {
+  background: linear-gradient(150deg, #FFFFFF 0%, #FAF6E8 100%);
+  border: 1px solid rgba(184, 144, 42, 0.15);
+  border-radius: 24px !important;
+  padding: 24px;
+  box-shadow: 0 12px 35px rgba(184, 144, 42, 0.06);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+[data-theme="dark"] .apple-card-gold {
+  background: linear-gradient(150deg, #1C1914 0%, #0E0C09 100%);
+  border: 1px solid rgba(184, 144, 42, 0.25);
+  box-shadow: 0 12px 45px rgba(0, 0, 0, 0.3);
+}
+
+.apple-card-gold:hover {
+  transform: translateY(-4px) scale(1.01);
+  box-shadow: 0 22px 50px rgba(184, 144, 42, 0.15);
+}
+
+[data-theme="dark"] .apple-card-gold:hover {
+  box-shadow: 0 22px 55px rgba(0, 0, 0, 0.45);
+}

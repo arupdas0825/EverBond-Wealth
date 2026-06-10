@@ -2,158 +2,40 @@ import React, { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { 
   PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, 
-  XAxis, YAxis, Tooltip, AreaChart, Area 
+  XAxis, YAxis, Tooltip, AreaChart, Area, LineChart, Line
 } from 'recharts';
 import { useFinanceStore } from '../../store/useFinanceStore';
 import { 
   calculateFinancialSnapshot, calculateHealthScore, 
-  formatCurrency, formatCompact, simulateGrowth, calculateGoalTimeline 
+  formatCurrency, formatCompact
 } from '../../utils/finance';
-import { totalMilestoneContribution, requiredMonthlySaving, parseMilestoneDate } from '../../utils/milestones';
 import { T } from '../../theme/tokens';
-import { Card, StatCard } from '../common/Card';
+import { Card } from '../common/Card';
 import { 
-  ShieldAlert, Heart, Users, Coins, Sparkles, Flame, UserCheck, 
-  Crown, Lock, RefreshCw, Copy, Check, Link, ArrowRight, User, 
-  Smartphone, Key, Calendar, TrendingUp, Target, Milestone, 
-  Shield, Award, Landmark, GraduationCap, Briefcase, ChevronRight,
-  TrendingDown, PlusCircle, Compass, HelpCircle, BarChart3, Info
+  TrendingUp, TrendingDown, Wallet, Coins, Shield, Landmark, 
+  GraduationCap, Briefcase, Target, Calendar, Sparkles, Info,
+  ArrowUpRight, AlertCircle, CheckCircle2, ChevronRight, Activity, FileText
 } from 'lucide-react';
 import { Logo } from '../common/Logo';
-import { useToast } from '../common/Toast';
-import { JourneyTimeline } from './JourneyTimeline';
-import { ACHIEVEMENTS } from '../../constants/achievements';
-import { Badge } from '../achievements/Badge';
 
-const TT = {
-  borderRadius: '14px',
+const CHART_TOOLTIP_STYLE = {
+  borderRadius: '16px',
   border: '1px solid var(--border-mid)',
-  boxShadow: 'var(--sh-md)',
-  fontFamily: T.fontBody,
-  fontSize: '13px',
-  padding: '12px 16px',
+  boxShadow: '0 8px 30px rgba(0,0,0,0.08)',
+  fontSize: '12px',
+  padding: '10px 14px',
   background: 'var(--bg-card)',
   color: 'var(--text)',
 };
 
-function greeting(stage, name, partner2) {
-  const h = new Date().getHours();
-  let text = 'Good Morning';
-  let emoji = '☀️';
-  
-  if (h < 5)  { text = 'Good Night'; emoji = '🌙'; }
-  else if (h < 12) { text = 'Good Morning'; emoji = '☀️'; }
-  else if (h < 17) { text = 'Good Afternoon'; emoji = '✨'; }
-  else if (h < 21) { text = 'Good Evening'; emoji = '🌇'; }
-  else { text = 'Good Night'; emoji = '🌙'; }
-
-  if (stage === 'Single') {
-    return [`${text}, ${name || 'Solo Builder'}`, emoji];
-  } else if (stage === 'Committed') {
-    return [`${text}, ${name} & ${partner2 || 'Partner'}`, `💑`];
-  } else {
-    return [`${text}, The Dynasty`, `👑`];
-  }
-}
-
-function LockedStateCard({ title, desc, onConnect }) {
-  return (
-    <div style={{
-      position: 'absolute',
-      inset: 0,
-      background: 'rgba(255, 255, 255, 0.05)',
-      backdropFilter: 'blur(16px) saturate(180%)',
-      WebkitBackdropFilter: 'blur(16px) saturate(180%)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '24px',
-      borderRadius: '18px',
-      zIndex: 10,
-    }}>
-      <div style={{
-        background: 'var(--bg-card)',
-        border: '1.5px solid var(--border-mid)',
-        borderRadius: '20px',
-        padding: '28px',
-        textAlign: 'center',
-        boxShadow: '0 20px 48px rgba(0, 0, 0, 0.08)',
-        maxWidth: '320px',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        gap: '16px'
-      }}>
-        {/* SVG Illustration */}
-        <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="18" cy="28" r="10" stroke={T.gold} strokeWidth="2.5" strokeDasharray="3 3" />
-          <circle cx="30" cy="22" r="10" stroke={T.rose} strokeWidth="2.5" />
-          <rect x="20" y="10" width="8" height="8" rx="1.5" fill="var(--bg-card)" stroke={T.gold} strokeWidth="2" />
-        </svg>
-
-        <div>
-          <h4 style={{ fontSize: '0.9rem', fontWeight: 800, color: 'var(--text)', marginBottom: '6px', fontFamily: T.fontBody }}>
-            {title || 'Shared Wealth Locked'}
-          </h4>
-          <p style={{ fontSize: '0.74rem', color: 'var(--text-muted)', lineHeight: 1.4, margin: 0 }}>
-            {desc || 'Connect your partner to unlock shared wealth planning.'}
-          </p>
-        </div>
-
-        <button 
-          onClick={onConnect}
-          className="btn-primary"
-          style={{
-            width: 'auto',
-            padding: '6px 16px',
-            fontSize: '0.75rem',
-            borderRadius: '100px',
-            background: `linear-gradient(135deg, ${T.gold} 0%, #a07d22 100%)`,
-            boxShadow: 'var(--sh-sm)'
-          }}
-        >
-          Connect Partner
-        </button>
-      </div>
-    </div>
-  );
-}
-
-export function Dashboard({ setPage }) {
-  const toast = useToast();
-  const { 
-    partner1, 
-    partner2, 
-    stage, 
-    region, 
-    mode, 
-    currency, 
-    milestones, 
-    getTotalSalary,
-    partnerLinked,
-    partnerAccepted,
-    connectionStatus,
-    everBondId,
-    partnerEverBondId,
-    verificationStatus,
-    invitationCode,
-    partnerId,
-    relationshipId,
-    setVerificationState,
-    setProfile,
-    setStage,
-    onboardingSingle,
-    onboardingCommitted,
-    onboardingMarried,
-    goalTargets,
-    setGoalTargets,
-    addMilestone,
-    simulateIncomingRequest,
-    incomingRequest
-  } = useFinanceStore();
-
+export function Dashboard() {
+  const { partner1, currency, getTotalSalary, mode } = useFinanceStore();
   const theme = useFinanceStore(s => s.theme);
 
+  // States
+  const [growthFilter, setGrowthFilter] = useState('1Y');
+
+  // Handle window resizing for responsive layouts
   const [windowWidth, setWindowWidth] = React.useState(typeof window !== 'undefined' ? window.innerWidth : 1024);
   React.useEffect(() => {
     const handler = () => setWindowWidth(window.innerWidth);
@@ -162,1038 +44,697 @@ export function Dashboard({ setPage }) {
   }, []);
   const isMobile = windowWidth < 768;
 
-  const [isUpgradingStage, setIsUpgradingStage] = useState(false);
-  const [selectedUpgradeStage, setSelectedUpgradeStage] = useState('Committed');
+  // Formatting Helpers
+  const fmt = val => formatCurrency(val, currency);
+  const cmpct = val => formatCompact(val, currency);
 
-  // Interactive Widgets State
-  const [simYearsSolo, setSimYearsSolo] = useState(15);
-  const [simInvestSolo, setSimInvestSolo] = useState(25000);
-  const [homeTargetCost, setHomeTargetCost] = useState(8000000);
-  const [homeDownpaymentPct, setHomeDownpaymentPct] = useState(20);
-  const [homeMonthlySavings, setHomeMonthlySavings] = useState(40000);
-  const [weddingCost, setWeddingCost] = useState(2000000);
-  const [weddingGuests, setWeddingGuests] = useState(150);
-
-  const totalSalary = getTotalSalary();
-  const mContribution = useMemo(() => totalMilestoneContribution(milestones), [milestones]);
-  const snap = useMemo(() => calculateFinancialSnapshot(totalSalary, mode), [totalSalary, mode]);
+  // Dynamic Finance Calculations
+  const salaryAmount = getTotalSalary() || 120000;
+  const snap = useMemo(() => calculateFinancialSnapshot(salaryAmount, mode || 'Balanced'), [salaryAmount, mode]);
   const health = useMemo(() => calculateHealthScore(snap), [snap]);
-  
-  const fmt = a => formatCurrency(a, currency);
-  const cmpct = a => formatCompact(a, currency);
-  const [greet, emoji] = greeting(stage, partner1, partner2);
-  const scoreColor = health.value >= 75 ? T.sage : health.value >= 50 ? T.goldMid : T.rose;
-  const deg = (health.value / 100) * 360;
 
-  const handleStageUpgrade = (targetStage) => {
-    setStage(targetStage);
-    setVerificationState({
-      partnerAccepted: false,
-      partnerLinked: false,
-      verificationStatus: 'unverified',
-      invitationCode: '',
-      connectionStatus: 'none',
-      partnerEverBondId: '',
-      partner2: '',
-      partnerName: ''
-    });
-    setIsUpgradingStage(false);
-    setPage('partner');
+  // Derived Financial Metrics
+  const monthlyIncome = salaryAmount;
+  const monthlyInvestments = snap.budget.investments || (salaryAmount * 0.35);
+  const emergencyReserve = snap.budget.emergency || (salaryAmount * 0.10);
+  const totalAssets = salaryAmount * 40; // Simulated base asset pool
+  const netWorth = totalAssets + emergencyReserve;
+
+  // Dynamic greeting in all caps
+  const nameToUpper = (partner1 || 'Arup').toUpperCase();
+  const getGreetingTime = () => {
+    const hrs = new Date().getHours();
+    if (hrs < 12) return 'GOOD MORNING';
+    if (hrs < 17) return 'GOOD AFTERNOON';
+    return 'GOOD EVENING';
   };
 
-  const createMockGoal = () => {
-    addMilestone({
-      name: 'Initial Sovereignty Asset',
-      category: 'other',
-      targetCost: 500000,
-      monthlySaved: 5000,
-      targetDate: '2028-12-31'
-    });
-  };
+  // Sparkline graph data for Net Worth Card (right side of Hero)
+  const sparklineData = [
+    { value: 100 },
+    { value: 104 },
+    { value: 102 },
+    { value: 108 },
+    { value: 111 },
+    { value: 112.4 }
+  ];
 
-  // Reusable Shared Widgets
-  const LifeJourneyWidget = () => {
-    const steps = [
-      { name: 'Single', icon: '⚡', color: T.sky, desc: 'Solo Autonomy' },
-      { name: 'Committed', icon: '💑', color: '#D05C72', desc: 'Sync Ledger' },
-      { name: 'Married', icon: '💍', color: T.goldMid, desc: 'Dynasty Shield' },
-      { name: 'Freedom', icon: '🌿', color: T.sage, desc: 'Sovereignty' }
+  // Interactive Net Worth Growth Data Points
+  const growthData = useMemo(() => {
+    const base = netWorth;
+    if (growthFilter === '1M') {
+      return Array.from({ length: 30 }, (_, i) => {
+        const day = i + 1;
+        const growthFactor = 0.985 + (day * 0.0005);
+        return { name: `Day ${day}`, value: Math.round(base * growthFactor) };
+      });
+    }
+    if (growthFilter === '6M') {
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
+      return months.map((m, i) => {
+        const growthFactor = 0.92 + (i * 0.016);
+        return { name: m, value: Math.round(base * growthFactor) };
+      });
+    }
+    if (growthFilter === '5Y') {
+      const years = ['2022', '2023', '2024', '2025', '2026'];
+      return years.map((y, i) => {
+        const growthFactor = 0.65 + (i * 0.088);
+        return { name: y, value: Math.round(base * growthFactor) };
+      });
+    }
+    // Default 1Y
+    const months = ['Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
+    return months.map((m, i) => {
+      const growthFactor = 0.89 + (i * 0.01);
+      return { name: m, value: Math.round(base * growthFactor) };
+    });
+  }, [growthFilter, netWorth]);
+
+  // Asset Allocation Donut Chart Data
+  const assetAllocationData = useMemo(() => {
+    const inv = monthlyInvestments;
+    const eq = snap.investmentSplit.equity || (inv * 0.50);
+    const dt = snap.investmentSplit.debt || (inv * 0.25);
+    const gold = snap.commoditiesBreakdown.gold || (inv * 0.10);
+    const crypto = snap.investmentSplit.crypto || (inv * 0.05);
+    const cash = emergencyReserve;
+
+    return [
+      { name: 'Equity', value: Math.round(eq), color: T.sky },
+      { name: 'Debt', value: Math.round(dt), color: T.goldMid },
+      { name: 'Gold', value: Math.round(gold), color: T.gold },
+      { name: 'Crypto', value: Math.round(crypto), color: T.rose },
+      { name: 'Cash', value: Math.round(cash), color: T.sage }
     ];
+  }, [snap, monthlyInvestments, emergencyReserve]);
 
-    const currentIdx = steps.findIndex(s => s.name === stage);
+  // Income vs Expenses Monthly Side-by-Side Data
+  const incomeVsExpensesData = useMemo(() => {
+    const inc = monthlyIncome;
+    const exp = snap.budget.needs || (monthlyIncome * 0.50);
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
     
-    return (
-      <Card style={{ marginBottom: '24px', padding: '20px 24px', overflow: 'hidden' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '8px' }}>
-          <div>
-            <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.gold }}>Ecosystem Status</span>
-            <h4 style={{ fontSize: '0.98rem', fontWeight: 700, color: 'var(--text)', marginTop: '2px' }}>Life Journey Navigation Blueprint</h4>
+    return months.map((m, i) => {
+      const fluctuationInc = 1 + (Math.sin(i * 1.5) * 0.02);
+      const fluctuationExp = 0.95 + (Math.cos(i * 1.5) * 0.08);
+      return {
+        name: m,
+        Income: Math.round(inc * fluctuationInc),
+        Expenses: Math.round(exp * fluctuationExp)
+      };
+    });
+  }, [monthlyIncome, snap.budget.needs]);
+
+  // Goals list mapping
+  const goalsData = [
+    { name: 'House Fund', target: 8000000, progress: 42, color: T.sky },
+    { name: 'Europe Education Fund', target: 5000000, progress: 28, color: T.rose },
+    { name: 'Retirement Corpus', target: 30000000, progress: 15, color: T.gold },
+    { name: 'Emergency Fund', target: 500000, progress: 85, color: T.sage }
+  ];
+
+  // Activities logs
+  const activitiesData = [
+    { id: 1, type: 'investment', title: 'Investment Added', desc: '₹25,000 SIP allocated to Nifty 50 Index Fund.', time: '2 hours ago', icon: <TrendingUp size={14} style={{ color: T.sage }} /> },
+    { id: 2, type: 'salary', title: 'Salary Received', desc: 'Primary income node of ₹1,20,000 credited to core ledger.', time: '1 day ago', icon: <Coins size={14} style={{ color: T.gold }} /> },
+    { id: 3, type: 'goal', title: 'Goal Updated', desc: 'Retirement Corpus target calibrated to ₹3,00,00,000.', time: '3 days ago', icon: <Target size={14} style={{ color: T.sky }} /> },
+    { id: 4, type: 'reserve', title: 'Emergency Fund Topped Up', desc: '₹15,000 shifted to liquid reserve locker.', time: '5 days ago', icon: <Shield size={14} style={{ color: T.rose }} /> },
+    { id: 5, type: 'portfolio', title: 'Portfolio Rebalanced', desc: 'Asset allocation synchronized to Balanced profile.', time: '1 week ago', icon: <Activity size={14} style={{ color: T.goldMid }} /> }
+  ];
+
+  // Health Score Gauge variables
+  const scoreColor = health.value >= 85 ? T.sage : health.value >= 70 ? T.gold : T.rose;
+  const scorePercent = health.value / 100;
+  const strokeDashoffset = 251.2 - (251.2 * scorePercent);
+
+  return (
+    <div className="fade-in" style={{ paddingBottom: '60px' }}>
+      
+      {/* NEW HERO SECTION */}
+      <div 
+        className={isMobile ? 'mobile-stack' : ''} 
+        style={{ 
+          display: 'grid', 
+          gridTemplateColumns: '1.4fr 1fr', 
+          gap: '24px', 
+          alignItems: 'stretch',
+          marginBottom: '28px' 
+        }}
+      >
+        {/* Left Welcome Block */}
+        <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+          <div className="page-eyebrow" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+            <span style={{ fontSize: '0.72rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: T.gold }}>
+              {getGreetingTime()}, {nameToUpper}
+            </span>
           </div>
-          {stage === 'Single' && (
-            <button 
-              onClick={() => setIsUpgradingStage(true)}
-              style={{ padding: '8px 14px', fontSize: '0.75rem', background: 'rgba(184, 144, 42, 0.08)', border: `1.5px solid ${T.goldBorder}`, color: T.gold, fontWeight: 700, cursor: 'pointer', borderRadius: '100px', display: 'flex', alignItems: 'center', gap: '6px', minHeight: '36px' }}
-            >
-              <Heart size={12} /> Sync Partner Node
-            </button>
-          )}
+          <h1 className="page-title" style={{ marginTop: '8px', fontSize: '2.2rem', fontWeight: 800 }}>
+            Financial Command Center
+          </h1>
+          <p className="page-desc" style={{ color: 'var(--text-muted)', fontSize: '0.95rem', maxWidth: '540px', marginTop: '6px', lineHeight: 1.5 }}>
+            Track assets, income, investments and long-term wealth growth in a single, focused environment.
+          </p>
         </div>
 
-        {/* Horizontally scrollable on mobile */}
-        <div style={{ overflowX: 'auto', overflowY: 'hidden', marginRight: '-8px', paddingRight: '8px' }}>
-          <div style={{ position: 'relative', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', zIndex: 1, minWidth: isMobile ? '280px' : 'auto' }}>
-            <div style={{ position: 'absolute', left: '20px', right: '20px', height: '2px', background: 'var(--border-mid)', zIndex: -1 }} />
-            <div style={{ position: 'absolute', left: '20px', right: `${100 - (Math.min(currentIdx, 2) / 2) * 100}%`, height: '2px', background: `linear-gradient(90deg, ${T.sky}, #D05C72, ${T.goldMid})`, zIndex: -1 }} />
+        {/* Right Total Net Worth Card */}
+        <div className="apple-card-gold" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: '140px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <div>
+              <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', color: T.gold, letterSpacing: '0.08em' }}>
+                Total Net Worth
+              </span>
+              <div style={{ fontFamily: 'var(--fn)', fontSize: '2.1rem', fontWeight: 800, color: T.gold, letterSpacing: '-0.03em', marginTop: '4px' }}>
+                {fmt(netWorth)}
+              </div>
+            </div>
+            <span style={{ 
+              fontSize: '0.75rem', 
+              fontWeight: 700, 
+              color: T.sage, 
+              background: theme === 'dark' ? 'rgba(16,185,129,0.1)' : 'rgba(16,185,129,0.08)',
+              padding: '4px 10px', 
+              borderRadius: '999px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px'
+            }}>
+              <TrendingUp size={12} /> +12.4%
+            </span>
+          </div>
 
-            {steps.map((st, idx) => {
-              const isActive = stage === st.name || (stage === 'Married' && st.name === 'Freedom' && false);
-              const isPassed = idx < currentIdx;
-              const isLocked = idx > currentIdx && st.name !== 'Freedom';
-              
-              return (
-                <div key={st.name} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', flex: '0 0 auto' }}>
-                  <div style={{
-                    width: isMobile ? '32px' : '36px',
-                    height: isMobile ? '32px' : '36px',
-                    borderRadius: '50%',
-                    background: isActive ? st.color : 'var(--bg-card)',
-                    border: `2px solid ${isActive ? st.color : isPassed ? T.sage : 'var(--border-str)'}`,
-                    color: isActive ? '#fff' : isPassed ? T.sage : 'var(--text-faint)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: isMobile ? '0.85rem' : '1rem',
-                    boxShadow: isActive ? `0 0 12px ${st.color}45` : 'none',
-                    transition: 'all 0.3s ease',
-                    cursor: isLocked ? 'pointer' : 'default'
-                  }}
-                  onClick={() => isLocked && setIsUpgradingStage(true)}
-                  >
-                    {isPassed ? '✓' : isLocked ? <Lock size={12} /> : st.icon}
-                  </div>
-                  <span style={{ fontSize: isMobile ? '0.65rem' : '0.72rem', fontWeight: isActive ? 800 : 500, color: isActive ? 'var(--text)' : 'var(--text-faint)', whiteSpace: 'nowrap' }}>{st.name}</span>
-                </div>
-              );
-            })}
+          {/* Sparkline line trend graph */}
+          <div style={{ width: '100%', height: '40px', marginTop: '12px' }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={sparklineData}>
+                <defs>
+                  <linearGradient id="sparklineGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor={T.gold} stopOpacity={0.25}/>
+                    <stop offset="95%" stopColor={T.gold} stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <Area type="monotone" dataKey="value" stroke={T.gold} strokeWidth={2} fillOpacity={1} fill="url(#sparklineGrad)" />
+              </AreaChart>
+            </ResponsiveContainer>
           </div>
         </div>
-      </Card>
-    );
-  };
-
-  const PremiumInsightsPanel = () => {
-    const stageTips = {
-      Single: [
-        "⚡ Compounding Alert: Solo builders see personal ledgers compound 2x faster by shifting an extra 5% of monthly salary into highly aggressive assets.",
-        "📊 Career Indexing: A 7% annual salary raise compounds your 20-year career wealth cap by an additional 1.8X. Preserve solo compounding anchors.",
-        "🛡️ Sovereignty Vault: Your solo emergency buffer score is Excellent. Consider mapping milestone targets next to lock in core capital growth."
-      ],
-      Committed: [
-        "💑 Dual-Income Synergy: Consolidating dual ledgers yields a 38% increase in unified safety vault resilience and cuts down mortgage ETA by 14 months.",
-        "🏡 Target Deposit: Allocating 40,000 INR monthly compounds your Home Deposit pool 12% faster. Consider shifting guest margins to Home Fund.",
-        "💍 Wedding Alignment: Setting consensus weight sliders on relationship timeline targets stabilizes risk profiles by balancing lifestyle and asset growth."
-      ],
-      Married: [
-        "👑 Dynasty Resilience: Consolidated family net worth features an outstanding Emergency Shield coverage index, ensuring 18 months of security.",
-        "🎓 Kid Compounding: Starting college allocations at age 1 compounds overall childhood education trusts by 3.2X by graduation. Maximize SIP speeds.",
-        "🌅 Passive Sovereignty: Systematic 4% retirement withdrawals secure 125% of passive coverage index over essential needs. Family legacy remains robust."
-      ]
-    };
-
-    return (
-      <Card style={{ marginBottom: '24px', background: 'var(--bg-warm)', border: '1.5px solid var(--border-mid)', overflow: 'hidden' }}>
-        <div style={{ padding: '18px 24px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <Sparkles size={16} style={{ color: T.gold }} />
-          <h4 style={{ fontSize: '0.85rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.12em', color: T.gold }}>Premium Stage Insights</h4>
-        </div>
-        <div style={{ padding: '0 24px 20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          {stageTips[stage].map((tip, idx) => (
-            <div key={idx} style={{ display: 'flex', gap: '10px', fontSize: '0.8rem', color: 'var(--text-muted)', lineHeight: 1.45 }}>
-              <div style={{ color: T.goldMid, marginTop: '2px' }}>•</div>
-              <span>{tip}</span>
-            </div>
-          ))}
-        </div>
-      </Card>
-    );
-  };
-
-  const PartnerStatusCard = () => {
-    return (
-      <div style={{
-        background: 'var(--bg-card)',
-        border: '1.5px solid var(--border-mid)',
-        borderRadius: 'var(--r-lg)',
-        padding: '24px',
-        marginBottom: '24px',
-        boxShadow: 'var(--sh-xs)',
-        position: 'relative',
-        overflow: 'hidden'
-      }}>
-        {connectionStatus === 'connected' ? (
-          <div style={{ position: 'relative', zIndex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '20px' }}>
-            <div>
-              <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: stage === 'Married' ? T.gold : T.rose }}>Ecosystem Connection</span>
-              <h3 style={{ fontFamily: T.fontDisplay, fontSize: '1.4rem', fontWeight: 700, color: 'var(--text)', marginTop: '4px', marginBottom: '8px' }}>
-                Linked with {partner2 || 'Partner'}
-              </h3>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.82rem' }}>
-                <span style={{ color: 'var(--text-muted)' }}>Status:</span>
-                <strong style={{ color: T.sage }}>🟢 Connected</strong>
-              </div>
-              {everBondId && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '6px', fontSize: '0.75rem', color: 'var(--text-faint)' }}>
-                  <span>Partner ID:</span>
-                  <span style={{ fontFamily: 'monospace', color: T.gold }}>{partnerEverBondId || '—'}</span>
-                </div>
-              )}
-            </div>
-            <button
-              className="btn-primary"
-              style={{
-                background: 'linear-gradient(135deg, #1c1a16 0%, #111 100%)',
-                fontSize: '0.85rem',
-                padding: '10px 20px',
-                width: 'auto',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px'
-              }}
-              onClick={() => setPage('partner')}
-            >
-              <Users size={16} /> Manage Connection
-            </button>
-          </div>
-        ) : connectionStatus === 'pending' ? (
-          <div style={{ position: 'relative', zIndex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '24px' }}>
-            <div>
-              <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.goldMid }}>Ecosystem Connection</span>
-              <h3 style={{ fontFamily: T.fontDisplay, fontSize: '1.4rem', fontWeight: 700, color: 'var(--text)', marginTop: '4px', marginBottom: '12px' }}>
-                Partner Status: <span style={{ color: T.goldMid }}>Request Pending</span>
-              </h3>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-                🟡 Waiting for partner confirmation...
-              </div>
-            </div>
-            <button
-              className="btn-primary"
-              style={{
-                background: `linear-gradient(135deg, ${T.goldMid} 0%, ${T.gold} 100%)`,
-                boxShadow: 'var(--sh-gold)',
-                fontSize: '0.85rem',
-                padding: '12px 24px',
-                width: 'auto',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                borderRadius: '100px'
-              }}
-              onClick={() => setPage('partner')}
-            >
-              <Users size={16} /> View Details
-            </button>
-          </div>
-        ) : connectionStatus === 'received' ? (
-          <div style={{ position: 'relative', zIndex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '20px' }}>
-            <div>
-              <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.gold }}>Ecosystem Connection</span>
-              <h3 style={{ fontFamily: T.fontDisplay, fontSize: '1.4rem', fontWeight: 700, color: 'var(--text)', marginTop: '4px', marginBottom: '8px' }}>
-                Request Received
-              </h3>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.82rem' }}>
-                <span style={{ color: 'var(--text-muted)' }}>Status:</span>
-                <strong style={{ color: T.gold }}>🔴 Incoming Request</strong>
-              </div>
-              <div style={{ fontSize: '0.85rem', color: 'var(--text)', marginTop: '8px' }}>
-                <strong>{incomingRequest?.senderName || 'Arup'}</strong> wants to connect with you.
-              </div>
-            </div>
-            <div style={{ display: 'flex', gap: '10px' }}>
-              <button
-                className="btn-primary"
-                style={{
-                  background: `linear-gradient(135deg, ${T.goldMid} 0%, ${T.gold} 100%)`,
-                  fontSize: '0.85rem',
-                  padding: '10px 20px',
-                  width: 'auto',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  boxShadow: 'var(--sh-gold)',
-                  borderRadius: '100px',
-                }}
-                onClick={() => setPage('partner')}
-              >
-                <Sparkles size={15} /> Accept Invitation
-              </button>
-              <button
-                className="btn-secondary"
-                style={{
-                  fontSize: '0.85rem',
-                  padding: '10px 16px',
-                  width: 'auto',
-                  borderRadius: '100px',
-                }}
-                onClick={() => setPage('partner')}
-              >
-                View Details
-              </button>
-            </div>
-          </div>
-        ) : (
-          <div style={{ position: 'relative', zIndex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '24px' }}>
-            <div>
-              <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: stage === 'Married' ? T.gold : T.rose }}>Ecosystem Connection</span>
-              <h3 style={{ fontFamily: T.fontDisplay, fontSize: '1.4rem', fontWeight: 700, color: 'var(--text)', marginTop: '4px', marginBottom: '12px' }}>
-                Partner Status: <span style={{ color: T.rose }}>Not Connected</span>
-              </h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '12px' }}>
-                <span style={{ fontSize: '0.72rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-muted)' }}>Benefits unlocked after connecting:</span>
-                <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', marginTop: '4px', alignItems: 'center' }}>
-                  <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <span style={{ color: T.sage }}>✓</span> Shared Goals
-                  </span>
-                  <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <span style={{ color: T.sage }}>✓</span> Joint Planning
-                  </span>
-                  <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <span style={{ color: T.sage }}>✓</span> Couple Dashboard
-                  </span>
-                  <span 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      simulateIncomingRequest({
-                        senderEverBondId: 'EB-A7K92X',
-                        senderName: 'Arup',
-                        relationshipDate: '2025-02-15'
-                      });
-                      toast.info('Simulated request received! Go to Partner page to accept.');
-                    }}
-                    style={{ 
-                      fontSize: '0.72rem', 
-                      color: T.gold, 
-                      cursor: 'pointer', 
-                      marginLeft: '10px', 
-                      textDecoration: 'underline',
-                      fontWeight: 700 
-                    }}
-                  >
-                    📥 Simulate Mock Request
-                  </span>
-                </div>
-              </div>
-            </div>
-            <button
-              className="btn-primary"
-              style={{
-                background: `linear-gradient(135deg, ${stage === 'Married' ? T.gold : T.rose} 0%, ${stage === 'Married' ? '#9e7b24' : '#a33b52'} 100%)`,
-                boxShadow: 'var(--sh-sm)',
-                fontSize: '0.85rem',
-                padding: '12px 24px',
-                width: 'auto',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                borderRadius: '100px'
-              }}
-              onClick={() => setPage('partner')}
-            >
-              <Users size={16} /> Connect Partner
-            </button>
-          </div>
-        )}
       </div>
-    );
-  };
 
-  const RecentAchievementsWidget = () => {
-    const achievementsList = useFinanceStore(s => s.achievements);
-    if (!achievementsList || achievementsList.length === 0) return null;
-    
-    // Sort by unlockedAt desc, take top 3
-    const recentUnlocks = [...achievementsList].sort((a,b) => new Date(b.unlockedAt) - new Date(a.unlockedAt)).slice(0, 3);
-    
-    return (
-      <div style={{ marginBottom: '24px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-          <h3 style={{ fontSize: '1.2rem', fontFamily: T.fontDisplay, fontWeight: 700, margin: 0, color: 'var(--text)' }}>Recent Achievements</h3>
-          <button 
-            onClick={() => setPage('achievements')}
-            style={{ background: 'none', border: 'none', color: T.gold, fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer' }}
-          >
-            View All →
-          </button>
+      {/* ROW 1: KPI CARDS */}
+      <div 
+        style={{ 
+          display: 'grid', 
+          gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, 1fr)', 
+          gap: '16px',
+          marginBottom: '24px'
+        }}
+      >
+        {/* KPI 1: Total Assets */}
+        <div className="apple-card" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Landmark size={18} style={{ color: T.sky }} />
+            <span style={{ fontSize: '0.68rem', fontWeight: 700, color: T.sage }}>+8.2%</span>
+          </div>
+          <div>
+            <span style={{ fontSize: '0.65rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)' }}>
+              Total Assets
+            </span>
+            <div style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text)', marginTop: '2px', fontFamily: 'var(--fn)' }}>
+              {cmpct(totalAssets)}
+            </div>
+          </div>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
-          {recentUnlocks.map(u => {
-            const data = ACHIEVEMENTS.find(a => a.id === u.id);
-            if (!data) return null;
-            return <Badge key={data.id} achievement={data} isUnlocked={true} />;
+
+        {/* KPI 2: Monthly Income */}
+        <div className="apple-card" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Briefcase size={18} style={{ color: T.goldMid }} />
+            <span style={{ fontSize: '0.68rem', fontWeight: 700, color: T.sage }}>+6.5%</span>
+          </div>
+          <div>
+            <span style={{ fontSize: '0.65rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)' }}>
+              Monthly Income
+            </span>
+            <div style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text)', marginTop: '2px', fontFamily: 'var(--fn)' }}>
+              {fmt(monthlyIncome)}
+            </div>
+          </div>
+        </div>
+
+        {/* KPI 3: Monthly Investments */}
+        <div className="apple-card" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Coins size={18} style={{ color: T.gold }} />
+            <span style={{ fontSize: '0.68rem', fontWeight: 700, color: T.sage }}>+10.2%</span>
+          </div>
+          <div>
+            <span style={{ fontSize: '0.65rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)' }}>
+              Monthly Invest
+            </span>
+            <div style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text)', marginTop: '2px', fontFamily: 'var(--fn)' }}>
+              {fmt(monthlyInvestments)}
+            </div>
+          </div>
+        </div>
+
+        {/* KPI 4: Emergency Reserve */}
+        <div className="apple-card" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Shield size={18} style={{ color: T.rose }} />
+            <span style={{ fontSize: '0.68rem', fontWeight: 700, color: T.sage }}>+4.1%</span>
+          </div>
+          <div>
+            <span style={{ fontSize: '0.65rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)' }}>
+              Emergency Buffer
+            </span>
+            <div style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text)', marginTop: '2px', fontFamily: 'var(--fn)' }}>
+              {fmt(emergencyReserve)}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ROW 2: CHARTS */}
+      <div 
+        className={isMobile ? 'mobile-stack' : ''} 
+        style={{ 
+          display: 'grid', 
+          gridTemplateColumns: '1.4fr 1fr', 
+          gap: '24px',
+          marginBottom: '24px'
+        }}
+      >
+        {/* Net Worth Growth Interactive Area Chart */}
+        <div className="apple-card" style={{ display: 'flex', flexDirection: 'column', minHeight: '340px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }}>
+            <div>
+              <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', color: T.gold, letterSpacing: '0.05em' }}>
+                Long-Term Projection
+              </span>
+              <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--text)', marginTop: '2px' }}>
+                Net Worth Growth
+              </h3>
+            </div>
+            
+            {/* Filter buttons */}
+            <div style={{ display: 'flex', gap: '4px', background: 'var(--bg-muted)', padding: '4px', borderRadius: '12px', border: '1px solid var(--border)' }}>
+              {['1M', '6M', '1Y', '5Y'].map(f => (
+                <button
+                  key={f}
+                  onClick={() => setGrowthFilter(f)}
+                  style={{
+                    padding: '6px 12px',
+                    borderRadius: '8px',
+                    border: 'none',
+                    background: growthFilter === f ? 'var(--bg-card)' : 'transparent',
+                    color: growthFilter === f ? T.gold : 'var(--text-muted)',
+                    fontSize: '0.72rem',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    boxShadow: growthFilter === f ? '0 2px 8px rgba(0,0,0,0.04)' : 'none'
+                  }}
+                >
+                  {f}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div style={{ width: '100%', height: '220px', flexGrow: 1 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={growthData} margin={{ top: 10, right: 10, left: -15, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="netWorthGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor={T.gold} stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor={T.gold} stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <XAxis dataKey="name" fontSize={10} stroke="var(--text-faint)" tickLine={false} />
+                <YAxis tickFormatter={v => formatCompact(v, currency)} fontSize={10} stroke="var(--text-faint)" tickLine={false} />
+                <Tooltip contentStyle={CHART_TOOLTIP_STYLE} formatter={v => [fmt(v), 'Net Worth']} />
+                <Area type="monotone" dataKey="value" stroke={T.gold} strokeWidth={2.5} fillOpacity={1} fill="url(#netWorthGrad)" />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Asset Allocation Donut Chart */}
+        <div className="apple-card" style={{ display: 'flex', flexDirection: 'column', minHeight: '340px' }}>
+          <div>
+            <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', color: T.gold, letterSpacing: '0.05em' }}>
+              Asset Split
+            </span>
+            <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--text)', marginTop: '2px', marginBottom: '20px' }}>
+              Asset Allocation
+            </h3>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexGrow: 1, position: 'relative', height: '160px' }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={assetAllocationData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={55}
+                  outerRadius={75}
+                  paddingAngle={4}
+                  dataKey="value"
+                >
+                  {assetAllocationData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip contentStyle={CHART_TOOLTIP_STYLE} formatter={v => [fmt(v), 'Allocation']} />
+              </PieChart>
+            </ResponsiveContainer>
+
+            {/* Total Investments indicator in center of donut */}
+            <div style={{ position: 'absolute', textAlign: 'center' }}>
+              <div style={{ fontSize: '0.58rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>
+                Monthly SIP
+              </div>
+              <div style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--text)', marginTop: '2px', fontFamily: 'var(--fn)' }}>
+                {cmpct(monthlyInvestments)}
+              </div>
+            </div>
+          </div>
+
+          {/* Allocation Legend */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', marginTop: '16px' }}>
+            {assetAllocationData.map(item => (
+              <div key={item.name} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: item.color }} />
+                <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                  {item.name}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ROW 3: COMPARISON CHART & HEALTH SCORE */}
+      <div 
+        className={isMobile ? 'mobile-stack' : ''} 
+        style={{ 
+          display: 'grid', 
+          gridTemplateColumns: '1.4fr 1fr', 
+          gap: '24px',
+          marginBottom: '24px'
+        }}
+      >
+        {/* Income vs Expenses side-by-side BarChart */}
+        <div className="apple-card" style={{ display: 'flex', flexDirection: 'column', minHeight: '320px' }}>
+          <div>
+            <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', color: T.gold, letterSpacing: '0.05em' }}>
+              Budget Split
+            </span>
+            <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--text)', marginTop: '2px', marginBottom: '20px' }}>
+              Income vs Expenses
+            </h3>
+          </div>
+
+          <div style={{ width: '100%', height: '200px', flexGrow: 1 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={incomeVsExpensesData} margin={{ top: 10, right: 10, left: -15, bottom: 0 }} barGap={6}>
+                <XAxis dataKey="name" fontSize={10} stroke="var(--text-faint)" tickLine={false} />
+                <YAxis tickFormatter={v => formatCompact(v, currency)} fontSize={10} stroke="var(--text-faint)" tickLine={false} />
+                <Tooltip contentStyle={CHART_TOOLTIP_STYLE} formatter={v => [fmt(v), '']} />
+                <Bar dataKey="Income" fill={T.sky} radius={[6, 6, 0, 0]} maxBarSize={18} />
+                <Bar dataKey="Expenses" fill={T.rose} radius={[6, 6, 0, 0]} maxBarSize={18} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Financial Health Score visual gauge */}
+        <div className="apple-card" style={{ display: 'flex', flexDirection: 'column', minHeight: '320px', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ width: '100%', textAlign: 'left' }}>
+            <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', color: T.gold, letterSpacing: '0.05em' }}>
+              Financial Index
+            </span>
+            <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--text)', marginTop: '2px' }}>
+              Financial Health Score
+            </h3>
+          </div>
+
+          {/* Visual Gauge Component */}
+          <div style={{ position: 'relative', width: '150px', height: '150px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '12px 0' }}>
+            <svg width="100%" height="100%" viewBox="0 0 100 100">
+              <circle
+                cx="50"
+                cy="50"
+                r="40"
+                fill="transparent"
+                stroke="var(--border)"
+                strokeWidth="8"
+              />
+              <circle
+                cx="50"
+                cy="50"
+                r="40"
+                fill="transparent"
+                stroke={scoreColor}
+                strokeWidth="8"
+                strokeDasharray="251.2"
+                strokeDashoffset={strokeDashoffset}
+                strokeLinecap="round"
+                transform="rotate(-90 50 50)"
+                style={{ transition: 'stroke-dashoffset 0.6s ease' }}
+              />
+            </svg>
+
+            {/* Score Centered Label */}
+            <div style={{ position: 'absolute', textAlign: 'center' }}>
+              <div style={{ fontSize: '2.2rem', fontWeight: 800, color: 'var(--text)', letterSpacing: '-0.02em', fontFamily: 'var(--fn)' }}>
+                {health.value}
+              </div>
+              <div style={{ fontSize: '0.58rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>
+                / 100 Score
+              </div>
+            </div>
+          </div>
+
+          {/* Health Index Rating */}
+          <div style={{ textAlign: 'center', width: '100%' }}>
+            <span style={{ 
+              fontSize: '0.82rem', 
+              fontWeight: 800, 
+              color: scoreColor,
+              textTransform: 'uppercase',
+              letterSpacing: '0.08em'
+            }}>
+              {health.label}
+            </span>
+            <p style={{ fontSize: '0.74rem', color: 'var(--text-muted)', marginTop: '4px', padding: '0 12px', lineHeight: 1.4 }}>
+              {health.tips[0]}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* ROW 4: GOAL TRACKING */}
+      <div className="apple-card" style={{ marginBottom: '24px' }}>
+        <div>
+          <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', color: T.gold, letterSpacing: '0.05em' }}>
+            Wealth Milestones
+          </span>
+          <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text)', marginTop: '2px', marginBottom: '20px' }}>
+            Financial Goals
+          </h3>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          {goalsData.map(goal => {
+            const currentSave = goal.target * (goal.progress / 100);
+            return (
+              <div key={goal.name} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <div style={{ 
+                      width: '32px', 
+                      height: '32px', 
+                      borderRadius: '10px', 
+                      background: `${goal.color}15`, 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'center',
+                      color: goal.color
+                    }}>
+                      <Target size={16} />
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text)' }}>{goal.name}</div>
+                      <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>Target: {fmt(goal.target)}</div>
+                    </div>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text)' }}>{goal.progress}%</div>
+                    <div style={{ fontSize: '0.68rem', color: 'var(--text-faint)' }}>Saved: {cmpct(currentSave)}</div>
+                  </div>
+                </div>
+
+                {/* Progress bar */}
+                <div style={{ width: '100%', height: '6px', background: 'var(--border)', borderRadius: '4px', overflow: 'hidden' }}>
+                  <div 
+                    style={{ 
+                      width: `${goal.progress}%`, 
+                      height: '100%', 
+                      background: goal.color, 
+                      borderRadius: '4px',
+                      transition: 'width 0.4s ease'
+                    }} 
+                  />
+                </div>
+              </div>
+            );
           })}
         </div>
       </div>
-    );
-  };
 
-  // 1. SINGLE WORKSPACE LAYOUT
-  const renderSingleWorkspace = () => {
-    const career5y = totalSalary * Math.pow(1.07, 5);
-    const career10y = totalSalary * Math.pow(1.07, 10);
-    const career20y = totalSalary * Math.pow(1.07, 20);
-
-    const activeInvestments = snap.budget.investments;
-    const compoundSolo = simulateGrowth(simInvestSolo, simYearsSolo, 10);
-
-    return (
-      <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-        
-        {/* Header Block */}
-        <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px', marginBottom: '24px' }}>
-          <div>
-            <div className="page-eyebrow" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span className="stage-badge single" style={{ background: T.sky, color: '#fff', padding: '3px 8px', borderRadius: '100px', fontSize: '0.65rem', fontWeight: 700 }}>Single Stage</span>
-              <span>· Personal Growth Engine</span>
-            </div>
-            <h1 className="page-title">Build Your Future With Confidence</h1>
-            <p className="page-desc">Sovereign planning workspace calibrated for individual capital compounding.</p>
+      {/* ROW 5 & ROW 6 GRID */}
+      <div 
+        className={isMobile ? 'mobile-stack' : ''} 
+        style={{ 
+          display: 'grid', 
+          gridTemplateColumns: '1.2fr 1fr', 
+          gap: '24px' 
+        }}
+      >
+        {/* Row 5: Recent Activity (Timeline Card) */}
+        <div className="apple-card" style={{ display: 'flex', flexDirection: 'column' }}>
+          <div style={{ marginBottom: '20px' }}>
+            <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', color: T.gold, letterSpacing: '0.05em' }}>
+              Transaction Logs
+            </span>
+            <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--text)', marginTop: '2px' }}>
+              Recent Activity
+            </h3>
           </div>
-        </div>
 
-        {/* Common Widgets */}
-        <LifeJourneyWidget />
-        <PremiumInsightsPanel />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', flexGrow: 1, position: 'relative' }}>
+            <div style={{ 
+              position: 'absolute', 
+              left: '17px', 
+              top: '8px', 
+              bottom: '8px', 
+              width: '1px', 
+              background: 'var(--border)' 
+            }} />
 
-        {/* Bento Grid Row 1 */}
-        <div className={isMobile ? 'mobile-stack' : ''} style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '20px', marginBottom: '20px' }}>
-          
-          {/* Card 1: Net Worth and Income Overview */}
-          <Card gold style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-            <div>
-              <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.gold }}>Net Worth Valuation</span>
-              <h2 style={{ fontFamily: T.fontDisplay, fontSize: 'clamp(2rem, 5vw, 3rem)', fontWeight: 700, color: 'var(--text)', margin: '12px 0 6px' }}>
-                {cmpct(snap.budget.emergency + mContribution * 36)}
-              </h2>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.78rem', color: T.sage, fontWeight: 700 }}>
-                <TrendingUp size={14} /> Compounding Compound Score: {health.value}
-              </div>
-            </div>
-
-            <div style={{ borderTop: '1px solid var(--border-mid)', paddingTop: '16px', marginTop: '20px' }}>
-              <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-faint)' }}>Income Overview</span>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginTop: '8px' }}>
-                <div>
-                  <span style={{ fontSize: '0.7rem', color: 'var(--text-faint)' }}>Solo Monthly Income</span>
-                  <div style={{ fontSize: '1.15rem', fontWeight: 700, color: 'var(--text)' }}>{cmpct(totalSalary)}</div>
+            {activitiesData.map(activity => (
+              <div key={activity.id} style={{ display: 'flex', gap: '14px', alignItems: 'flex-start', position: 'relative', zIndex: 2 }}>
+                <div style={{ 
+                  width: '34px', 
+                  height: '34px', 
+                  borderRadius: '50%', 
+                  background: 'var(--bg-card)', 
+                  border: '1.5px solid var(--border)', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  flexShrink: 0
+                }}>
+                  {activity.icon}
                 </div>
-                <div>
-                  <span style={{ fontSize: '0.7rem', color: 'var(--text-faint)' }}>Sovereign Compounding Cap</span>
-                  <div style={{ fontSize: '1.15rem', fontWeight: 700, color: T.gold }}>{cmpct(activeInvestments)}</div>
-                </div>
-              </div>
-            </div>
-          </Card>
-
-          {/* Card 2: Career Growth Tracker */}
-          <Card>
-            <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.gold }}>Career Compounding</span>
-            <h3 style={{ fontFamily: T.fontDisplay, fontSize: '1.3rem', fontWeight: 700, color: 'var(--text)', marginTop: '4px', marginBottom: '16px' }}>Solo Raise Projection</h3>
-            
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-              {[
-                { label: 'Estimated Raise Rate', value: '7.0% p.a.' },
-                { label: 'Projected Monthly Salary (5Y)', value: fmt(career5y) },
-                { label: 'Projected Monthly Salary (10Y)', value: fmt(career10y) },
-                { label: 'Projected Monthly Salary (20Y)', value: fmt(career20y) }
-              ].map((item, idx) => (
-                <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: idx < 3 ? '1px solid var(--border)' : 'none', paddingBottom: idx < 3 ? '10px' : '0' }}>
-                  <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{item.label}</span>
-                  <strong style={{ fontSize: '0.88rem', color: idx === 0 ? T.sky : 'var(--text)' }}>{item.value}</strong>
-                </div>
-              ))}
-            </div>
-          </Card>
-        </div>
-
-        {/* Bento Grid Row 2 */}
-        <div className={isMobile ? 'mobile-stack' : ''} style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: '20px', marginBottom: '20px' }}>
-          
-          {/* Card 3: Investment Simulation */}
-          <Card>
-            <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.gold }}>Compound Sandbox</span>
-            <h3 style={{ fontFamily: T.fontDisplay, fontSize: '1.3rem', fontWeight: 700, color: 'var(--text)', marginTop: '4px', marginBottom: '16px' }}>Interactive Investment Simulator</h3>
-            
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', marginBottom: '6px' }}>
-                  <span style={{ color: 'var(--text-muted)' }}>Monthly SIP Contribution</span>
-                  <strong style={{ color: T.gold }}>{fmt(simInvestSolo)}</strong>
-                </div>
-                <input 
-                  type="range" min={5000} max={100000} step={5000}
-                  className="eb-slider"
-                  value={simInvestSolo} 
-                  onChange={e => setSimInvestSolo(parseInt(e.target.value))}
-                />
-              </div>
-
-              <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', marginBottom: '6px' }}>
-                  <span style={{ color: 'var(--text-muted)' }}>Simulation Duration</span>
-                  <strong style={{ color: T.gold }}>{simYearsSolo} Years</strong>
-                </div>
-                <input 
-                  type="range" min={5} max={40} step={1}
-                  className="eb-slider"
-                  value={simYearsSolo} 
-                  onChange={e => setSimYearsSolo(parseInt(e.target.value))}
-                />
-              </div>
-
-              <div style={{ background: 'var(--bg-warm)', padding: '14px', borderRadius: '12px', border: '1px solid var(--border)', textAlign: 'center', marginTop: '8px' }}>
-                <span style={{ fontSize: '0.7rem', color: 'var(--text-faint)', textTransform: 'uppercase', fontWeight: 700 }}>Projected Value (@ 10% returns)</span>
-                <div style={{ fontSize: '1.5rem', fontWeight: 800, color: T.goldMid, fontFamily: T.fontDisplay, marginTop: '4px' }}>
-                  {fmt(compoundSolo.fv)}
+                <div style={{ flexGrow: 1 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                    <h5 style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text)' }}>
+                      {activity.title}
+                    </h5>
+                    <span style={{ fontSize: '0.62rem', color: 'var(--text-faint)' }}>{activity.time}</span>
+                  </div>
+                  <p style={{ fontSize: '0.74rem', color: 'var(--text-muted)', marginTop: '2px', lineHeight: 1.4 }}>
+                    {activity.desc}
+                  </p>
                 </div>
               </div>
-            </div>
-          </Card>
-
-          {/* Card 4: Personal Goals & Empty States */}
-          <Card style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-            <div>
-              <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.gold }}>Target Indexing</span>
-              <h3 style={{ fontFamily: T.fontDisplay, fontSize: '1.3rem', fontWeight: 700, color: 'var(--text)', marginTop: '4px', marginBottom: '16px' }}>Personal Goals</h3>
-            </div>
-
-            {milestones.length === 0 ? (
-              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px', textAlign: 'center' }}>
-                <span style={{ fontSize: '2rem', marginBottom: '12px' }}>🌱</span>
-                <h4 style={{ fontSize: '0.92rem', fontWeight: 700, color: 'var(--text)', marginBottom: '4px' }}>Your Financial Journey Has Just Begun</h4>
-                <p style={{ fontSize: '0.76rem', color: 'var(--text-muted)', lineHeight: 1.4, maxWidth: '240px', marginBottom: '16px' }}>
-                  No active milestones. Calibrate your first savings goal parameter.
-                </p>
-                <button 
-                  onClick={createMockGoal}
-                  className="btn-primary" 
-                  style={{ width: 'auto', padding: '6px 16px', fontSize: '0.78rem', background: T.sky }}
-                >
-                  Create First Goal
-                </button>
-              </div>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', flex: 1 }}>
-                {milestones.slice(0, 3).map(m => {
-                  const req = requiredMonthlySaving(m.targetCost, m.monthlySaved, m.targetDate);
-                  return (
-                    <div key={m.id} className="alloc-row" style={{ padding: '8px 0' }}>
-                      <div className="alloc-name">
-                        <span style={{ fontSize: '1.1rem' }}>🏁</span>
-                        <div>
-                          <div style={{ fontWeight: 600, fontSize: '0.85rem' }}>{m.name}</div>
-                          <div style={{ fontSize: '0.65rem', color: 'var(--text-faint)' }}>Target: {m.targetDate}</div>
-                        </div>
-                      </div>
-                      <div className="alloc-amount" style={{ fontSize: '0.85rem' }}>{fmt(req)} / mo</div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </Card>
-        </div>
-
-        {/* Locked SaaS Previews */}
-        <div style={{ marginTop: '24px' }}>
-          <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-faint)', display: 'block', marginBottom: '12px' }}>🔒 Ecosystem Previews</span>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '20px' }}>
-            {[
-              { title: '🔒 Couple Dashboard', desc: 'Consolidate multiple ledgers securely.', col: '#D05C72' },
-              { title: '🔒 Shared Financial Goals', desc: 'Co-plan for weddings, homes, or travel.', col: T.rose },
-              { title: '🔒 Family Wealth Center', desc: 'Orchestrate multi-generation legacy reserves.', col: T.goldMid }
-            ].map((p, idx) => (
-              <Card key={idx} style={{ position: 'relative', overflow: 'hidden', minHeight: '120px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                <div style={{ position: 'absolute', top: 0, left: 0, width: '3px', height: '100%', background: p.col }} />
-                <h4 style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text)', marginBottom: '4px' }}>{p.title}</h4>
-                <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{p.desc}</p>
-                <div style={{ fontSize: '0.65rem', color: T.gold, fontWeight: 700, marginTop: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Your future journey awaits</div>
-              </Card>
             ))}
           </div>
-          <div style={{ textAlign: 'center', marginTop: '16px' }}>
-            <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>Connect your partner to unlock collaborative planning.</p>
-          </div>
         </div>
 
-      </motion.div>
-    );
-  };
-
-  const renderCommittedWorkspace = () => {
-    // Math checks for Home Fund
-    const downpaymentTarget = homeTargetCost * (homeDownpaymentPct / 100);
-    const monthsToHome = calculateGoalTimeline(homeMonthlySavings, downpaymentTarget, 8);
-    const { p1Salary, p2Salary } = useFinanceStore();
-
-    return (
-      <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-        
-        {/* Header Block */}
-        <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px', marginBottom: '24px' }}>
-          <div>
-            <div className="page-eyebrow" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span className="stage-badge committed" style={{ background: '#D05C72', color: '#fff', padding: '3px 8px', borderRadius: '100px', fontSize: '0.65rem', fontWeight: 700 }}>Committed Stage</span>
-              <span>· Collaboration Workspace</span>
-            </div>
-            <h1 className="page-title">Plan Your Future Together</h1>
-            <p className="page-desc">Shared ledgers mapped for dual-income compromises and romantic milestones.</p>
-          </div>
-        </div>
-
-        {/* Common Widgets */}
-        <LifeJourneyWidget />
-        <PremiumInsightsPanel />
-
-        {/* Redesigned Partner Connection Status Card */}
-        <PartnerStatusCard />
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          
-          {/* Bento Grid Row 1 */}
-          <div className={isMobile ? 'mobile-stack' : ''} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-            
-            {/* Card 1: Personal Wealth and Shared Pool */}
-            <Card style={{ position: 'relative' }}>
-              <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.rose }}>Asset Segregation</span>
-              <h3 style={{ fontFamily: T.fontDisplay, fontSize: '1.3rem', fontWeight: 700, color: 'var(--text)', marginTop: '4px', marginBottom: '16px' }}>Personal Wealth Splits</h3>
-              
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                {[
-                  { label: 'Your In-hand Salary', value: fmt(p1Salary || 100000) },
-                  { label: `${partner2 || 'Partner'}'s Salary`, value: connectionStatus === 'connected' ? fmt(p2Salary || 80000) : "Not Connected (🔒)" },
-                  { label: 'Combined Income Pool', value: connectionStatus === 'connected' ? fmt(totalSalary) : `${fmt(p1Salary || 100000)} (🔒 Solo)` },
-                  { label: 'Consensual Savings Target', value: connectionStatus === 'connected' ? fmt(snap.budget.investments) : `${fmt((p1Salary || 100000) * (snap.presets ? snap.presets.invest : 0.35))} (🔒 Solo)` }
-                ].map((item, idx) => (
-                  <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: idx < 3 ? '1px solid var(--border)' : 'none', paddingBottom: idx < 3 ? '10px' : '0' }}>
-                    <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{item.label}</span>
-                    <strong style={{ fontSize: '0.88rem', color: idx === 2 && connectionStatus === 'connected' ? T.rose : 'var(--text)' }}>{item.value}</strong>
-                  </div>
-                ))}
-              </div>
-            </Card>
-
-            {/* Card 2: Interactive Future Home Fund Simulator */}
-            <Card>
-              <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.rose }}>Property Calibration</span>
-              <h3 style={{ fontFamily: T.fontDisplay, fontSize: '1.3rem', fontWeight: 700, color: 'var(--text)', marginTop: '4px', marginBottom: '16px' }}>Future Home Fund</h3>
-              
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', marginBottom: '6px' }}>
-                    <span style={{ color: 'var(--text-muted)' }}>Target Home Value</span>
-                    <strong style={{ color: T.rose }}>{cmpct(homeTargetCost)}</strong>
-                  </div>
-                  <input 
-                    type="range" min={3000000} max={25000000} step={500000}
-                    className="eb-slider"
-                    value={homeTargetCost} 
-                    onChange={e => setHomeTargetCost(parseInt(e.target.value))}
-                  />
-                </div>
-
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                  <div style={{ background: 'var(--bg-warm)', padding: '10px', borderRadius: '10px', textAlign: 'center' }}>
-                    <span style={{ fontSize: '0.65rem', color: 'var(--text-faint)' }}>Downpayment (20%)</span>
-                    <div style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--text)', marginTop: '2px' }}>{cmpct(downpaymentTarget)}</div>
-                  </div>
-                  <div style={{ background: 'var(--bg-warm)', padding: '10px', borderRadius: '10px', textAlign: 'center' }}>
-                    <span style={{ fontSize: '0.65rem', color: 'var(--text-faint)' }}>Months to target</span>
-                    <div style={{ fontSize: '1.05rem', fontWeight: 700, color: T.rose, marginTop: '2px' }}>
-                      {isFinite(monthsToHome) ? `${monthsToHome} mo` : '—'}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </Card>
-          </div>
-
-          {/* Bento Grid Row 2 */}
-          <div className={isMobile ? 'mobile-stack' : ''} style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '20px' }}>
-            
-            {/* Card 3: Marriage Planning Bento */}
-            <Card>
-              <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.rose }}>Lifestyle Strategy</span>
-              <h3 style={{ fontFamily: T.fontDisplay, fontSize: '1.3rem', fontWeight: 700, color: 'var(--text)', marginTop: '4px', marginBottom: '16px' }}>Marriage Budget Calibration</h3>
-              
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', marginBottom: '6px' }}>
-                    <span style={{ color: 'var(--text-muted)' }}>Wedding Budget Cap</span>
-                    <strong style={{ color: T.rose }}>{fmt(weddingCost)}</strong>
-                  </div>
-                  <input 
-                    type="range" min={500000} max={6000000} step={100000}
-                    className="eb-slider"
-                    value={weddingCost}
-                    onChange={e => setWeddingCost(parseInt(e.target.value))}
-                  />
-                </div>
-
-                <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', marginBottom: '6px' }}>
-                    <span style={{ color: 'var(--text-muted)' }}>Guest Volume Limit</span>
-                    <strong style={{ color: T.rose }}>{weddingGuests} Guests</strong>
-                  </div>
-                  <input 
-                    type="range" min={50} max={500} step={10}
-                    className="eb-slider"
-                    value={weddingGuests}
-                    onChange={e => setWeddingGuests(parseInt(e.target.value))}
-                  />
-                </div>
-
-                <div style={{ fontSize: '0.72rem', color: 'var(--text-faint)', fontStyle: 'italic', borderTop: '1px solid var(--border)', paddingTop: '10px' }}>
-                  *Calculated averages allocate approx. {fmt(weddingCost / weddingGuests)} per guest package inclusive of banquet reserves.
-                </div>
-              </div>
-            </Card>
-
-            {/* Card 4: Relationship Timeline */}
-            <Card style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', position: 'relative' }}>
-              <div>
-                <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.rose }}>Anniversary Calibration</span>
-                <h3 style={{ fontFamily: T.fontDisplay, fontSize: '1.3rem', fontWeight: 700, color: 'var(--text)', marginTop: '4px', marginBottom: '16px' }}>Relationship Timeline</h3>
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', flex: 1, paddingLeft: '12px', position: 'relative', marginTop: '10px', filter: connectionStatus !== 'connected' ? 'blur(1.5px)' : 'none', opacity: connectionStatus !== 'connected' ? 0.6 : 1 }}>
-                <div style={{ position: 'absolute', left: '4px', top: '8px', bottom: '8px', width: '1.5px', background: T.rose }} />
-
-                {[
-                  { label: 'Sovereign Ledger Synced', date: 'Active Consensus', ok: true },
-                  { label: 'First Shared Goal Acquired', date: 'Projected 2026', ok: milestones.length > 0 && connectionStatus === 'connected' },
-                  { label: 'Future Home Deposit Met', date: `Projected in ${isFinite(monthsToHome) ? Math.ceil(monthsToHome/12) : 3} Years`, ok: false }
-                ].map((node, idx) => (
-                  <div key={idx} style={{ position: 'relative', paddingLeft: '16px' }}>
-                    <div style={{
-                      position: 'absolute',
-                      left: '-16px',
-                      top: '4px',
-                      width: '9px',
-                      height: '9px',
-                      borderRadius: '50%',
-                      background: node.ok ? T.rose : 'var(--bg-muted)',
-                      border: `1.5px solid ${node.ok ? T.rose : 'var(--border-str)'}`
-                    }} />
-                    <div style={{ fontSize: '0.82rem', fontWeight: 700, color: node.ok ? 'var(--text)' : 'var(--text-faint)' }}>{node.label}</div>
-                    <div style={{ fontSize: '0.68rem', color: 'var(--text-faint)' }}>{node.date}</div>
-                  </div>
-                ))}
-              </div>
-              {connectionStatus !== 'connected' && (
-                <LockedStateCard 
-                  title="Timeline Sync Locked"
-                  desc="Connect your partner to unlock shared wealth planning."
-                  onConnect={() => setPage('partner')}
-                />
-              )}
-            </Card>
-          </div>
-        </div>
-      </motion.div>
-    );
-  };
-
-  // 3. MARRIED WORKSPACE LAYOUT
-  const renderMarriedWorkspace = () => {
-    // Dynamic forecasts
-    const annualContrib = snap.budget.investments * 12;
-    const rPct = snap.blendedReturn * 100;
-    
-    // Child education projection age 1 to 18
-    const childCorpus18y = simulateGrowth(snap.goalSplit.child, 18, 10).fv;
-
-    // Retirement indicators
-    const retirementGoal = goalTargets.retirement || 20000000;
-    const systematicRetireVal = retirementGoal * 0.04 / 12;
-    const passiveCoveragePct = Math.round((systematicRetireVal / Math.max(snap.budget.needs, 1)) * 100);
-
-    // Dynamic 30-year projections data source
-    const projections = simulateGrowth(snap.budget.investments, 30, rPct).dataPoints;
-
-    return (
-      <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-        
-        {/* Header Block */}
-        <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px', marginBottom: '24px' }}>
-          <div>
-            <div className="page-eyebrow" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span className="stage-badge married" style={{ background: T.goldMid, color: '#fff', padding: '3px 8px', borderRadius: '100px', fontSize: '0.65rem', fontWeight: 700 }}>Married Dynasty</span>
-              <span>· Family Legacy Shield</span>
-            </div>
-            <h1 className="page-title">Grow Wealth As A Family</h1>
-            <p className="page-desc">Consolidated multi-locker portfolios structured for trust allocations and retirement exit caps.</p>
-          </div>
-        </div>
-
-        {/* Common Widgets */}
-        <LifeJourneyWidget />
-        <PremiumInsightsPanel />
-
-        {/* Redesigned Partner Connection Status Card */}
-        <PartnerStatusCard />
-
-        {/* Bento Grid Row 1 */}
-        <div className={isMobile ? 'mobile-stack' : ''} style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '20px', marginBottom: '20px' }}>
-          
-          {/* Card 1: Family Net Worth Consolidated Ledger */}
-          <Card gold style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', position: 'relative' }}>
-            <div>
-              <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.gold }}>Consolidated Family Net Worth</span>
-              <h2 style={{ fontFamily: T.fontDisplay, fontSize: 'clamp(2.1rem, 5vw, 3.2rem)', fontWeight: 700, color: 'var(--text)', margin: '12px 0 6px' }}>
-                {cmpct(5000000 + mContribution * 48)}
-              </h2>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.78rem', color: T.sage, fontWeight: 700 }}>
-                <Shield size={14} style={{ color: T.sage }} /> Multi-Generational Trust Lock Active
-              </div>
-            </div>
-
-            <div style={{ borderTop: '1px solid var(--border-mid)', paddingTop: '16px', marginTop: '20px' }}>
-              <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-faint)' }}>Family Ledger Metrics</span>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginTop: '8px' }}>
-                <div>
-                  <span style={{ fontSize: '0.68rem', color: 'var(--text-faint)' }}>Combined Salaries</span>
-                  <div style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text)' }}>{cmpct(totalSalary)}</div>
-                </div>
-                <div>
-                  <span style={{ fontSize: '0.68rem', color: 'var(--text-faint)' }}>Emergency Vault</span>
-                  <div style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text)' }}>{cmpct(snap.budget.emergency)}</div>
-                </div>
-                <div>
-                  <span style={{ fontSize: '0.68rem', color: 'var(--text-faint)' }}>Child SIP rate</span>
-                  <div style={{ fontSize: '1rem', fontWeight: 700, color: T.gold }}>{cmpct(snap.goalSplit.child)}</div>
-                </div>
-              </div>
-            </div>
-
-            {connectionStatus !== 'connected' && (
-              <LockedStateCard 
-                title="Consolidated Net Worth Locked"
-                desc="Connect your partner to unlock shared wealth planning."
-                onConnect={() => setPage('partner')}
-              />
-            )}
-          </Card>
-
-          {/* Card 2: Child Education Planning trust */}
-          <Card style={{ position: 'relative' }}>
-            <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.gold }}>Generational Launchpad</span>
-            <h3 style={{ fontFamily: T.fontDisplay, fontSize: '1.3rem', fontWeight: 700, color: 'var(--text)', marginTop: '4px', marginBottom: '16px' }}>Child Education Trust</h3>
-            
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border)', paddingBottom: '10px' }}>
-                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Target Education Fund</span>
-                <strong style={{ fontSize: '0.88rem', color: 'var(--text)' }}>{fmt(goalTargets.child || 5000000)}</strong>
-              </div>
-              
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border)', paddingBottom: '10px' }}>
-                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Dynamic Monthly Allocation</span>
-                <strong style={{ fontSize: '0.88rem', color: T.gold }}>{fmt(snap.goalSplit.child)}</strong>
-              </div>
-
-              <div style={{ background: 'var(--bg-warm)', padding: '14px', borderRadius: '12px', border: '1px solid var(--border)', textAlign: 'center', marginTop: '10px' }}>
-                <span style={{ fontSize: '0.7rem', color: 'var(--text-faint)', textTransform: 'uppercase', fontWeight: 700 }}>Projected Value at Age 18 (@ 10% returns)</span>
-                <div style={{ fontSize: '1.45rem', fontWeight: 800, color: T.goldMid, fontFamily: T.fontDisplay, marginTop: '4px' }}>
-                  {fmt(childCorpus18y)}
-                </div>
-              </div>
-            </div>
-
-            {connectionStatus !== 'connected' && (
-              <LockedStateCard 
-                title="Generational Trust Locked"
-                desc="Connect your partner to unlock shared wealth planning."
-                onConnect={() => setPage('partner')}
-              />
-            )}
-          </Card>
-        </div>
-
-        {/* Bento Grid Row 2 */}
-        <div className={isMobile ? 'mobile-stack' : ''} style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: '20px', marginBottom: '20px' }}>
-          
-          {/* Card 3: Retirement Strategy Widget */}
-          <Card>
-            <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.gold }}>Autonomy Calibration</span>
-            <h3 style={{ fontFamily: T.fontDisplay, fontSize: '1.3rem', fontWeight: 700, color: 'var(--text)', marginTop: '4px', marginBottom: '16px' }}>Retirement Strategy</h3>
-            
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Target Corpus Target</span>
-                <strong style={{ fontSize: '0.88rem', color: 'var(--text)' }}>{fmt(retirementGoal)}</strong>
-              </div>
-
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border)', paddingBottom: '10px' }}>
-                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Monthly Systematic Outflow (4%)</span>
-                <strong style={{ fontSize: '0.88rem', color: T.sage }}>{fmt(systematicRetireVal)}</strong>
-              </div>
-
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '4px' }}>
-                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Passive Coverage index</span>
-                <strong style={{ fontSize: '1.15rem', color: T.sage, fontFamily: T.fontDisplay }}>{passiveCoveragePct}%</strong>
-              </div>
-              <div style={{ width: '100%', height: '4px', background: 'var(--onb-border)', borderRadius: '4px', overflow: 'hidden' }}>
-                <div style={{ width: `${Math.min(passiveCoveragePct, 100)}%`, height: '100%', background: T.sage }} />
-              </div>
-              
-              <div style={{ fontSize: '0.68rem', color: 'var(--text-faint)', lineHeight: 1.35 }}>
-                *A coverage index exceeding 100% means systematically withdrawn interest funds family needs without touching principal core.
-              </div>
-            </div>
-          </Card>
-
-          {/* Card 4: Multi-Decade Wealth Forecasting Chart */}
-          <Card>
-            <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.gold }}>Dynamic Foresight</span>
-            <h3 style={{ fontFamily: T.fontDisplay, fontSize: '1.3rem', fontWeight: 700, color: 'var(--text)', marginTop: '4px', marginBottom: '16px' }}>30-Year Wealth Forecast</h3>
-            
-            <div style={{ width: '100%', height: '180px' }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={projections} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                  <XAxis dataKey="year" fontSize={10} stroke="var(--text-faint)" />
-                  <YAxis tickFormatter={v => formatCompact(v, currency)} fontSize={10} stroke="var(--text-faint)" />
-                  <Tooltip contentStyle={TT} formatter={v => [fmt(v), 'Projected Wealth']} />
-                  <defs>
-                    <linearGradient id="colorCorpus" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor={T.goldMid} stopOpacity={0.4}/>
-                      <stop offset="95%" stopColor={T.goldMid} stopOpacity={0.0}/>
-                    </linearGradient>
-                  </defs>
-                  <Area type="monotone" dataKey="corpus" stroke={T.gold} strokeWidth={2} fillOpacity={1} fill="url(#colorCorpus)" />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-          </Card>
-        </div>
-
-      </motion.div>
-    );
-  };
-
-  return (
-    <div className="fade-in" style={{ position: 'relative' }}>
-      
-
-
-      {/* DYNAMIC BACKDROP STYLING */}
-      <div>
-        
-        {/* Render Workspace Conditionally based on Active Life Stage */}
-        {stage === 'Single' && renderSingleWorkspace()}
-        {stage === 'Committed' && renderCommittedWorkspace()}
-        {stage === 'Married' && renderMarriedWorkspace()}
-
-        {/* Dedicated Shared Journey Timeline Widget */}
-        <div style={{ marginTop: '24px' }}>
-          <RecentAchievementsWidget />
-          <JourneyTimeline />
-        </div>
-
-      </div>
-
-      {/* DIALOG: SINGLE UPGRADE SELECTOR */}
-      {isUpgradingStage && (
-        <div style={{
-          position: 'fixed',
-          inset: 0,
-          zIndex: 2000,
-          background: 'rgba(5, 5, 8, 0.55)',
-          backdropFilter: 'blur(20px)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: '20px'
-        }}>
-          <div className="liquid-glass" style={{ width: '100%', maxWidth: '440px', padding: '32px', background: 'var(--bg-card)', position: 'relative' }}>
-            <h3 style={{ fontFamily: T.fontDisplay, fontSize: '1.6rem', fontWeight: 600, color: 'var(--text)', marginBottom: '8px', textAlign: 'center' }}>
-              Secure Partnership Upgrade
+        {/* Row 6: AI Financial Insights */}
+        <div className="apple-card" style={{ display: 'flex', flexDirection: 'column' }}>
+          <div style={{ marginBottom: '20px' }}>
+            <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', color: T.gold, letterSpacing: '0.05em' }}>
+              Smart Recommendations
+            </span>
+            <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--text)', marginTop: '2px' }}>
+              AI Financial Insights
             </h3>
-            <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', lineHeight: 1.45, marginBottom: '24px', textAlign: 'center' }}>
-              Ready to link financial ledgers? Choose your partnership stage to configure identity &amp; initiate cryptographic synchronization:
-            </p>
+          </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '24px' }}>
-              <button
-                onClick={() => setSelectedUpgradeStage('Committed')}
-                style={{
-                  padding: '16px',
-                  borderRadius: '12px',
-                  border: `2px solid ${selectedUpgradeStage === 'Committed' ? T.rose : 'var(--border)'}`,
-                  background: selectedUpgradeStage === 'Committed' ? 'rgba(208, 92, 114, 0.05)' : 'transparent',
-                  color: 'var(--text)',
-                  cursor: 'pointer',
-                  textAlign: 'left',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px',
-                  transition: 'all 0.25s ease'
-                }}
-              >
-                <span style={{ fontSize: '1.5rem' }}>💑</span>
-                <div>
-                  <strong style={{ fontSize: '0.9rem', color: selectedUpgradeStage === 'Committed' ? T.rose : 'var(--text)' }}>Committed Partners</strong>
-                  <div style={{ fontSize: '0.72rem', color: 'var(--text-faint)', marginTop: '2px' }}>Consolidate dual portfolios with romantic lifestyle targets.</div>
-                </div>
-              </button>
-
-              <button
-                onClick={() => setSelectedUpgradeStage('Married')}
-                style={{
-                  padding: '16px',
-                  borderRadius: '12px',
-                  border: `2px solid ${selectedUpgradeStage === 'Married' ? T.gold : 'var(--border)'}`,
-                  background: selectedUpgradeStage === 'Married' ? 'rgba(184, 144, 42, 0.05)' : 'transparent',
-                  color: 'var(--text)',
-                  cursor: 'pointer',
-                  textAlign: 'left',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px',
-                  transition: 'all 0.25s ease'
-                }}
-              >
-                <span style={{ fontSize: '1.5rem' }}>💍</span>
-                <div>
-                  <strong style={{ fontSize: '0.9rem', color: selectedUpgradeStage === 'Married' ? T.gold : 'var(--text)' }}>Family Dynasty</strong>
-                  <div style={{ fontSize: '0.72rem', color: 'var(--text-faint)', marginTop: '2px' }}>Multi-generation estate reserves &amp; child launchpads.</div>
-                </div>
-              </button>
-            </div>
-
-            <div style={{ display: 'flex', gap: '12px' }}>
-              <button
-                className="btn-secondary"
-                style={{ flex: 1, padding: '10px 16px' }}
-                onClick={() => setIsUpgradingStage(false)}
-              >
-                Cancel
-              </button>
-              <button
-                className="btn-primary"
-                style={{ flex: 2, padding: '10px 16px', background: selectedUpgradeStage === 'Married' ? T.gold : T.rose }}
-                onClick={() => handleStageUpgrade(selectedUpgradeStage)}
-              >
-                Initiate Linkage Flow
-              </button>
-            </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', flexGrow: 1 }}>
             
-            <button
-              onClick={() => setIsUpgradingStage(false)}
-              style={{ position: 'absolute', top: '16px', right: '16px', background: 'none', border: 'none', color: 'var(--text-faint)', fontSize: '1.1rem', cursor: 'pointer' }}
-            >
-              ✕
-            </button>
+            {/* Recommendation 1 */}
+            <div style={{ 
+              background: 'var(--bg-muted)', 
+              border: '1px solid var(--border)', 
+              borderRadius: '16px', 
+              padding: '12px 16px' 
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <CheckCircle2 size={16} style={{ color: T.sage }} />
+                <strong style={{ fontSize: '0.78rem', color: 'var(--text)' }}>Emergency fund can sustain 8 months</strong>
+              </div>
+              <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '4px', lineHeight: 1.4 }}>
+                Your liquid reserve of {fmt(emergencyReserve)} covers 8.2 months of essential lifestyle expenses. Outstanding security margin.
+              </p>
+            </div>
+
+            {/* Recommendation 2 */}
+            <div style={{ 
+              background: 'var(--bg-muted)', 
+              border: '1px solid var(--border)', 
+              borderRadius: '16px', 
+              padding: '12px 16px' 
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Sparkles size={16} style={{ color: T.gold }} />
+                <strong style={{ fontSize: '0.78rem', color: 'var(--text)' }}>Increase SIP by 5%</strong>
+              </div>
+              <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '4px', lineHeight: 1.4 }}>
+                A minor 5% raise in monthly equity SIP boosts your 20-year projected dynasty corpus by {cmpct(1840000)}.
+              </p>
+            </div>
+
+            {/* Recommendation 3 */}
+            <div style={{ 
+              background: 'var(--bg-muted)', 
+              border: '1px solid var(--border)', 
+              borderRadius: '16px', 
+              padding: '12px 16px' 
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <CheckCircle2 size={16} style={{ color: T.sage }} />
+                <strong style={{ fontSize: '0.78rem', color: 'var(--text)' }}>Debt ratio is healthy</strong>
+              </div>
+              <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '4px', lineHeight: 1.4 }}>
+                Allocating {cmpct(monthlyInvestments * (snap.presets ? snap.presets.debt : 0.25))} to secure short-term debt instruments reduces target portfolio volatility by 14%.
+              </p>
+            </div>
+
+            {/* Recommendation 4 */}
+            <div style={{ 
+              background: 'var(--bg-muted)', 
+              border: '1px solid var(--border)', 
+              borderRadius: '16px', 
+              padding: '12px 16px' 
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Info size={16} style={{ color: T.sky }} />
+                <strong style={{ fontSize: '0.78rem', color: 'var(--text)' }}>Diversification score: 82%</strong>
+              </div>
+              <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '4px', lineHeight: 1.4 }}>
+                Your asset spread across Equity, Debt, Gold and Cash is highly optimized. Crypto exposure is maintained within safe risk parameters (5%).
+              </p>
+            </div>
+
           </div>
         </div>
-      )}
+      </div>
 
     </div>
   );
