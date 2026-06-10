@@ -14,7 +14,7 @@ import { Card } from '../common/Card';
 import { 
   TrendingUp, Wallet, Coins, Shield, Landmark, Sparkles, 
   Target, AlertCircle, CheckCircle2, ChevronRight, Activity, 
-  FileText, Upload, Plus, Check, ArrowRight, X, Heart
+  FileText, Upload, Plus, Check, ArrowRight, X, Heart, Briefcase, Info
 } from 'lucide-react';
 import { useToast } from '../common/Toast';
 
