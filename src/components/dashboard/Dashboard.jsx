@@ -28,6 +28,13 @@ const CHART_TOOLTIP_STYLE = {
   color: 'var(--text)',
 };
 
+const getGreetingTime = () => {
+  const hr = new Date().getHours();
+  if (hr < 12) return 'GOOD MORNING';
+  if (hr < 17) return 'GOOD AFTERNOON';
+  return 'GOOD EVENING';
+};
+
 export function Dashboard() {
   const toast = useToast();
   const { 
@@ -35,6 +42,7 @@ export function Dashboard() {
     setP1Salary, setMindset, addMilestone
   } = useFinanceStore();
   const theme = useFinanceStore(s => s.theme);
+  const nameToUpper = (partner1 || 'Arup').toUpperCase();
 
   // States
   const [growthFilter, setGrowthFilter] = useState('1Y');
