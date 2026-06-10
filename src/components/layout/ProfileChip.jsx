@@ -163,11 +163,11 @@ export function ProfileChip({ setPage, onReset }) {
               initial="hidden"
               animate="visible"
               exit="hidden"
-              className="eb-glass-dropdown"
-              style={{ width: '220px', padding: '16px 12px' }}
+              className="eb-profile-dropdown-glass"
+              style={{ width: '240px' }}
             >
-              {/* Header: avatar, name, EverBond ID */}
-              <div style={{ display: 'flex', gap: '12px', alignItems: 'center', padding: '0 8px 12px', borderBottom: '1px solid var(--border-mid)', marginBottom: '8px' }}>
+              {/* Header: avatar, name, EverBond ID (Solid User Card) */}
+              <div className="eb-profile-user-card">
                 <div style={{
                   width: '36px',
                   height: '36px',
@@ -179,7 +179,8 @@ export function ProfileChip({ setPage, onReset }) {
                   justifyContent: 'center',
                   fontSize: '0.85rem',
                   fontWeight: 800,
-                  boxShadow: '0 4px 12px rgba(201, 168, 76, 0.2)'
+                  boxShadow: '0 4px 12px rgba(201, 168, 76, 0.2)',
+                  flexShrink: 0
                 }}>
                   {getInitials(partner1)}
                 </div>
@@ -194,21 +195,21 @@ export function ProfileChip({ setPage, onReset }) {
               </div>
 
               {/* Menu Items */}
-              <button onClick={() => handleNav('profile')} className="eb-dropdown-item">
+              <button onClick={() => handleNav('profile')} className="eb-profile-menu-item">
                 <span className="eb-dropdown-item-icon"><User size={14} /></span>
                 Profile
               </button>
-              <button onClick={() => handleNav('settings')} className="eb-dropdown-item">
+              <button onClick={() => handleNav('settings')} className="eb-profile-menu-item">
                 <span className="eb-dropdown-item-icon"><Settings size={14} /></span>
                 Settings
               </button>
-              <button onClick={() => handleNav('documentation')} className="eb-dropdown-item">
+              <button onClick={() => handleNav('documentation')} className="eb-profile-menu-item">
                 <span className="eb-dropdown-item-icon"><FileText size={14} /></span>
                 Documentation
               </button>
               <button
                 onClick={() => { setIsOpen(false); setTheme(theme === 'light' ? 'dark' : 'light'); }}
-                className="eb-dropdown-item"
+                className="eb-profile-menu-item"
               >
                 <span className="eb-dropdown-item-icon">
                   {theme === 'light' ? <Moon size={14} /> : <Sun size={14} />}
@@ -220,7 +221,7 @@ export function ProfileChip({ setPage, onReset }) {
 
               <button
                 onClick={handleLogoutClick}
-                className="eb-dropdown-item"
+                className="eb-profile-menu-item"
                 style={{ color: T.rose }}
               >
                 <span className="eb-dropdown-item-icon" style={{ color: T.rose }}><LogOut size={14} /></span>

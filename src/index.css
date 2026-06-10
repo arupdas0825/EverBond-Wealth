@@ -2843,3 +2843,83 @@ input,select{font-family:var(--fb)}
 [data-theme="dark"] .apple-card-gold:hover {
   box-shadow: 0 22px 55px rgba(0, 0, 0, 0.45);
 }
+
+/* Profile Dropdown Specific Glassmorphism Fix */
+.eb-profile-dropdown-glass {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  width: 240px;
+  border-radius: 24px !important;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  z-index: 99999 !important; /* z-index: 9999+ */
+  overflow: hidden;
+  
+  background: rgba(255, 255, 255, 0.88) !important; /* background: rgba(255,255,255,0.88) */
+  backdrop-filter: blur(32px) saturate(180%) !important; /* blur(32px) saturate(180%) */
+  -webkit-backdrop-filter: blur(32px) saturate(180%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.65) !important; /* border: 1px solid rgba(255,255,255,0.65) */
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12) !important; /* shadow: 0 20px 60px rgba(0,0,0,0.12) */
+  
+  transition: background 0.3s ease, border-color 0.3s ease;
+}
+
+[data-theme="dark"] .eb-profile-dropdown-glass {
+  background: rgba(20, 25, 35, 0.88) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.38) !important;
+}
+
+/* User Card Fix inside Profile Dropdown */
+.eb-profile-user-card {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 16px !important; /* padding: 16px */
+  background: rgba(240, 246, 255, 0.95) !important; /* background: rgba(240,246,255,0.95) */
+  border: 1px solid rgba(255, 255, 255, 0.8) !important; /* border: 1px solid rgba(255,255,255,0.8) */
+  border-radius: 18px !important; /* border-radius: 18px */
+  margin-bottom: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+}
+
+[data-theme="dark"] .eb-profile-user-card {
+  background: rgba(30, 41, 59, 0.95) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Menu Item overrides in Profile Dropdown */
+.eb-profile-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: none;
+  background: rgba(255, 255, 255, 0.95) !important; /* background: rgba(255,255,255,0.95) NOT transparent */
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  outline: none;
+  transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1), background 180ms ease, color 180ms ease; /* transition: 180ms */
+}
+
+[data-theme="dark"] .eb-profile-menu-item {
+  background: rgba(25, 30, 40, 0.95) !important;
+}
+
+.eb-profile-menu-item:hover {
+  transform: translateX(4px); /* transform: translateX(4px) */
+  background: rgba(245, 247, 250, 1) !important; /* Hover: background: rgba(245,247,250,1) */
+  color: var(--text) !important;
+}
+
+[data-theme="dark"] .eb-profile-menu-item:hover {
+  background: rgba(35, 45, 55, 1) !important;
+}
