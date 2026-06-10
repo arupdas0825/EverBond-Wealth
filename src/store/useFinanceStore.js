@@ -148,6 +148,8 @@ export const useFinanceStore = create(
       requestReceived:     false,           // User received a connection request
       connectedAt:         null,            // ISO timestamp when accepted
       incomingRequest:     null,            // Incoming request metadata { senderEverBondId, senderName, relationshipDate, sentAt }
+      requestStatus:       'none',          // 'none' | 'pending' | 'received'
+      sharedWorkspace:     null,            // Shared workspace metadata
 
       // Legacy verification states (kept for backward compat during transition)
       invitationAccepted: false,
@@ -395,11 +397,15 @@ export const useFinanceStore = create(
 
         set({
           partnerEverBondId,
+          partnerId: partnerEverBondId,
           relationshipDate: relationshipDate || '',
           connectionStatus: 'pending',
+          requestStatus: 'pending',
           requestSentAt: new Date().toISOString(),
           requestSent: true,
           requestReceived: false,
+          connectedAt: null,
+          sharedWorkspace: null,
           // Also sync legacy fields for backward compat
           verificationStatus: 'awaiting',
         });
@@ -422,6 +428,7 @@ export const useFinanceStore = create(
 
         set({
           connectionStatus: 'received',
+          requestStatus: 'received',
           requestSent: false,
           requestReceived: true,
           incomingRequest: {
@@ -432,9 +439,12 @@ export const useFinanceStore = create(
           },
           // Populate fields so acceptance resolves smoothly
           partnerEverBondId: senderEverBondId,
+          partnerId: senderEverBondId,
           partner2: senderName,
           partnerName: senderName,
           relationshipDate: dateVal,
+          connectedAt: null,
+          sharedWorkspace: null,
           verificationStatus: 'awaiting',
         });
       },
@@ -455,15 +465,18 @@ export const useFinanceStore = create(
 
         set({
           connectionStatus: 'none',
+          requestStatus: 'none',
           requestSent: false,
           requestReceived: false,
           incomingRequest: null,
           partnerEverBondId: '',
+          partnerId: '',
           partner2: '',
           partnerName: '',
           relationshipDate: '',
           requestSentAt: null,
           connectedAt: null,
+          sharedWorkspace: null,
           verificationStatus: 'unverified',
         });
       },
@@ -519,9 +532,11 @@ export const useFinanceStore = create(
 
         set({
           connectionStatus: 'connected',
+          requestStatus: 'none',
           partner2: resolvedName,
           partnerName: resolvedName,
           partnerEverBondId: resolvedId,
+          partnerId: resolvedId,
           relationshipDate: resolvedDate,
           relationshipId: relId,
           coupleId: resolvedCoupleId,
@@ -529,12 +544,18 @@ export const useFinanceStore = create(
           requestSent: false,
           requestReceived: false,
           incomingRequest: null,
+          sharedWorkspace: {
+            unlocked: true,
+            syncedAt: new Date().toISOString(),
+            goals: [],
+            notesCount: get().workspaceNotes?.length || 0,
+            tasksCount: get().workspaceTasks?.length || 0
+          },
           
           // Sync legacy fields
           partnerLinked: true,
           partnerAccepted: true,
           verificationStatus: 'verified',
-          partnerId: resolvedId,
         });
         get().syncInsightsData();
       },
@@ -556,7 +577,9 @@ export const useFinanceStore = create(
 
         set({
           connectionStatus: 'none',
+          requestStatus: 'none',
           partnerEverBondId: '',
+          partnerId: '',
           relationshipDate: '',
           requestSentAt: null,
           relationshipId: '',
@@ -568,12 +591,12 @@ export const useFinanceStore = create(
           requestReceived: false,
           connectedAt: null,
           incomingRequest: null,
+          sharedWorkspace: null,
           // Sync legacy fields
           partnerLinked: false,
           partnerAccepted: false,
           verificationStatus: 'unverified',
           invitationCode: '',
-          partnerId: '',
         });
         get().syncInsightsData();
       },
@@ -727,8 +750,28 @@ export const useFinanceStore = create(
           update.everBondId = existingId;
         }
 
-        if (partnerEverBondId !== undefined) update.partnerEverBondId = partnerEverBondId;
-        if (connectionStatus !== undefined) update.connectionStatus = connectionStatus;
+        if (partnerEverBondId !== undefined) {
+          update.partnerEverBondId = partnerEverBondId;
+          update.partnerId = partnerEverBondId;
+        }
+        if (connectionStatus !== undefined) {
+          update.connectionStatus = connectionStatus;
+          if (connectionStatus === 'connected') {
+            update.requestStatus = 'none';
+            if (!get().sharedWorkspace) {
+              update.sharedWorkspace = {
+                unlocked: true,
+                syncedAt: new Date().toISOString(),
+                goals: [],
+                notesCount: get().workspaceNotes?.length || 0,
+                tasksCount: get().workspaceTasks?.length || 0
+              };
+            }
+          } else {
+            update.requestStatus = connectionStatus;
+            update.sharedWorkspace = null;
+          }
+        }
         if (relationshipDate !== undefined) update.relationshipDate = relationshipDate;
         
         // Legacy partnership linking states
