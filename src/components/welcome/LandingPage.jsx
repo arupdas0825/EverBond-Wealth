@@ -50,6 +50,7 @@ export function LandingPage({ onStartJourney }) {
   const theme = useFinanceStore(s => s.theme);
   const [activeStage, setActiveStage] = useState('Single');
   const [particles, setParticles] = useState([]);
+  const [imgFailed, setImgFailed] = useState(false);
 
   // Generate drift particles
   useEffect(() => {
@@ -1369,20 +1370,29 @@ export function LandingPage({ onStartJourney }) {
             }} />
 
             {/* Profile Avatar placeholder with initials */}
-            <div style={{
-              width: '80px',
-              height: '80px',
-              borderRadius: '50%',
-              background: `linear-gradient(135deg, ${T.goldMid} 0%, ${T.gold} 100%)`,
-              margin: '0 auto',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: 'var(--sh-gold)',
-              border: '3px solid #fff'
-            }}>
-              <span style={{ color: '#fff', fontSize: '1.8rem', fontFamily: T.fontDisplay, fontWeight: 700 }}>AD</span>
-            </div>
+            {!imgFailed ? (
+              <img
+                src="/AD.jpeg"
+                alt="Arup Das"
+                className="vision-profile-img"
+                onError={() => setImgFailed(true)}
+              />
+            ) : (
+              <div style={{
+                width: '80px',
+                height: '80px',
+                borderRadius: '50%',
+                background: `linear-gradient(135deg, ${T.goldMid} 0%, ${T.gold} 100%)`,
+                margin: '0 auto',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: 'var(--sh-gold)',
+                border: '3px solid #fff'
+              }}>
+                <span style={{ color: '#fff', fontSize: '1.8rem', fontFamily: T.fontDisplay, fontWeight: 700 }}>AD</span>
+              </div>
+            )}
 
             <div>
               <h3 style={{ fontFamily: T.fontDisplay, fontSize: '1.6rem', fontWeight: 700, color: 'var(--text)', marginBottom: '4px' }}>Arup Das</h3>

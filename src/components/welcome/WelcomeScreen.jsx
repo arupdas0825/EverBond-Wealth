@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useFinanceStore } from '../../store/useFinanceStore';
 import { Logo } from '../common/Logo';
 import { CURRENCIES, REGIONS } from '../../constants/presets';
-import { Heart, Sparkles, User, Shield, Compass, TrendingUp, Award, Clock } from 'lucide-react';
+import { Heart, Sparkles, User, Shield, Compass, TrendingUp, Award, Clock, ArrowLeft, ArrowRight } from 'lucide-react';
 import { T } from '../../theme/tokens';
 import { LandingPage } from './LandingPage';
 import { PrivacyDrawer } from '../common/PrivacyDrawer';
@@ -16,6 +16,21 @@ const DREAM_GOALS = [
   { key: 'vacation', label: 'Travel Fund', icon: '✈️', desc: 'Explore global destinations' },
   { key: 'growth', label: 'Wealth Growth', icon: '📈', desc: 'Accelerate compound wealth expansion' }
 ];
+
+const stepVariants = {
+  enter: (dir) => ({
+    x: dir === 'forward' ? 120 : -120,
+    opacity: 0
+  }),
+  center: {
+    x: 0,
+    opacity: 1
+  },
+  exit: (dir) => ({
+    x: dir === 'forward' ? -120 : 120,
+    opacity: 0
+  })
+};
 
 export function WelcomeScreen() {
   const {
@@ -30,6 +45,7 @@ export function WelcomeScreen() {
   } = useFinanceStore();
 
   const [step, setStep] = useState(0);
+  const [direction, setDirection] = useState('forward');
   const [particles, setParticles] = useState([]);
   const [validationErrors, setValidationErrors] = useState({});
   const [currency, setLocalCurrency] = useState('INR');
@@ -172,12 +188,13 @@ export function WelcomeScreen() {
       setValidationErrors(errors);
     } else {
       setValidationErrors({});
+      setDirection('forward');
       setStep(3);
     }
   };
 
   if (step === 0) {
-    return <LandingPage onStartJourney={() => setStep(1)} />;
+    return <LandingPage onStartJourney={() => { setDirection('forward'); setStep(1); }} />;
   }
 
   return (
@@ -257,7 +274,7 @@ export function WelcomeScreen() {
           </div>
         )}
 
-        <AnimatePresence mode="wait">
+        <AnimatePresence mode="wait" custom={direction}>
           
           {/* STEP 0: CINEMATIC INTRO */}
           {step === 0 && (
@@ -326,10 +343,12 @@ export function WelcomeScreen() {
           {step === 1 && (
             <motion.div
               key="stage-selection"
-              initial={{ opacity: 0, scale: 0.96 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.96 }}
-              transition={{ duration: 0.5 }}
+              custom={direction}
+              variants={stepVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={{ duration: 0.25, ease: 'easeInOut' }}
               className="liquid-glass"
               style={{ padding: '40px' }}
             >
@@ -386,14 +405,12 @@ export function WelcomeScreen() {
 
               </div>
 
-              <div style={{ display: 'flex', justifySelf: 'flex-end', justifyContent: 'space-between', alignItems: 'center' }}>
-                <button className="btn-reset" style={{ width: 'auto', background: 'transparent', border: 'none', color: 'var(--onb-back)' }} onClick={() => setStep(0)}>Back</button>
-                <button 
-                  className="btn-primary" 
-                  style={{ width: 'auto', padding: '12px 28px' }}
-                  onClick={() => setStep(2)}
-                >
-                  Continue →
+              <div className="onb-nav-container">
+                <button className="onb-btn-back" onClick={() => { setDirection('backward'); setStep(0); }}>
+                  <ArrowLeft size={16} /> Back
+                </button>
+                <button className="onb-btn-continue" onClick={() => { setDirection('forward'); setStep(2); }}>
+                  Continue <ArrowRight size={16} />
                 </button>
               </div>
             </motion.div>
@@ -403,10 +420,12 @@ export function WelcomeScreen() {
           {step === 2 && (
             <motion.div
               key="details"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.5 }}
+              custom={direction}
+              variants={stepVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={{ duration: 0.25, ease: 'easeInOut' }}
               className="liquid-glass"
               style={{ padding: '40px' }}
             >
@@ -621,14 +640,12 @@ export function WelcomeScreen() {
                 </div>
               )}
 
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <button className="btn-reset" style={{ width: 'auto', background: 'transparent', border: 'none', color: 'var(--onb-back)' }} onClick={() => setStep(1)}>Back</button>
-                <button 
-                  className="btn-primary" 
-                  style={{ width: 'auto', padding: '12px 28px' }}
-                  onClick={handleStep2Continue}
-                >
-                  Continue →
+              <div className="onb-nav-container">
+                <button className="onb-btn-back" onClick={() => { setDirection('backward'); setStep(1); }}>
+                  <ArrowLeft size={16} /> Back
+                </button>
+                <button className="onb-btn-continue" onClick={handleStep2Continue}>
+                  Continue <ArrowRight size={16} />
                 </button>
               </div>
             </motion.div>
@@ -638,10 +655,12 @@ export function WelcomeScreen() {
           {step === 3 && (
             <motion.div
               key="personality-goals"
-              initial={{ opacity: 0, scale: 0.96 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.96 }}
-              transition={{ duration: 0.5 }}
+              custom={direction}
+              variants={stepVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={{ duration: 0.25, ease: 'easeInOut' }}
               className="liquid-glass"
               style={{ padding: '24px 32px' }}
             >
@@ -822,27 +841,18 @@ export function WelcomeScreen() {
 
               <div 
                 ref={mainCtaRef}
-                style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--onb-border)', paddingTop: '16px' }}
+                className="onb-nav-container"
+                style={{ borderTop: '1px solid var(--onb-border)', paddingTop: '16px' }}
               >
-                <button className="btn-reset" style={{ width: 'auto', background: 'transparent', border: 'none', color: 'var(--onb-back)' }} onClick={() => setStep(2)}>Back</button>
+                <button className="onb-btn-back" onClick={() => { setDirection('backward'); setStep(2); }}>
+                  <ArrowLeft size={16} /> Back
+                </button>
                 <button 
-                  className="btn-primary" 
-                  style={{ 
-                    width: 'auto', 
-                    padding: '10px 24px', 
-                    background: agreeTerms && agreePrivacy && agreeProjections
-                      ? `linear-gradient(135deg, ${T.goldMid} 0%, ${T.gold} 100%)`
-                      : 'var(--bg-muted)',
-                    color: agreeTerms && agreePrivacy && agreeProjections ? '#fff' : 'var(--text-faint)',
-                    opacity: agreeTerms && agreePrivacy && agreeProjections ? 1 : 0.5,
-                    cursor: agreeTerms && agreePrivacy && agreeProjections ? 'pointer' : 'not-allowed',
-                    boxShadow: agreeTerms && agreePrivacy && agreeProjections ? '0 4px 15px rgba(184,144,42,0.25)' : 'none',
-                    transition: 'all 0.25s ease'
-                  }}
+                  className="onb-btn-continue" 
                   disabled={!(agreeTerms && agreePrivacy && agreeProjections)}
                   onClick={handleCompleteOnboarding}
                 >
-                  Start My Financial Journey
+                  Start My Financial Journey <ArrowRight size={16} />
                 </button>
               </div>
             </motion.div>
@@ -895,24 +905,12 @@ export function WelcomeScreen() {
                 </span>
               </div>
               <button 
-                className="btn-primary" 
-                style={{ 
-                  width: 'auto', 
-                  padding: '10px 24px', 
-                  fontSize: '0.88rem',
-                  background: agreeTerms && agreePrivacy && agreeProjections
-                    ? `linear-gradient(135deg, ${T.goldMid} 0%, ${T.gold} 100%)`
-                    : 'var(--bg-muted)',
-                  color: agreeTerms && agreePrivacy && agreeProjections ? '#fff' : 'var(--text-faint)',
-                  opacity: agreeTerms && agreePrivacy && agreeProjections ? 1 : 0.5,
-                  cursor: agreeTerms && agreePrivacy && agreeProjections ? 'pointer' : 'not-allowed',
-                  boxShadow: agreeTerms && agreePrivacy && agreeProjections ? '0 4px 15px rgba(184,144,42,0.25)' : 'none',
-                  transition: 'all 0.25s ease'
-                }}
+                className="onb-btn-continue" 
+                style={{ fontSize: '0.88rem', padding: '10px 24px' }}
                 disabled={!(agreeTerms && agreePrivacy && agreeProjections)}
                 onClick={handleCompleteOnboarding}
               >
-                Start My Financial Journey
+                Start My Financial Journey <ArrowRight size={16} />
               </button>
             </div>
           </motion.div>

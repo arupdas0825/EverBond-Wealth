@@ -2242,3 +2242,122 @@ input,select{font-family:var(--fb)}
   -ms-overflow-style: none;  /* IE and Edge */
   scrollbar-width: none;  /* Firefox */
 }
+
+/* Onboarding Wizard Navigation Layout & Premium Button Styles */
+.onb-nav-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 32px;
+  gap: 16px;
+  width: 100%;
+}
+
+/* Back Button Styles */
+.onb-btn-back {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background: transparent;
+  border: 1px solid var(--border-mid);
+  border-radius: var(--r-md);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  min-height: 48px;
+  outline: none;
+}
+
+.onb-btn-back:hover {
+  background: var(--bg-muted);
+  color: var(--text);
+  border-color: var(--border-str);
+}
+
+.onb-btn-back:active {
+  transform: translateY(1px);
+}
+
+/* Continue & Complete Onboarding Button Styles */
+.onb-btn-continue {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 28px;
+  background: linear-gradient(135deg, var(--gold-mid) 0%, var(--gold) 100%);
+  color: #fff;
+  border: none;
+  border-radius: var(--r-md);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(184, 144, 42, 0.2);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  min-height: 48px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Add slight glow effect on continue hover */
+.onb-btn-continue:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(184, 144, 42, 0.35), 0 0 12px rgba(184, 144, 42, 0.15);
+}
+
+.onb-btn-continue:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.onb-btn-continue:disabled {
+  background: var(--bg-muted) !important;
+  color: var(--text-faint) !important;
+  opacity: 0.5;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* Responsive grid for Mobile Onboarding navigation buttons */
+@media (max-width: 768px) {
+  .onb-nav-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    width: 100%;
+  }
+
+  .onb-btn-back,
+  .onb-btn-continue {
+    width: 100%;
+    min-height: 48px; /* Equal height constraint */
+  }
+}
+
+/* Built With Vision - Profile Image Styling */
+.vision-profile-img {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  border: 3px solid #C9A227;
+  object-fit: cover;
+  box-shadow: 0 10px 25px rgba(201, 162, 39, 0.25);
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  display: block;
+  margin: 0 auto;
+}
+
+.vision-profile-img:hover {
+  transform: scale(1.08);
+  box-shadow: 0 15px 35px rgba(201, 162, 39, 0.4);
+}
+
+@media (min-width: 769px) {
+  .vision-profile-img {
+    width: 96px;
+    height: 96px;
+  }
+}
