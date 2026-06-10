@@ -281,7 +281,6 @@ export function LandingPage({ onStartJourney }) {
           minHeight: '100vh',
           fontFamily: T.fontBody,
           position: 'relative',
-          overflowX: 'hidden'
         }}
       >
 

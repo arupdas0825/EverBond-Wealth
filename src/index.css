@@ -188,9 +188,21 @@ body,
 /* ── RESET ─────────────────────────────────────────────── */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{font-size:16px;-webkit-text-size-adjust:100%;overflow-x:hidden;scroll-behavior:smooth}
-body{font-family:var(--fb);background:var(--bg);color:var(--text);min-height:100dvh;
-  -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;overflow-x:hidden;
-  overscroll-behavior-y:none;-webkit-overflow-scrolling:touch}
+body{
+  font-family:var(--fb);background:var(--bg);color:var(--text);
+  min-height:100dvh;
+  -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
+  overflow-x:hidden;
+  /* ── SCROLL FIX: body is the scroll container ── */
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+}
+/* Modal scroll lock — applied via JS when modal is open */
+body.eb-modal-open{
+  overflow:hidden;
+  /* preserve scroll position with padding so page doesn't jump */
+  padding-right:var(--scrollbar-width,0px);
+}
 #root{min-height:100dvh}
 em{font-style:italic;color:var(--gold-mid)}
 button{font-family:var(--fb);touch-action:manipulation}
@@ -203,12 +215,24 @@ input,select{font-family:var(--fb)}
 /* ═══════════════════════════════════════════════════════════
    LAYOUT
 ═══════════════════════════════════════════════════════════ */
-.eb-app{display:flex;min-height:100dvh;background:var(--bg)}
+.eb-app{
+  display:flex;
+  flex-direction:column;
+  min-height:100dvh;
+  background:var(--bg);
+}
 
 /* ── SIDEBAR REMOVED ─────────────────────────────────────── */
 
-/* ── MAIN ───────────────────────────────────────────────── */
-.eb-main{flex:1;min-width:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}
+/* ── MAIN: natural flow — window scroll handles everything ── */
+.eb-main{
+  flex:1;
+  min-width:0;
+  /* No overflow-y:auto — let window scroll handle it natively */
+  /* This enables: mouse wheel, trackpad, touch, keyboard all naturally */
+  overflow-x:hidden;
+  width:100%;
+}
 .eb-page{
   max-width:var(--content-w);margin:0 auto;
   padding:calc(var(--page-y) + 40px) var(--page-x) var(--page-y);
@@ -644,14 +668,20 @@ input,select{font-family:var(--fb)}
 ═══════════════════════════════════════════════════════════ */
 @media(max-width:767px){
   :root{--page-x:16px;--page-y:20px}
-  .eb-app{flex-direction:column}
+  /* eb-app already flex-column from base rule above */
   .eb-sidebar{display:none}
-  /* Account for mobile bottom nav clearance only */
+  /* Mobile: full-width, natural scroll, bottom clearance for nav pill */
+  .eb-main{
+    overflow-x:hidden;
+    /* Allow touch momentum scrolling on iOS */
+    -webkit-overflow-scrolling:touch;
+  }
   .eb-page{
     padding-top:calc(var(--page-y));
     padding-left:max(16px,env(safe-area-inset-left) + 16px);
     padding-right:max(16px,env(safe-area-inset-right) + 16px);
-    padding-bottom:calc(96px + env(safe-area-inset-bottom));
+    /* bottom clearance: 80px nav + safe area + extra buffer */
+    padding-bottom:calc(100px + env(safe-area-inset-bottom));
   }
 
   /* Dark mode mobile header */
@@ -1397,9 +1427,12 @@ input,select{font-family:var(--fb)}
   align-items: center;
   justify-content: center;
   background: var(--bg-warm);
-  padding: 32px 20px;
+  /* Use padding generously so content never clips */
+  padding: 32px 20px 40px;
   position: relative;
-  overflow: hidden;
+  /* overflow:hidden would clip tall step cards — use overflow-x only */
+  overflow-x: hidden;
+  overflow-y: visible;
   color: var(--text);
   transition: background 0.4s var(--ease), color 0.4s var(--ease);
 }
