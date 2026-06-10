@@ -125,6 +125,35 @@ export function NotificationCenter() {
     };
   }, [isOpen, isMobile]);
 
+  // Dispatch 'eb-menu-opened' when Notifications drawer opens
+  useEffect(() => {
+    if (isOpen) {
+      window.dispatchEvent(new CustomEvent('eb-menu-opened', { detail: 'notifications' }));
+    }
+  }, [isOpen]);
+
+  // Close when other menus open
+  useEffect(() => {
+    const handleMenuOpened = (e) => {
+      if (e.detail !== 'notifications') {
+        setIsOpen(false);
+      }
+    };
+    window.addEventListener('eb-menu-opened', handleMenuOpened);
+    return () => window.removeEventListener('eb-menu-opened', handleMenuOpened);
+  }, []);
+
+  // Close on Escape key press
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   // Prevent scroll when bottom sheet is open on mobile
   useEffect(() => {
     if (isOpen && isMobile) {
@@ -308,17 +337,13 @@ export function NotificationCenter() {
             {/* Notification Center Content */}
             <motion.div
               ref={drawerRef}
-              className={`eb-notif-drawer ${isMobile ? 'mobile-sheet' : 'desktop-drawer'}`}
+              className={`eb-notif-drawer ${isMobile ? 'mobile-sheet' : 'desktop-drawer'} liquid-glass`}
               variants={isMobile ? bottomSheetVariants : drawerVariants}
               initial="hidden"
               animate="visible"
               exit="exit"
               style={{
                 position: 'fixed',
-                background: theme === 'light' ? 'rgba(255, 252, 248, 0.88)' : 'rgba(10, 10, 10, 0.88)',
-                backdropFilter: 'blur(30px) saturate(180%)',
-                WebkitBackdropFilter: 'blur(30px) saturate(180%)',
-                boxShadow: 'var(--sh-lg)',
                 zIndex: 2200,
                 display: 'flex',
                 flexDirection: 'column',
@@ -330,14 +355,19 @@ export function NotificationCenter() {
                   right: 0,
                   height: '82vh',
                   borderRadius: '32px 32px 0 0',
-                  borderTop: theme === 'light' ? '1px solid rgba(184, 144, 42, 0.15)' : '1px solid rgba(255, 255, 255, 0.1)',
+                  borderBottom: 'none',
+                  borderLeft: 'none',
+                  borderRight: 'none',
                 } : {
                   top: 0,
                   right: 0,
                   bottom: 0,
                   width: '420px',
                   height: '100vh',
-                  borderLeft: theme === 'light' ? '1px solid rgba(184, 144, 42, 0.12)' : '1px solid rgba(255, 255, 255, 0.08)',
+                  borderRadius: '24px 0 0 24px',
+                  borderTop: 'none',
+                  borderBottom: 'none',
+                  borderRight: 'none',
                 })
               }}
             >

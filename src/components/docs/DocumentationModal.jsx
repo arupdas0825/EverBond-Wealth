@@ -186,6 +186,17 @@ export function DocumentationModal({ isOpen, onClose }) {
 
   const theme = useFinanceStore((s) => s.theme);
 
+  // Close on Escape key press
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && isOpen) {
+        onClose();
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
   // Scroll Spy Logic
   const handleScroll = (e) => {
     const target = e.target;
@@ -262,10 +273,9 @@ export function DocumentationModal({ isOpen, onClose }) {
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: 30, scale: 0.98 }}
         transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+        className="liquid-glass"
         style={{
           width: '100%', maxWidth: '1100px', height: '90vh',
-          background: 'var(--bg)', border: '1px solid var(--border)',
-          borderRadius: '24px', boxShadow: 'var(--sh-lg)',
           display: 'flex', flexDirection: 'column', overflow: 'hidden', position: 'relative'
         }}
       >

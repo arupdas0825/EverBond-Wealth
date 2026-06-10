@@ -58,6 +58,17 @@ export function ProfileEditModal({ isOpen, onClose }) {
     };
   }, [isOpen]);
 
+  // Close on Escape key press
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && isOpen) {
+        onClose();
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
   // Handle file selection
   const handleFile = (file) => {
     if (file && file.type.startsWith('image/')) {
@@ -236,12 +247,6 @@ export function ProfileEditModal({ isOpen, onClose }) {
             style={{
               width: '100%',
               maxWidth: '700px', // Width: 700px
-              background: modalBg,
-              border: modalBorder,
-              borderRadius: '28px', // Border radius: 28px
-              boxShadow: '0 30px 80px rgba(0, 0, 0, 0.12)', // Shadow: 30px 80px
-              backdropFilter: 'blur(20px)',
-              WebkitBackdropFilter: 'blur(20px)',
               position: 'relative',
               maxHeight: '90vh', // Max height: 90vh
               display: 'flex',

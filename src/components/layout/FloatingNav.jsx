@@ -74,6 +74,35 @@ export function FloatingNav({ page, setPage }) {
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
 
+  // Dispatch 'eb-menu-opened' when More menu opens
+  useEffect(() => {
+    if (isMoreOpen) {
+      window.dispatchEvent(new CustomEvent('eb-menu-opened', { detail: 'more' }));
+    }
+  }, [isMoreOpen]);
+
+  // Listen to global open menu events to close if another one opens
+  useEffect(() => {
+    const handleMenuOpened = (e) => {
+      if (e.detail !== 'more') {
+        setIsMoreOpen(false);
+      }
+    };
+    window.addEventListener('eb-menu-opened', handleMenuOpened);
+    return () => window.removeEventListener('eb-menu-opened', handleMenuOpened);
+  }, []);
+
+  // Escape key handler to close the dropdown
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        setIsMoreOpen(false);
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   // Cleanup timers on component unmount
   useEffect(() => {
     return () => {
@@ -94,7 +123,7 @@ export function FloatingNav({ page, setPage }) {
       opacity: 0, 
       y: -8,
       transition: {
-        duration: 0.18, // 180ms closing
+        duration: 0.14,
         ease: 'easeOut'
       }
     },
@@ -102,7 +131,7 @@ export function FloatingNav({ page, setPage }) {
       opacity: 1, 
       y: 0,
       transition: {
-        duration: 0.18, // 180ms opening (Apple-style fast transition)
+        duration: 0.18,
         ease: 'easeOut'
       }
     }
@@ -193,6 +222,12 @@ export function FloatingNav({ page, setPage }) {
           <motion.button
             whileHover={{ scale: 1.02 }}
             transition={{ duration: 0.2 }}
+            onClick={(e) => {
+              e.stopPropagation();
+              if (openTimeout.current) clearTimeout(openTimeout.current);
+              if (closeTimeout.current) clearTimeout(closeTimeout.current);
+              setIsMoreOpen(prev => !prev);
+            }}
             style={{
               display: 'flex',
               alignItems: 'center',

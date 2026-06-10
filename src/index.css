@@ -1376,24 +1376,30 @@ input,select{font-family:var(--fb)}
 
 /* Liquid Glass Cards */
 .liquid-glass {
-  background: var(--onb-bg-card);
-  backdrop-filter: blur(28px) saturate(190%);
-  -webkit-backdrop-filter: blur(28px) saturate(190%);
-  border: 1px solid var(--onb-border);
-  border-radius: var(--r-xl);
-  box-shadow: 
-    0 24px 70px rgba(0, 0, 0, 0.15),
-    inset 0 1px 0 rgba(255, 255, 255, 0.15),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.2);
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.12);
+  border-radius: 24px;
   color: var(--onb-title);
   transition: all 0.4s var(--ease);
 }
 
+[data-theme="dark"] .liquid-glass {
+  background: rgba(15, 20, 30, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.28);
+}
+
 .liquid-glass:hover {
-  border-color: rgba(255, 255, 255, 0.25);
-  box-shadow: 
-    0 30px 80px rgba(0, 0, 0, 0.45),
-    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.5);
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.15);
+}
+
+[data-theme="dark"] .liquid-glass:hover {
+  border-color: rgba(255, 255, 255, 0.22);
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.35);
 }
 
 /* Premium Gradient Stage Profiles */
@@ -2663,7 +2669,7 @@ input,select{font-family:var(--fb)}
   top: calc(100% + 12px);
   right: 0;
   width: 220px;
-  border-radius: 24px; /* Radius: 24px */
+  border-radius: 24px;
   padding: 8px;
   display: flex;
   flex-direction: column;
@@ -2671,19 +2677,19 @@ input,select{font-family:var(--fb)}
   z-index: 10000;
   
   /* Glassmorphism styling */
-  background: rgba(255, 255, 255, 0.7); /* Background: rgba(255,255,255,0.7) */
-  backdrop-filter: blur(24px); /* Backdrop Blur: 24px */
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(255, 255, 255, 0.3); /* Border: 1px solid rgba(255,255,255,0.3) */
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12); /* Shadow: 0 20px 60px rgba(0,0,0,0.12) */
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.12);
   
   transition: background 0.4s ease, border-color 0.4s ease;
 }
 
 [data-theme="dark"] .eb-glass-dropdown {
-  background: rgba(15, 20, 30, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+  background: rgba(15, 20, 30, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.28);
 }
 
 .eb-dropdown-item {

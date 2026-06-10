@@ -333,6 +333,20 @@ function PartnerPageContent({ setPage }) {
   const [confettiParticles, setConfettiParticles] = useState([]);
   const [showTimelineModal, setShowTimelineModal] = useState(false);
 
+  // Close all active modals on Escape key press
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        setIsDesktopModalOpen(false);
+        setIsScannerOpen(false);
+        setShowDisconnectConfirm(false);
+        setShowTimelineModal(false);
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   // References for Media/Canvas capture loop
   const videoRef = useRef(null);
   const offscreenCanvasRef = useRef(null);
@@ -1482,14 +1496,11 @@ function PartnerPageContent({ setPage }) {
                 initial={{ scale: 0.95, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.95, opacity: 0 }}
+                className="liquid-glass"
                 style={{
                   width: '100%',
                   maxWidth: '460px',
-                  background: 'var(--bg-card)',
-                  border: '1.5px solid var(--gold-border)',
-                  borderRadius: '24px',
                   padding: '36px',
-                  boxShadow: '0 25px 60px rgba(0,0,0,0.18)',
                   position: 'relative'
                 }}
                 onClick={(e) => e.stopPropagation()}
@@ -1603,14 +1614,11 @@ function PartnerPageContent({ setPage }) {
                 initial={{ scale: 0.95, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.95, opacity: 0 }}
+                className="liquid-glass"
                 style={{
                   width: '100%',
                   maxWidth: '480px',
-                  background: 'var(--bg-card)',
-                  border: '1.5px solid var(--gold-border)',
-                  borderRadius: '24px',
                   padding: '28px',
-                  boxShadow: '0 20px 60px rgba(0,0,0,0.25)',
                   position: 'relative'
                 }}
                 onClick={(e) => e.stopPropagation()}
@@ -1811,15 +1819,13 @@ function PartnerPageContent({ setPage }) {
                 initial={{ scale: 0.95, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.95, opacity: 0 }}
+                className="liquid-glass"
                 style={{
                   width: '100%',
                   maxWidth: '440px',
-                  background: 'var(--bg-card)',
-                  border: '1.5px solid var(--rose-border)',
-                  borderRadius: '24px',
                   padding: '32px',
-                  boxShadow: '0 20px 60px rgba(208, 92, 114, 0.12)',
-                  position: 'relative'
+                  position: 'relative',
+                  border: '1.5px solid var(--rose-border)'
                 }}
                 onClick={(e) => e.stopPropagation()}
               >
@@ -2042,6 +2048,7 @@ function PartnerPageContent({ setPage }) {
                 animate={{ x: 0, opacity: 1 }}
                 exit={{ x: '100%', opacity: 1 }}
                 transition={{ type: 'spring', stiffness: 280, damping: 28 }}
+                className="liquid-glass"
                 style={{
                   position: 'fixed',
                   right: 0,
@@ -2049,14 +2056,15 @@ function PartnerPageContent({ setPage }) {
                   bottom: 0,
                   width: '100%',
                   maxWidth: '480px',
-                  background: 'var(--bg-card)',
-                  borderLeft: '1.5px solid var(--border)',
-                  boxShadow: '-10px 0 40px rgba(0,0,0,0.15)',
                   padding: '36px 28px',
                   display: 'flex',
                   flexDirection: 'column',
                   gap: '24px',
-                  zIndex: 10000
+                  zIndex: 10000,
+                  borderRadius: '24px 0 0 24px',
+                  borderTop: 'none',
+                  borderBottom: 'none',
+                  borderRight: 'none'
                 }}
                 onClick={(e) => e.stopPropagation()}
               >

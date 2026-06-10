@@ -26,6 +26,35 @@ export function ProfileChip({ setPage, onReset }) {
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
 
+  // Dispatch 'eb-menu-opened' when Profile dropdown opens
+  useEffect(() => {
+    if (isOpen) {
+      window.dispatchEvent(new CustomEvent('eb-menu-opened', { detail: 'profile' }));
+    }
+  }, [isOpen]);
+
+  // Close when other menus open
+  useEffect(() => {
+    const handleMenuOpened = (e) => {
+      if (e.detail !== 'profile') {
+        setIsOpen(false);
+      }
+    };
+    window.addEventListener('eb-menu-opened', handleMenuOpened);
+    return () => window.removeEventListener('eb-menu-opened', handleMenuOpened);
+  }, []);
+
+  // Close on Escape key press
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   const handleNav = (pageId) => {
     setPage(pageId);
     setIsOpen(false);
@@ -69,17 +98,15 @@ export function ProfileChip({ setPage, onReset }) {
     return name.substring(0, 2).toUpperCase();
   };
 
-  // Dropdown animation: fade + scale (0.95 → 1) over 180ms
+  // Dropdown animation: fade + translateY Spec (180ms open, 140ms close)
   const dropdownVariants = {
     hidden: {
       opacity: 0,
-      scale: 0.95,
-      y: 8,
-      transition: { duration: 0.18, ease: 'easeOut' }
+      y: -8,
+      transition: { duration: 0.14, ease: 'easeOut' }
     },
     visible: {
       opacity: 1,
-      scale: 1,
       y: 0,
       transition: { duration: 0.18, ease: 'easeOut' }
     }

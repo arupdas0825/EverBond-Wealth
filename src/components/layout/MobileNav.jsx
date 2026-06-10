@@ -11,6 +11,7 @@ export function MobileNav({ page, setPage, onReset }) {
   const theme = useFinanceStore(s => s.theme);
   const [isMoreOpen, setIsMoreOpen] = useState(false);
   const moreRef = useRef(null);
+  const moreButtonRef = useRef(null);
 
   const MAIN_TABS = [
     { key: "dashboard",  icon: LayoutDashboard, label: "Dashboard" },
@@ -31,14 +32,15 @@ export function MobileNav({ page, setPage, onReset }) {
     { id: 'settings',        label: 'Settings',        icon: <Settings size={16} /> }
   ];
 
-  const bgGlass = theme === 'dark' ? 'rgba(30, 30, 30, 0.65)' : 'rgba(255, 255, 255, 0.7)';
-  const borderGlass = theme === 'dark' ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid rgba(0, 0, 0, 0.05)';
-  const shadowGlass = theme === 'dark' ? '0 12px 40px rgba(0,0,0,0.5)' : '0 12px 40px rgba(0,0,0,0.08)';
+  const bgGlass = theme === 'dark' ? 'rgba(15, 20, 30, 0.75)' : 'rgba(255, 255, 255, 0.75)';
+  const borderGlass = theme === 'dark' ? '1px solid rgba(255, 255, 255, 0.15)' : '1px solid rgba(255, 255, 255, 0.4)';
+  const shadowGlass = theme === 'dark' ? '0 20px 50px rgba(0, 0, 0, 0.28)' : '0 20px 50px rgba(0, 0, 0, 0.12)';
 
   // Click outside "More" drawer
   useEffect(() => {
     const handleClick = (e) => {
-      if (moreRef.current && !moreRef.current.contains(e.target)) {
+      if (moreRef.current && !moreRef.current.contains(e.target) &&
+          moreButtonRef.current && !moreButtonRef.current.contains(e.target)) {
         setIsMoreOpen(false);
       }
     };
@@ -52,10 +54,58 @@ export function MobileNav({ page, setPage, onReset }) {
     };
   }, [isMoreOpen]);
 
+  // Dispatch 'eb-menu-opened' when More menu opens on mobile
+  useEffect(() => {
+    if (isMoreOpen) {
+      window.dispatchEvent(new CustomEvent('eb-menu-opened', { detail: 'more-mobile' }));
+    }
+  }, [isMoreOpen]);
+
+  // Close when other menus are opened
+  useEffect(() => {
+    const handleMenuOpened = (e) => {
+      if (e.detail !== 'more-mobile') {
+        setIsMoreOpen(false);
+      }
+    };
+    window.addEventListener('eb-menu-opened', handleMenuOpened);
+    return () => window.removeEventListener('eb-menu-opened', handleMenuOpened);
+  }, []);
+
+  // Escape key handler to close the drawer
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        setIsMoreOpen(false);
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   const handleNav = (id) => {
     setPage(id);
     setIsMoreOpen(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const dropdownVariants = {
+    hidden: { 
+      opacity: 0, 
+      y: -8,
+      transition: {
+        duration: 0.14,
+        ease: 'easeOut'
+      }
+    },
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      transition: {
+        duration: 0.18,
+        ease: 'easeOut'
+      }
+    }
   };
 
   const activeInMore = MORE_TABS.some(t => t.id === page);
@@ -93,10 +143,10 @@ export function MobileNav({ page, setPage, onReset }) {
           {isMoreOpen && (
             <motion.div
               ref={moreRef}
-              initial={{ opacity: 0, y: 20, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 20, scale: 0.95 }}
-              transition={{ duration: 0.2 }}
+              variants={dropdownVariants}
+              initial="hidden"
+              animate="visible"
+              exit="hidden"
               style={{
                 background: bgGlass,
                 border: borderGlass,
@@ -184,6 +234,7 @@ export function MobileNav({ page, setPage, onReset }) {
           })}
 
           <button
+            ref={moreButtonRef}
             onClick={() => setIsMoreOpen(!isMoreOpen)}
             style={{
               display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '4px',
