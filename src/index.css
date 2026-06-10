@@ -2555,3 +2555,94 @@ input,select{font-family:var(--fb)}
     background-position: 0% 50%;
   }
 }
+
+/* ── GLASSMORPHISM MORE DROPDOWN ────────────────────────── */
+
+.eb-more-dropdown {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  width: 220px;
+  border-radius: 24px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  z-index: 10000;
+  
+  /* Glassmorphism styling */
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.08);
+  
+  transition: background 0.4s ease, border-color 0.4s ease;
+}
+
+[data-theme="dark"] .eb-more-dropdown {
+  background: rgba(15, 20, 30, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+}
+
+.eb-more-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+  position: relative;
+  transition: transform 200ms ease, background 200ms ease, color 200ms ease;
+  width: 100%;
+  outline: none;
+}
+
+.eb-more-item:hover {
+  transform: translateX(6px);
+  background: rgba(0, 0, 0, 0.04) !important;
+  color: var(--text) !important;
+}
+
+[data-theme="dark"] .eb-more-item:hover {
+  background: rgba(255, 255, 255, 0.06) !important;
+}
+
+.eb-more-item-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 200ms ease;
+  color: inherit;
+}
+
+.eb-more-item:hover .eb-more-item-icon {
+  transform: scale(1.12); /* icon slightly scales */
+}
+
+/* Left indicator gold line slides in */
+.eb-more-item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 25%;
+  bottom: 25%;
+  width: 3px;
+  background: var(--gold);
+  border-radius: 999px;
+  opacity: 0;
+  transform: scaleY(0);
+  transition: transform 200ms ease, opacity 200ms ease;
+}
+
+.eb-more-item:hover::before {
+  opacity: 1;
+  transform: scaleY(1);
+}

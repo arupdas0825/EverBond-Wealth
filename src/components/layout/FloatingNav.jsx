@@ -1,38 +1,72 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  LayoutDashboard, Users, LineChart, Wallet, Target, 
+  LayoutDashboard, LineChart, Wallet, Target, 
   ChevronDown, PieChart, Flag, Award, Activity, Heart, 
-  Settings, FileText, Map, Shield
+  FileText, Map, Shield
 } from 'lucide-react';
 import { T } from '../../theme/tokens';
 import { useFinanceStore } from '../../store/useFinanceStore';
 
 const MAIN_TABS = [
   { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard size={16} /> },
-  { id: 'workspace', label: 'Workspace', icon: <Users size={16} /> },
-  { id: 'insights',  label: 'Insights',  icon: <LineChart size={16} /> },
   { id: 'income',    label: 'Income',    icon: <Wallet size={16} /> },
-  { id: 'goals',     label: 'Goals',     icon: <Target size={16} /> }
+  { id: 'allocation',label: 'Allocation',icon: <PieChart size={16} /> },
+  { id: 'insights',  label: 'Insights',  icon: <LineChart size={16} /> },
+  { id: 'partner',   label: 'Partner',   icon: <Heart size={16} /> }
 ];
 
 const MORE_TABS = [
-  { id: 'allocation',   label: 'Allocation',      icon: <PieChart size={14} /> },
-  { id: 'milestones',   label: 'Milestones',      icon: <Flag size={14} /> },
-  { id: 'achievements', label: 'Journey Rewards', icon: <Award size={14} /> },
-  { id: 'simulation',   label: 'Simulation',      icon: <Activity size={14} /> },
-  { id: 'partner',      label: 'Partner',         icon: <Heart size={14} /> },
-  { id: 'couple-planning', label: 'Couple Plan',  icon: <Map size={14} /> },
-  { id: 'family-planning', label: 'Family Dynasty', icon: <Shield size={14} /> },
-  { id: 'settings',     label: 'Settings',        icon: <Settings size={14} /> }
+  { id: 'goals',           label: 'Goals',           icon: <Target size={14} /> },
+  { id: 'milestones',      label: 'Milestones',      icon: <Flag size={14} /> },
+  { id: 'achievements',    label: 'Journey Rewards', icon: <Award size={14} /> },
+  { id: 'simulation',      label: 'Simulation',      icon: <Activity size={14} /> },
+  { id: 'couple-planning', label: 'Couple Plan',     icon: <Map size={14} /> },
+  { id: 'family-planning', label: 'Family Dynasty',  icon: <Shield size={14} /> },
+  { id: 'settings',        label: 'Documentation',   icon: <FileText size={14} /> }
 ];
 
 export function FloatingNav({ page, setPage }) {
   const [isMoreOpen, setIsMoreOpen] = useState(false);
   const moreRef = useRef(null);
+  const openTimeout = useRef(null);
+  const closeTimeout = useRef(null);
   const theme = useFinanceStore(s => s.theme);
 
-  // Close dropdown on outside click
+  // Smart hover state management
+  const handleMouseEnter = () => {
+    // Clear closing timer if user returns cursor
+    if (closeTimeout.current) {
+      clearTimeout(closeTimeout.current);
+      closeTimeout.current = null;
+    }
+    
+    // Set opening timer with 150ms delay
+    if (!isMoreOpen && !openTimeout.current) {
+      openTimeout.current = setTimeout(() => {
+        setIsMoreOpen(true);
+        openTimeout.current = null;
+      }, 150);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    // Clear opening timer if cursor leaves before opening
+    if (openTimeout.current) {
+      clearTimeout(openTimeout.current);
+      openTimeout.current = null;
+    }
+    
+    // Set closing timer with 200ms delay
+    if (!closeTimeout.current) {
+      closeTimeout.current = setTimeout(() => {
+        setIsMoreOpen(false);
+        closeTimeout.current = null;
+      }, 200);
+    }
+  };
+
+  // Close dropdown on outside click (fallback)
   useEffect(() => {
     const handleClick = (e) => {
       if (moreRef.current && !moreRef.current.contains(e.target)) {
@@ -43,12 +77,39 @@ export function FloatingNav({ page, setPage }) {
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
 
+  // Cleanup timers on component unmount
+  useEffect(() => {
+    return () => {
+      if (openTimeout.current) clearTimeout(openTimeout.current);
+      if (closeTimeout.current) clearTimeout(closeTimeout.current);
+    };
+  }, []);
+
   const handleNav = (id) => {
     setPage(id);
     setIsMoreOpen(false);
   };
 
   const activeInMore = MORE_TABS.some(t => t.id === page);
+
+  const dropdownVariants = {
+    hidden: { 
+      opacity: 0, 
+      y: -8,
+      transition: {
+        duration: 0.18, // 180ms closing
+        ease: 'easeOut'
+      }
+    },
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      transition: {
+        duration: 0.22, // 220ms opening
+        ease: 'easeOut'
+      }
+    }
+  };
 
   return (
     <div className="hide-on-mobile" style={{
@@ -107,10 +168,14 @@ export function FloatingNav({ page, setPage }) {
           );
         })}
 
-        {/* More Dropdown */}
-        <div ref={moreRef} style={{ position: 'relative' }}>
+        {/* More Dropdown (Triggered by Smart Hover) */}
+        <div 
+          ref={moreRef} 
+          style={{ position: 'relative' }}
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+        >
           <motion.button
-            onClick={() => setIsMoreOpen(!isMoreOpen)}
             whileHover={{ scale: 1.04 }}
             transition={{ duration: 0.2 }}
             style={{
@@ -135,26 +200,11 @@ export function FloatingNav({ page, setPage }) {
           <AnimatePresence>
             {isMoreOpen && (
               <motion.div
-                initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                transition={{ duration: 0.2 }}
-                style={{
-                  position: 'absolute',
-                  top: 'calc(100% + 12px)',
-                  right: 0,
-                  width: '200px',
-                  background: theme === 'dark' ? 'rgba(30,30,30,0.85)' : 'rgba(255,255,255,0.9)',
-                  backdropFilter: 'blur(20px)',
-                  WebkitBackdropFilter: 'blur(20px)',
-                  border: theme === 'dark' ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(200,200,200,0.3)',
-                  borderRadius: '16px',
-                  padding: '8px',
-                  boxShadow: '0 20px 40px rgba(0,0,0,0.15)',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '4px'
-                }}
+                variants={dropdownVariants}
+                initial="hidden"
+                animate="visible"
+                exit="hidden"
+                className="eb-more-dropdown"
               >
                 {MORE_TABS.map(tab => {
                   const isItemActive = page === tab.id;
@@ -162,23 +212,14 @@ export function FloatingNav({ page, setPage }) {
                     <button
                       key={tab.id}
                       onClick={() => handleNav(tab.id)}
+                      className="eb-more-item"
                       style={{
-                        display: 'flex', alignItems: 'center', gap: '8px',
-                        padding: '10px 12px', borderRadius: '10px',
-                        border: 'none', background: isItemActive ? 'var(--gold-pale)' : 'transparent',
+                        background: isItemActive ? 'var(--gold-pale)' : 'transparent',
                         color: isItemActive ? T.gold : 'var(--text-muted)',
-                        fontSize: '0.8rem', fontWeight: isItemActive ? 700 : 500,
-                        cursor: 'pointer', textAlign: 'left',
-                        transition: 'all 0.2s ease'
-                      }}
-                      onMouseOver={(e) => {
-                        if(!isItemActive) e.currentTarget.style.background = 'var(--bg-hover)';
-                      }}
-                      onMouseOut={(e) => {
-                        if(!isItemActive) e.currentTarget.style.background = 'transparent';
+                        fontWeight: isItemActive ? 700 : 600
                       }}
                     >
-                      {tab.icon}
+                      <span className="eb-more-item-icon">{tab.icon}</span>
                       {tab.label}
                     </button>
                   );
