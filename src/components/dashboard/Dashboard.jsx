@@ -557,14 +557,6 @@ export function Dashboard({ setPage }) {
             <h1 className="page-title">Build Your Future With Confidence</h1>
             <p className="page-desc">Sovereign planning workspace calibrated for individual capital compounding.</p>
           </div>
-          
-          <button 
-            className="btn-primary" 
-            style={{ width: 'auto', background: `linear-gradient(135deg, ${T.sky} 0%, #205c96 100%)`, boxShadow: `0 6px 20px ${T.sky}30`, display: 'flex', alignItems: 'center', gap: '8px' }}
-            onClick={() => setIsUpgradingStage(true)}
-          >
-            <Heart size={16} /> Sync Partner Ledger
-          </button>
         </div>
 
         {/* Common Widgets */}

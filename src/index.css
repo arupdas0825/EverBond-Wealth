@@ -2762,3 +2762,31 @@ input,select{font-family:var(--fb)}
     display: none !important;
   }
 }
+
+/* ── Partner Restructured Dropdown Glassmorphism ── */
+.eb-partner-glass-dropdown {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  width: 220px;
+  border-radius: 22px; /* radius: 22px */
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  z-index: 10000;
+  
+  background: rgba(255, 255, 255, 0.78); /* background: rgba(255,255,255,0.78) */
+  backdrop-filter: blur(24px); /* backdrop-filter: blur(24px) */
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.35); /* border: 1px solid rgba(255,255,255,0.35) */
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.12); /* shadow: 0 20px 50px rgba(0,0,0,0.12) */
+  
+  transition: background 0.4s ease, border-color 0.4s ease;
+}
+
+[data-theme="dark"] .eb-partner-glass-dropdown {
+  background: rgba(15, 20, 30, 0.78);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.28);
+}

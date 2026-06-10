@@ -12,8 +12,12 @@ const MAIN_TABS = [
   { id: 'dashboard',  label: 'Dashboard',  icon: <LayoutDashboard size={16} /> },
   { id: 'income',     label: 'Income',     icon: <Wallet size={16} /> },
   { id: 'allocation', label: 'Allocation', icon: <PieChart size={16} /> },
-  { id: 'insights',   label: 'Insights',   icon: <LineChart size={16} /> },
-  { id: 'partner',    label: 'Partner',    icon: <Heart size={16} /> }
+  { id: 'insights',   label: 'Insights',   icon: <LineChart size={16} /> }
+];
+
+const PARTNER_TABS = [
+  { id: 'partner-committed', label: 'Committed Partners', icon: <Heart size={14} /> },
+  { id: 'partner-family',    label: 'Family Dynasty',     icon: <Shield size={14} /> }
 ];
 
 const MORE_TABS = [
@@ -21,20 +25,26 @@ const MORE_TABS = [
   { id: 'milestones',      label: 'Milestones',      icon: <Flag size={14} /> },
   { id: 'achievements',    label: 'Journey Rewards', icon: <Award size={14} /> },
   { id: 'simulation',      label: 'Simulation',      icon: <Activity size={14} /> },
-  { id: 'couple-planning', label: 'Couple Plan',     icon: <Map size={14} /> },
-  { id: 'family-planning', label: 'Family Dynasty',  icon: <Shield size={14} /> },
   { id: 'documentation',   label: 'Documentation',   icon: <FileText size={14} /> },
   { id: 'settings',        label: 'Settings',        icon: <Settings size={14} /> }
 ];
 
 export function FloatingNav({ page, setPage }) {
   const [isMoreOpen, setIsMoreOpen] = useState(false);
+  const [isPartnerOpen, setIsPartnerOpen] = useState(false);
+  
   const moreRef = useRef(null);
+  const partnerRef = useRef(null);
+  
   const openTimeout = useRef(null);
   const closeTimeout = useRef(null);
+  
+  const partnerOpenTimeout = useRef(null);
+  const partnerCloseTimeout = useRef(null);
+  
   const theme = useFinanceStore(s => s.theme);
 
-  // Smart hover state management
+  // Smart hover state management for More
   const handleMouseEnter = () => {
     if (closeTimeout.current) {
       clearTimeout(closeTimeout.current);
@@ -63,11 +73,43 @@ export function FloatingNav({ page, setPage }) {
     }
   };
 
+  // Smart hover state management for Partner
+  const handlePartnerMouseEnter = () => {
+    if (partnerCloseTimeout.current) {
+      clearTimeout(partnerCloseTimeout.current);
+      partnerCloseTimeout.current = null;
+    }
+    
+    if (!isPartnerOpen && !partnerOpenTimeout.current) {
+      partnerOpenTimeout.current = setTimeout(() => {
+        setIsPartnerOpen(true);
+        partnerOpenTimeout.current = null;
+      }, 150);
+    }
+  };
+
+  const handlePartnerMouseLeave = () => {
+    if (partnerOpenTimeout.current) {
+      clearTimeout(partnerOpenTimeout.current);
+      partnerOpenTimeout.current = null;
+    }
+    
+    if (!partnerCloseTimeout.current) {
+      partnerCloseTimeout.current = setTimeout(() => {
+        setIsPartnerOpen(false);
+        partnerCloseTimeout.current = null;
+      }, 200);
+    }
+  };
+
   // Close dropdown on outside click (fallback)
   useEffect(() => {
     const handleClick = (e) => {
       if (moreRef.current && !moreRef.current.contains(e.target)) {
         setIsMoreOpen(false);
+      }
+      if (partnerRef.current && !partnerRef.current.contains(e.target)) {
+        setIsPartnerOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClick);
@@ -81,22 +123,33 @@ export function FloatingNav({ page, setPage }) {
     }
   }, [isMoreOpen]);
 
+  // Dispatch 'eb-menu-opened' when Partner menu opens
+  useEffect(() => {
+    if (isPartnerOpen) {
+      window.dispatchEvent(new CustomEvent('eb-menu-opened', { detail: 'partner' }));
+    }
+  }, [isPartnerOpen]);
+
   // Listen to global open menu events to close if another one opens
   useEffect(() => {
     const handleMenuOpened = (e) => {
       if (e.detail !== 'more') {
         setIsMoreOpen(false);
       }
+      if (e.detail !== 'partner') {
+        setIsPartnerOpen(false);
+      }
     };
     window.addEventListener('eb-menu-opened', handleMenuOpened);
     return () => window.removeEventListener('eb-menu-opened', handleMenuOpened);
   }, []);
 
-  // Escape key handler to close the dropdown
+  // Escape key handler to close the dropdowns
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === 'Escape') {
         setIsMoreOpen(false);
+        setIsPartnerOpen(false);
       }
     };
     document.addEventListener('keydown', handleKeyDown);
@@ -108,6 +161,8 @@ export function FloatingNav({ page, setPage }) {
     return () => {
       if (openTimeout.current) clearTimeout(openTimeout.current);
       if (closeTimeout.current) clearTimeout(closeTimeout.current);
+      if (partnerOpenTimeout.current) clearTimeout(partnerOpenTimeout.current);
+      if (partnerCloseTimeout.current) clearTimeout(partnerCloseTimeout.current);
     };
   }, []);
 
@@ -116,7 +171,13 @@ export function FloatingNav({ page, setPage }) {
     setIsMoreOpen(false);
   };
 
+  const handlePartnerNav = (id) => {
+    setPage(id);
+    setIsPartnerOpen(false);
+  };
+
   const activeInMore = MORE_TABS.some(t => t.id === page);
+  const activeInPartner = page === 'partner-committed' || page === 'partner-family';
 
   const dropdownVariants = {
     hidden: { 
@@ -211,6 +272,89 @@ export function FloatingNav({ page, setPage }) {
             </motion.button>
           );
         })}
+
+        {/* Partner Dropdown (Triggered by Smart Hover) */}
+        <div 
+          ref={partnerRef} 
+          style={{ position: 'relative' }}
+          onMouseEnter={handlePartnerMouseEnter}
+          onMouseLeave={handlePartnerMouseLeave}
+        >
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            transition={{ duration: 0.2 }}
+            onClick={(e) => {
+              e.stopPropagation();
+              if (partnerOpenTimeout.current) clearTimeout(partnerOpenTimeout.current);
+              if (partnerCloseTimeout.current) clearTimeout(partnerCloseTimeout.current);
+              setIsPartnerOpen(prev => !prev);
+            }}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '8px 16px',
+              borderRadius: '999px',
+              border: 'none',
+              cursor: 'pointer',
+              fontSize: '0.85rem',
+              fontWeight: activeInPartner ? 700 : 600,
+              color: activeInPartner ? '#fff' : 'var(--text-muted)',
+              background: 'transparent',
+              position: 'relative',
+              outline: 'none'
+            }}
+          >
+            {activeInPartner && (
+              <motion.div
+                layoutId="activeTabPill"
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  borderRadius: '999px',
+                  background: `linear-gradient(135deg, ${T.gold} 0%, #d4a017 100%)`,
+                  zIndex: 0,
+                  boxShadow: `0 4px 14px ${T.gold}40`
+                }}
+                transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+              />
+            )}
+            <span style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Heart size={16} /> Partner <ChevronDown size={14} style={{ transform: isPartnerOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
+            </span>
+          </motion.button>
+
+          <AnimatePresence>
+            {isPartnerOpen && (
+              <motion.div
+                variants={dropdownVariants}
+                initial="hidden"
+                animate="visible"
+                exit="hidden"
+                className="eb-partner-glass-dropdown"
+              >
+                {PARTNER_TABS.map(tab => {
+                  const isItemActive = page === tab.id;
+                  return (
+                    <button
+                      key={tab.id}
+                      onClick={() => handlePartnerNav(tab.id)}
+                      className="eb-dropdown-item"
+                      style={{
+                        background: isItemActive ? 'var(--gold-pale)' : 'transparent',
+                        color: isItemActive ? T.gold : 'var(--text-muted)',
+                        fontWeight: isItemActive ? 700 : 600
+                      }}
+                    >
+                      <span className="eb-dropdown-item-icon">{tab.icon}</span>
+                      {tab.label}
+                    </button>
+                  );
+                })}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
 
         {/* More Dropdown (Triggered by Smart Hover) */}
         <div 
