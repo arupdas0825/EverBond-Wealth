@@ -217,7 +217,7 @@ export default function App() {
           </div>
           {isMobile && (
             <div className="eb-mobile-header">
-              <Logo size={32} />
+              <Logo size={28} />
             </div>
           )}
           {!isMobile && (

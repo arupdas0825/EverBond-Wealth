@@ -189,10 +189,12 @@ body,
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{font-size:16px;-webkit-text-size-adjust:100%;overflow-x:hidden;scroll-behavior:smooth}
 body{font-family:var(--fb);background:var(--bg);color:var(--text);min-height:100dvh;
-  -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;overflow-x:hidden}
+  -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;overflow-x:hidden;
+  overscroll-behavior-y:none;-webkit-overflow-scrolling:touch}
 #root{min-height:100dvh}
 em{font-style:italic;color:var(--gold-mid)}
-button{font-family:var(--fb)}
+button{font-family:var(--fb);touch-action:manipulation}
+a,button,input,select,textarea{-webkit-tap-highlight-color:transparent}
 input,select{font-family:var(--fb)}
 ::-webkit-scrollbar{width:4px;height:4px}
 ::-webkit-scrollbar-track{background:transparent}
@@ -206,11 +208,14 @@ input,select{font-family:var(--fb)}
 /* ── SIDEBAR REMOVED ─────────────────────────────────────── */
 
 /* ── MAIN ───────────────────────────────────────────────── */
-.eb-main{flex:1;min-width:0;overflow-y:auto;overflow-x:hidden}
+.eb-main{flex:1;min-width:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}
 .eb-page{
   max-width:var(--content-w);margin:0 auto;
   padding:calc(var(--page-y) + 40px) var(--page-x) var(--page-y);
 }
+/* ── HIDE ON MOBILE ──────────────────────────────────────── */
+.hide-on-mobile{display:block}
+@media(max-width:767px){.hide-on-mobile{display:none!important}}
 
 /* ── MOBILE HEADER ───────────────────────────────────────── */
 .eb-mobile-header {
@@ -221,13 +226,16 @@ input,select{font-family:var(--fb)}
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 64px;
+    height: 56px;
     background: var(--bg-sidebar);
     border-bottom: 1px solid var(--border);
     position: sticky;
     top: 0;
-    z-index: 100;
-    padding: 0 20px;
+    z-index: 150;
+    padding: 0 16px;
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    transition: background 0.4s var(--ease);
   }
 }
 
@@ -635,20 +643,28 @@ input,select{font-family:var(--fb)}
    Apple‑style glassmorphism bottom nav pill
 ═══════════════════════════════════════════════════════════ */
 @media(max-width:767px){
-  :root{--page-x:16px;--page-y:24px}
+  :root{--page-x:16px;--page-y:20px}
   .eb-app{flex-direction:column}
   .eb-sidebar{display:none}
+  /* Account for mobile bottom nav clearance only */
   .eb-page{
+    padding-top:calc(var(--page-y));
     padding-left:max(16px,env(safe-area-inset-left) + 16px);
     padding-right:max(16px,env(safe-area-inset-right) + 16px);
-    padding-bottom:calc(var(--mobile-nh) + env(safe-area-inset-bottom) + 32px);
+    padding-bottom:calc(96px + env(safe-area-inset-bottom));
   }
 
-  /* ── Apple‑style pill nav ─────────────────────────────── */
+  /* Dark mode mobile header */
+  [data-theme="dark"] .eb-mobile-header {
+    background: rgba(0, 0, 0, 0.85);
+    border-bottom-color: rgba(255, 255, 255, 0.08);
+  }
+
+  /* ── Apple-style pill nav ─────────────────────────────── */
   .eb-mobile-nav{
     display:block;
     position:fixed;
-    bottom:calc(16px + env(safe-area-inset-bottom));
+    bottom:calc(12px + env(safe-area-inset-bottom));
     left:50%;transform:translateX(-50%);
     z-index:200;
     width:calc(100% - 32px);
@@ -656,7 +672,7 @@ input,select{font-family:var(--fb)}
   }
   .mob-nav-inner{
     display:flex;align-items:center;justify-content:space-around;
-    background:rgba(255,252,248,.82);
+    background:rgba(255,252,248,.88);
     backdrop-filter:blur(24px) saturate(160%);
     -webkit-backdrop-filter:blur(24px) saturate(160%);
     border:1px solid rgba(255,255,255,.72);
@@ -669,8 +685,9 @@ input,select{font-family:var(--fb)}
     display:flex;flex-direction:column;align-items:center;gap:2px;
     border:none;background:none;color:var(--text-faint);
     font-size:.55rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;
-    cursor:pointer;padding:6px 10px;border-radius:18px;
-    transition:all var(--t1) var(--ease);min-width:50px;
+    cursor:pointer;padding:8px 10px;border-radius:18px;
+    transition:all var(--t1) var(--ease);min-width:52px;
+    min-height:44px; /* Touch target */
   }
   .mob-nav-btn.active{
     background:rgba(26,23,20,.08);
@@ -687,15 +704,16 @@ input,select{font-family:var(--fb)}
   .mode-grid{grid-template-columns:1fr;gap:8px}
   .mode-card{
     display:flex;align-items:center;text-align:left;
-    padding:12px 16px;gap:13px;
+    padding:14px 16px;gap:13px;
+    min-height:60px;
   }
   .mode-icon{font-size:1.5rem;margin-bottom:0;flex-shrink:0}
   .sim-yr-grid{grid-template-columns:repeat(5,1fr);gap:5px}
-  .sim-yr-btn{padding:9px 3px}
+  .sim-yr-btn{padding:9px 3px;min-height:56px}
   .sim-yr-num{font-size:1.25rem}
   .sim-results{grid-template-columns:1fr 1fr;gap:8px}
   .sim-result-card{padding:14px 12px}
-  .page-title{font-size:1.75rem}
+  .page-title{font-size:1.65rem}
   .page-desc{font-size:.86rem}
   .alloc-amount{font-size:.9rem;min-width:60px}
   .alloc-name{font-size:.82rem}
@@ -713,6 +731,15 @@ input,select{font-family:var(--fb)}
   .health-score-num{font-size:1.9rem}
   .goal-monthly-amount{font-size:1.2rem}
   .goal-name{font-size:1.1rem}
+  /* Touch targets */
+  .btn-primary{min-height:48px;padding:14px 20px}
+  .btn-secondary{min-height:44px;padding:10px 20px}
+  .eb-input,.eb-select{min-height:48px;font-size:16px} /* 16px prevents iOS auto-zoom */
+  .eb-slider::-webkit-slider-thumb{width:24px;height:24px}
+  /* Bento grid — collapse all inline grids */
+  .mobile-stack{grid-template-columns:1fr!important;gap:16px!important}
+  /* modal bottom sheet constraint */
+  .eb-premium-modal{max-height:92vh;overflow-y:auto}
 }
 
 @media(max-width:420px){
@@ -723,6 +750,7 @@ input,select{font-family:var(--fb)}
   .welcome-card{padding:24px 16px}
   .salary-input{font-size:1.2rem}
   .eb-mobile-nav{width:calc(100% - 24px)}
+  .page-title{font-size:1.45rem}
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -2347,21 +2375,22 @@ input,select{font-family:var(--fb)}
 
 @media (max-width: 767px) {
   .eb-top-actions {
-    top: 12px !important;
-    right: 16px !important;
+    top: 8px !important;
+    right: 12px !important;
     height: 40px !important;
-    gap: 12px !important;
+    gap: 8px !important;
     padding: 2px 6px !important;
-    background: transparent !important; /* blend inside header */
+    background: transparent !important;
     border: none !important;
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
     box-shadow: none !important;
+    z-index: 160 !important; /* above mobile header (150) but below modals */
   }
   
   .eb-profile-name, 
   .eb-profile-chevron {
-    display: none !important; /* Mobile: hide username and chevron */
+    display: none !important;
   }
   
   .eb-top-actions button.eb-profile-chip-btn,
@@ -2369,8 +2398,9 @@ input,select{font-family:var(--fb)}
   .eb-top-actions button[aria-label="Toggle Theme"],
   .eb-top-actions button.eb-notif-bell-btn {
     padding: 0 !important;
-    width: 32px !important;
-    height: 32px !important;
+    width: 36px !important;
+    height: 36px !important;
+    min-height: unset !important; /* Override global min-height rule */
   }
 }
 

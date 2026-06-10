@@ -154,6 +154,14 @@ export function Dashboard({ setPage }) {
 
   const theme = useFinanceStore(s => s.theme);
 
+  const [windowWidth, setWindowWidth] = React.useState(typeof window !== 'undefined' ? window.innerWidth : 1024);
+  React.useEffect(() => {
+    const handler = () => setWindowWidth(window.innerWidth);
+    window.addEventListener('resize', handler);
+    return () => window.removeEventListener('resize', handler);
+  }, []);
+  const isMobile = windowWidth < 768;
+
   const [isUpgradingStage, setIsUpgradingStage] = useState(false);
   const [selectedUpgradeStage, setSelectedUpgradeStage] = useState('Committed');
 
@@ -216,7 +224,7 @@ export function Dashboard({ setPage }) {
     
     return (
       <Card style={{ marginBottom: '24px', padding: '20px 24px', overflow: 'hidden' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '8px' }}>
           <div>
             <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.gold }}>Ecosystem Status</span>
             <h4 style={{ fontSize: '0.98rem', fontWeight: 700, color: 'var(--text)', marginTop: '2px' }}>Life Journey Navigation Blueprint</h4>
@@ -224,47 +232,50 @@ export function Dashboard({ setPage }) {
           {stage === 'Single' && (
             <button 
               onClick={() => setIsUpgradingStage(true)}
-              style={{ padding: '6px 14px', fontSize: '0.75rem', background: 'rgba(184, 144, 42, 0.08)', border: `1.5px solid ${T.goldBorder}`, color: T.gold, fontWeight: 700, cursor: 'pointer', borderRadius: '100px', display: 'flex', alignItems: 'center', gap: '6px' }}
+              style={{ padding: '8px 14px', fontSize: '0.75rem', background: 'rgba(184, 144, 42, 0.08)', border: `1.5px solid ${T.goldBorder}`, color: T.gold, fontWeight: 700, cursor: 'pointer', borderRadius: '100px', display: 'flex', alignItems: 'center', gap: '6px', minHeight: '36px' }}
             >
               <Heart size={12} /> Sync Partner Node
             </button>
           )}
         </div>
 
-        <div style={{ position: 'relative', display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', padding: '10px 0', zIndex: 1 }}>
-          <div style={{ position: 'absolute', left: '20px', right: '20px', height: '2px', background: 'var(--border-mid)', zIndex: -1 }} />
-          <div style={{ position: 'absolute', left: '20px', right: `${100 - (Math.min(currentIdx, 2) / 2) * 100}%`, height: '2px', background: `linear-gradient(90deg, ${T.sky}, #D05C72, ${T.goldMid})`, zIndex: -1 }} />
+        {/* Horizontally scrollable on mobile */}
+        <div style={{ overflowX: 'auto', overflowY: 'hidden', marginRight: '-8px', paddingRight: '8px' }}>
+          <div style={{ position: 'relative', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', zIndex: 1, minWidth: isMobile ? '280px' : 'auto' }}>
+            <div style={{ position: 'absolute', left: '20px', right: '20px', height: '2px', background: 'var(--border-mid)', zIndex: -1 }} />
+            <div style={{ position: 'absolute', left: '20px', right: `${100 - (Math.min(currentIdx, 2) / 2) * 100}%`, height: '2px', background: `linear-gradient(90deg, ${T.sky}, #D05C72, ${T.goldMid})`, zIndex: -1 }} />
 
-          {steps.map((st, idx) => {
-            const isActive = stage === st.name || (stage === 'Married' && st.name === 'Freedom' && false);
-            const isPassed = idx < currentIdx;
-            const isLocked = idx > currentIdx && st.name !== 'Freedom';
-            
-            return (
-              <div key={st.name} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
-                <div style={{
-                  width: '36px',
-                  height: '36px',
-                  borderRadius: '50%',
-                  background: isActive ? st.color : 'var(--bg-card)',
-                  border: `2px solid ${isActive ? st.color : isPassed ? T.sage : 'var(--border-str)'}`,
-                  color: isActive ? '#fff' : isPassed ? T.sage : 'var(--text-faint)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '1rem',
-                  boxShadow: isActive ? `0 0 12px ${st.color}45` : 'none',
-                  transition: 'all 0.3s ease',
-                  cursor: isLocked ? 'pointer' : 'default'
-                }}
-                onClick={() => isLocked && setIsUpgradingStage(true)}
-                >
-                  {isPassed ? '✓' : isLocked ? <Lock size={12} /> : st.icon}
+            {steps.map((st, idx) => {
+              const isActive = stage === st.name || (stage === 'Married' && st.name === 'Freedom' && false);
+              const isPassed = idx < currentIdx;
+              const isLocked = idx > currentIdx && st.name !== 'Freedom';
+              
+              return (
+                <div key={st.name} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', flex: '0 0 auto' }}>
+                  <div style={{
+                    width: isMobile ? '32px' : '36px',
+                    height: isMobile ? '32px' : '36px',
+                    borderRadius: '50%',
+                    background: isActive ? st.color : 'var(--bg-card)',
+                    border: `2px solid ${isActive ? st.color : isPassed ? T.sage : 'var(--border-str)'}`,
+                    color: isActive ? '#fff' : isPassed ? T.sage : 'var(--text-faint)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: isMobile ? '0.85rem' : '1rem',
+                    boxShadow: isActive ? `0 0 12px ${st.color}45` : 'none',
+                    transition: 'all 0.3s ease',
+                    cursor: isLocked ? 'pointer' : 'default'
+                  }}
+                  onClick={() => isLocked && setIsUpgradingStage(true)}
+                  >
+                    {isPassed ? '✓' : isLocked ? <Lock size={12} /> : st.icon}
+                  </div>
+                  <span style={{ fontSize: isMobile ? '0.65rem' : '0.72rem', fontWeight: isActive ? 800 : 500, color: isActive ? 'var(--text)' : 'var(--text-faint)', whiteSpace: 'nowrap' }}>{st.name}</span>
                 </div>
-                <span style={{ fontSize: '0.72rem', fontWeight: isActive ? 800 : 500, color: isActive ? 'var(--text)' : 'var(--text-faint)' }}>{st.name}</span>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
       </Card>
     );
@@ -561,7 +572,7 @@ export function Dashboard({ setPage }) {
         <PremiumInsightsPanel />
 
         {/* Bento Grid Row 1 */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '20px', marginBottom: '20px' }}>
+        <div className={isMobile ? 'mobile-stack' : ''} style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '20px', marginBottom: '20px' }}>
           
           {/* Card 1: Net Worth and Income Overview */}
           <Card gold style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
@@ -612,7 +623,7 @@ export function Dashboard({ setPage }) {
         </div>
 
         {/* Bento Grid Row 2 */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: '20px', marginBottom: '20px' }}>
+        <div className={isMobile ? 'mobile-stack' : ''} style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: '20px', marginBottom: '20px' }}>
           
           {/* Card 3: Investment Simulation */}
           <Card>
@@ -756,7 +767,7 @@ export function Dashboard({ setPage }) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           
           {/* Bento Grid Row 1 */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+          <div className={isMobile ? 'mobile-stack' : ''} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
             
             {/* Card 1: Personal Wealth and Shared Pool */}
             <Card style={{ position: 'relative' }}>
@@ -814,7 +825,7 @@ export function Dashboard({ setPage }) {
           </div>
 
           {/* Bento Grid Row 2 */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '20px' }}>
+          <div className={isMobile ? 'mobile-stack' : ''} style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '20px' }}>
             
             {/* Card 3: Marriage Planning Bento */}
             <Card>
@@ -939,7 +950,7 @@ export function Dashboard({ setPage }) {
         <PartnerStatusCard />
 
         {/* Bento Grid Row 1 */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '20px', marginBottom: '20px' }}>
+        <div className={isMobile ? 'mobile-stack' : ''} style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '20px', marginBottom: '20px' }}>
           
           {/* Card 1: Family Net Worth Consolidated Ledger */}
           <Card gold style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', position: 'relative' }}>
@@ -1015,7 +1026,7 @@ export function Dashboard({ setPage }) {
         </div>
 
         {/* Bento Grid Row 2 */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: '20px', marginBottom: '20px' }}>
+        <div className={isMobile ? 'mobile-stack' : ''} style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: '20px', marginBottom: '20px' }}>
           
           {/* Card 3: Retirement Strategy Widget */}
           <Card>
