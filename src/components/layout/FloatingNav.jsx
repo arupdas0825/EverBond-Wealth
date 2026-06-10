@@ -44,65 +44,114 @@ export function FloatingNav({ page, setPage }) {
   
   const theme = useFinanceStore(s => s.theme);
 
-  // Smart hover state management for More
-  const handleMouseEnter = () => {
+  // Screen width detection to toggle hover behavior for width >= 1024px
+  const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1024);
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+  const isHoverMode = windowWidth >= 1024;
+
+  // Smart hover and accessibility focus state management for More dropdown
+  const handleMoreMouseEnter = () => {
+    if (!isHoverMode) return;
     if (closeTimeout.current) {
       clearTimeout(closeTimeout.current);
       closeTimeout.current = null;
     }
-    
-    if (!isMoreOpen && !openTimeout.current) {
-      openTimeout.current = setTimeout(() => {
-        setIsMoreOpen(true);
-        openTimeout.current = null;
+    setIsMoreOpen(true);
+    setIsPartnerOpen(false); // Close Partner when More is hovered
+  };
+
+  const handleMoreMouseLeave = () => {
+    if (!isHoverMode) return;
+    if (closeTimeout.current) {
+      clearTimeout(closeTimeout.current);
+    }
+    closeTimeout.current = setTimeout(() => {
+      setIsMoreOpen(false);
+      closeTimeout.current = null;
+    }, 150); // close dropdown after 150ms
+  };
+
+  const handleMoreFocus = () => {
+    if (closeTimeout.current) {
+      clearTimeout(closeTimeout.current);
+      closeTimeout.current = null;
+    }
+    setIsMoreOpen(true);
+    setIsPartnerOpen(false);
+  };
+
+  const handleMoreBlur = (e) => {
+    if (moreRef.current && !moreRef.current.contains(e.relatedTarget)) {
+      if (closeTimeout.current) {
+        clearTimeout(closeTimeout.current);
+      }
+      closeTimeout.current = setTimeout(() => {
+        setIsMoreOpen(false);
+        closeTimeout.current = null;
       }, 150);
     }
   };
 
-  const handleMouseLeave = () => {
-    if (openTimeout.current) {
-      clearTimeout(openTimeout.current);
-      openTimeout.current = null;
-    }
-    
-    if (!closeTimeout.current) {
-      closeTimeout.current = setTimeout(() => {
-        setIsMoreOpen(false);
-        closeTimeout.current = null;
-      }, 200);
-    }
-  };
-
-  // Smart hover state management for Partner
+  // Smart hover and accessibility focus state management for Partner dropdown
   const handlePartnerMouseEnter = () => {
+    if (!isHoverMode) return;
     if (partnerCloseTimeout.current) {
       clearTimeout(partnerCloseTimeout.current);
       partnerCloseTimeout.current = null;
     }
-    
-    if (!isPartnerOpen && !partnerOpenTimeout.current) {
-      partnerOpenTimeout.current = setTimeout(() => {
-        setIsPartnerOpen(true);
-        partnerOpenTimeout.current = null;
+    setIsPartnerOpen(true);
+    setIsMoreOpen(false); // Close More when Partner is hovered
+  };
+
+  const handlePartnerMouseLeave = () => {
+    if (!isHoverMode) return;
+    if (partnerCloseTimeout.current) {
+      clearTimeout(partnerCloseTimeout.current);
+    }
+    partnerCloseTimeout.current = setTimeout(() => {
+      setIsPartnerOpen(false);
+      partnerCloseTimeout.current = null;
+    }, 150); // close dropdown after 150ms
+  };
+
+  const handlePartnerFocus = () => {
+    if (partnerCloseTimeout.current) {
+      clearTimeout(partnerCloseTimeout.current);
+      partnerCloseTimeout.current = null;
+    }
+    setIsPartnerOpen(true);
+    setIsMoreOpen(false);
+  };
+
+  const handlePartnerBlur = (e) => {
+    if (partnerRef.current && !partnerRef.current.contains(e.relatedTarget)) {
+      if (partnerCloseTimeout.current) {
+        clearTimeout(partnerCloseTimeout.current);
+      }
+      partnerCloseTimeout.current = setTimeout(() => {
+        setIsPartnerOpen(false);
+        partnerCloseTimeout.current = null;
       }, 150);
     }
   };
 
-  const handlePartnerMouseLeave = () => {
-    if (partnerOpenTimeout.current) {
-      clearTimeout(partnerOpenTimeout.current);
-      partnerOpenTimeout.current = null;
-    }
-    
-    if (!partnerCloseTimeout.current) {
-      partnerCloseTimeout.current = setTimeout(() => {
-        setIsPartnerOpen(false);
-        partnerCloseTimeout.current = null;
-      }, 200);
-    }
+  const handlePartnerClick = (e) => {
+    e.stopPropagation();
+    setIsPartnerOpen(prev => !prev);
+    setIsMoreOpen(false);
   };
 
-  // Close dropdown on outside click (fallback)
+  const handleMoreClick = (e) => {
+    e.stopPropagation();
+    setIsMoreOpen(prev => !prev);
+    setIsPartnerOpen(false);
+  };
+
+
   useEffect(() => {
     const handleClick = (e) => {
       if (moreRef.current && !moreRef.current.contains(e.target)) {
@@ -273,19 +322,19 @@ export function FloatingNav({ page, setPage }) {
           );
         })}
 
-        {/* Partner Dropdown (Strictly Click-to-Toggle) */}
+        {/* Partner Dropdown */}
         <div 
           ref={partnerRef} 
           style={{ position: 'relative' }}
+          onMouseEnter={isHoverMode ? handlePartnerMouseEnter : undefined}
+          onMouseLeave={isHoverMode ? handlePartnerMouseLeave : undefined}
+          onFocus={handlePartnerFocus}
+          onBlur={handlePartnerBlur}
         >
           <motion.button
             whileHover={{ scale: 1.02 }}
             transition={{ duration: 0.2 }}
-            onClick={(e) => {
-              e.stopPropagation();
-              setIsPartnerOpen(prev => !prev);
-              setIsMoreOpen(false); // Close other menu
-            }}
+            onClick={handlePartnerClick}
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -358,19 +407,19 @@ export function FloatingNav({ page, setPage }) {
           </AnimatePresence>
         </div>
 
-        {/* More Dropdown (Strictly Click-to-Toggle) */}
+        {/* More Dropdown */}
         <div 
           ref={moreRef} 
           style={{ position: 'relative' }}
+          onMouseEnter={isHoverMode ? handleMoreMouseEnter : undefined}
+          onMouseLeave={isHoverMode ? handleMoreMouseLeave : undefined}
+          onFocus={handleMoreFocus}
+          onBlur={handleMoreBlur}
         >
           <motion.button
             whileHover={{ scale: 1.02 }}
             transition={{ duration: 0.2 }}
-            onClick={(e) => {
-              e.stopPropagation();
-              setIsMoreOpen(prev => !prev);
-              setIsPartnerOpen(false); // Close other menu
-            }}
+            onClick={handleMoreClick}
             style={{
               display: 'flex',
               alignItems: 'center',

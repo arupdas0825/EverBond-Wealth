@@ -2707,6 +2707,18 @@ input,select{font-family:var(--fb)}
   }
 }
 
+/* Hover bridge to prevent mouse-leave events in the 12px gap between nav item and dropdown */
+.eb-glass-dropdown::before,
+.eb-partner-glass-dropdown::before {
+  content: '';
+  position: absolute;
+  top: -16px;
+  left: 0;
+  right: 0;
+  height: 16px;
+  background: transparent;
+}
+
 .eb-dropdown-item {
   display: flex;
   align-items: center;
