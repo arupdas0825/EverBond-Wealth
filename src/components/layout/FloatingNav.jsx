@@ -206,7 +206,7 @@ export function FloatingNav({ page, setPage }) {
       top: '24px',
       left: '50%',
       transform: 'translateX(-50%)',
-      zIndex: 100,
+      zIndex: 9999, // z-index fix
       display: 'flex',
       alignItems: 'center'
     }}>
@@ -273,21 +273,18 @@ export function FloatingNav({ page, setPage }) {
           );
         })}
 
-        {/* Partner Dropdown (Triggered by Smart Hover) */}
+        {/* Partner Dropdown (Strictly Click-to-Toggle) */}
         <div 
           ref={partnerRef} 
           style={{ position: 'relative' }}
-          onMouseEnter={handlePartnerMouseEnter}
-          onMouseLeave={handlePartnerMouseLeave}
         >
           <motion.button
             whileHover={{ scale: 1.02 }}
             transition={{ duration: 0.2 }}
             onClick={(e) => {
               e.stopPropagation();
-              if (partnerOpenTimeout.current) clearTimeout(partnerOpenTimeout.current);
-              if (partnerCloseTimeout.current) clearTimeout(partnerCloseTimeout.current);
               setIsPartnerOpen(prev => !prev);
+              setIsMoreOpen(false); // Close other menu
             }}
             style={{
               display: 'flex',
@@ -342,11 +339,16 @@ export function FloatingNav({ page, setPage }) {
                       className="eb-dropdown-item"
                       style={{
                         background: isItemActive ? 'var(--gold-pale)' : 'transparent',
-                        color: isItemActive ? T.gold : 'var(--text-muted)',
+                        color: isItemActive ? T.gold : (theme === 'dark' ? '#f3f4f6' : '#111827'),
                         fontWeight: isItemActive ? 700 : 600
                       }}
                     >
-                      <span className="eb-dropdown-item-icon">{tab.icon}</span>
+                      <span 
+                        className="eb-dropdown-item-icon" 
+                        style={{ color: isItemActive ? T.gold : (theme === 'dark' ? '#9ca3af' : '#374151') }}
+                      >
+                        {tab.icon}
+                      </span>
                       {tab.label}
                     </button>
                   );
@@ -356,21 +358,18 @@ export function FloatingNav({ page, setPage }) {
           </AnimatePresence>
         </div>
 
-        {/* More Dropdown (Triggered by Smart Hover) */}
+        {/* More Dropdown (Strictly Click-to-Toggle) */}
         <div 
           ref={moreRef} 
           style={{ position: 'relative' }}
-          onMouseEnter={handleMouseEnter}
-          onMouseLeave={handleMouseLeave}
         >
           <motion.button
             whileHover={{ scale: 1.02 }}
             transition={{ duration: 0.2 }}
             onClick={(e) => {
               e.stopPropagation();
-              if (openTimeout.current) clearTimeout(openTimeout.current);
-              if (closeTimeout.current) clearTimeout(closeTimeout.current);
               setIsMoreOpen(prev => !prev);
+              setIsPartnerOpen(false); // Close other menu
             }}
             style={{
               display: 'flex',
@@ -425,11 +424,16 @@ export function FloatingNav({ page, setPage }) {
                       className="eb-dropdown-item"
                       style={{
                         background: isItemActive ? 'var(--gold-pale)' : 'transparent',
-                        color: isItemActive ? T.gold : 'var(--text-muted)',
+                        color: isItemActive ? T.gold : (theme === 'dark' ? '#f3f4f6' : '#111827'),
                         fontWeight: isItemActive ? 700 : 600
                       }}
                     >
-                      <span className="eb-dropdown-item-icon">{tab.icon}</span>
+                      <span 
+                        className="eb-dropdown-item-icon" 
+                        style={{ color: isItemActive ? T.gold : (theme === 'dark' ? '#9ca3af' : '#374151') }}
+                      >
+                        {tab.icon}
+                      </span>
                       {tab.label}
                     </button>
                   );
