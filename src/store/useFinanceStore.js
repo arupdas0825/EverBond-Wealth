@@ -1217,6 +1217,81 @@ export const useFinanceStore = create(
           workspaceActivities: [],
         });
       },
+
+      /**
+       * logout — clears session/auth state only.
+       * Preserves: theme preference (UX continuity).
+       * Clears: onboarding, profile, partner, financial data.
+       * Synchronously patches localStorage before UI transition
+       * so that a page reload or direct URL always shows landing page.
+       */
+      logout: () => {
+        // 1. Capture theme so we keep it post-logout
+        const currentTheme = get().theme;
+
+        // 2. Synchronously patch localStorage BEFORE state update
+        // This ensures any reload sees the logged-out state
+        try {
+          const stored = JSON.parse(localStorage.getItem('eb_v6') || '{}');
+          const patched = {
+            ...stored,
+            state: {
+              ...(stored.state || {}),
+              started: false,
+              onboardingComplete: false,
+              partner1: '',
+              userName: '',
+              partner2: '',
+              partnerName: '',
+              region: 'India',
+              country: 'India',
+              currency: 'INR',
+              stage: 'Single',
+              relationshipStage: 'Single',
+              p1Salary: 0,
+              p2Salary: 0,
+              // Clear partner connection
+              connectionStatus: 'none',
+              partnerEverBondId: '',
+              partnerLinked: false,
+              partnerAccepted: false,
+              incomingRequest: null,
+              // Keep theme
+              theme: currentTheme,
+            }
+          };
+          localStorage.setItem('eb_v6', JSON.stringify(patched));
+        } catch (_) {
+          // If JSON parse fails, remove the key entirely
+          localStorage.removeItem('eb_v6');
+        }
+
+        // 3. Clear sessionStorage
+        try { sessionStorage.clear(); } catch (_) { /* ignore */ }
+
+        // 4. Update zustand in-memory state
+        set({
+          started: false,
+          onboardingComplete: false,
+          partner1: '',
+          userName: '',
+          partner2: '',
+          partnerName: '',
+          region: 'India',
+          country: 'India',
+          currency: 'INR',
+          stage: 'Single',
+          relationshipStage: 'Single',
+          p1Salary: 0,
+          p2Salary: 0,
+          connectionStatus: 'none',
+          partnerEverBondId: '',
+          partnerLinked: false,
+          partnerAccepted: false,
+          incomingRequest: null,
+          theme: currentTheme,
+        });
+      },
     }),
     { name: 'eb_v6' }
   )
