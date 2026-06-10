@@ -249,6 +249,69 @@ export function WealthInsightsPage() {
     WebkitBackdropFilter: 'blur(16px)',
   };
 
+  const LockedStateCard = ({ title, desc, onConnect }) => {
+    return (
+      <div style={{
+        position: 'absolute',
+        inset: 0,
+        background: 'rgba(255, 255, 255, 0.05)',
+        backdropFilter: 'blur(16px) saturate(180%)',
+        WebkitBackdropFilter: 'blur(16px) saturate(180%)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '24px',
+        borderRadius: '18px',
+        zIndex: 10,
+      }}>
+        <div style={{
+          background: 'var(--bg-card)',
+          border: '1.5px solid var(--border-mid)',
+          borderRadius: '20px',
+          padding: '28px',
+          textAlign: 'center',
+          boxShadow: '0 20px 48px rgba(0, 0, 0, 0.08)',
+          maxWidth: '320px',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: '16px'
+        }}>
+          {/* SVG Illustration */}
+          <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="18" cy="28" r="10" stroke={T.gold} strokeWidth="2.5" strokeDasharray="3 3" />
+            <circle cx="30" cy="22" r="10" stroke={T.rose} strokeWidth="2.5" />
+            <rect x="20" y="10" width="8" height="8" rx="1.5" fill="var(--bg-card)" stroke={T.gold} strokeWidth="2" />
+          </svg>
+
+          <div>
+            <h4 style={{ fontSize: '0.9rem', fontWeight: 800, color: 'var(--text)', marginBottom: '6px', fontFamily: T.fontBody }}>
+              {title || 'Shared Wealth Locked'}
+            </h4>
+            <p style={{ fontSize: '0.74rem', color: 'var(--text-muted)', lineHeight: 1.4, margin: 0 }}>
+              {desc || 'Connect your partner to unlock shared wealth planning.'}
+            </p>
+          </div>
+
+          <button 
+            onClick={onConnect}
+            className="btn-primary"
+            style={{
+              width: 'auto',
+              padding: '6px 16px',
+              fontSize: '0.75rem',
+              borderRadius: '100px',
+              background: `linear-gradient(135deg, ${T.gold} 0%, #a07d22 100%)`,
+              boxShadow: 'var(--sh-sm)'
+            }}
+          >
+            Connect Partner
+          </button>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="fade-in">
       {/* Top Banner Header */}
@@ -790,8 +853,8 @@ export function WealthInsightsPage() {
               </Card>
             </motion.div>
 
-            {/* CHART 6 — LIFE JOURNEY TIMELINE (span-6 or span-12 depending on partner status) */}
-            <motion.div variants={itemVariants} className={connectionStatus === 'connected' ? 'span-6' : 'span-12'}>
+            {/* CHART 6 — LIFE JOURNEY TIMELINE (span-6) */}
+            <motion.div variants={itemVariants} className="span-6">
               <Card style={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                 <div>
                   <span className="card-title" style={{ fontSize: '0.72rem', tracking: '0.08em', textTransform: 'uppercase', color: T.textFaint }}>Roadmap</span>
@@ -901,9 +964,9 @@ export function WealthInsightsPage() {
               </Card>
             </motion.div>
 
-            {/* CHART 8 — COUPLE WEALTH INSIGHTS (span-6) — Visible only when partner is connected */}
-            {connectionStatus === 'connected' && (
-              <motion.div variants={itemVariants} className="span-6">
+            {/* CHART 8 — COUPLE WEALTH INSIGHTS (span-6) */}
+            <motion.div variants={itemVariants} className="span-6" style={{ position: 'relative' }}>
+              {connectionStatus === 'connected' ? (
                 <Card style={{ height: '100%', background: 'linear-gradient(135deg, rgba(208, 92, 114, 0.04) 0%, rgba(124, 107, 190, 0.04) 100%)', border: '1px solid var(--rose-border)' }}>
                   <span className="card-title" style={{ fontSize: '0.72rem', tracking: '0.08em', textTransform: 'uppercase', color: T.rose }}>Relationship Dashboard</span>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '2px', marginBottom: '16px' }}>
@@ -952,8 +1015,23 @@ export function WealthInsightsPage() {
                     </p>
                   </div>
                 </Card>
-              </motion.div>
-            )}
+              ) : (
+                <Card style={{ height: '100%', position: 'relative' }}>
+                  <span className="card-title" style={{ fontSize: '0.72rem', tracking: '0.08em', textTransform: 'uppercase', color: T.rose }}>Relationship Dashboard</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '2px', marginBottom: '16px' }}>
+                    <Heart size={18} fill={T.rose} style={{ color: T.rose }} />
+                    <h3 className="card-heading" style={{ fontSize: '1.25rem', margin: 0 }}>Couple Wealth Insights</h3>
+                  </div>
+                  <LockedStateCard 
+                    title="Couple Insights Locked"
+                    desc="Connect your partner to unlock shared wealth planning."
+                    onConnect={() => {
+                      if (store.setPage) store.setPage('partner');
+                    }}
+                  />
+                </Card>
+              )}
+            </motion.div>
 
           </motion.div>
         )}

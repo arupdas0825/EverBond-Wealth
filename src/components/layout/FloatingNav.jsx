@@ -3,27 +3,28 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   LayoutDashboard, LineChart, Wallet, Target, 
   ChevronDown, PieChart, Flag, Award, Activity, Heart, 
-  FileText, Map, Shield
+  FileText, Map, Shield, Settings
 } from 'lucide-react';
 import { T } from '../../theme/tokens';
 import { useFinanceStore } from '../../store/useFinanceStore';
 
 const MAIN_TABS = [
-  { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard size={16} /> },
-  { id: 'income',    label: 'Income',    icon: <Wallet size={16} /> },
-  { id: 'insights',  label: 'Insights',  icon: <LineChart size={16} /> },
-  { id: 'partner',   label: 'Partner',   icon: <Heart size={16} /> }
+  { id: 'dashboard',  label: 'Dashboard',  icon: <LayoutDashboard size={16} /> },
+  { id: 'income',     label: 'Income',     icon: <Wallet size={16} /> },
+  { id: 'allocation', label: 'Allocation', icon: <PieChart size={16} /> },
+  { id: 'insights',   label: 'Insights',   icon: <LineChart size={16} /> },
+  { id: 'partner',    label: 'Partner',    icon: <Heart size={16} /> }
 ];
 
 const MORE_TABS = [
-  { id: 'allocation',      label: 'Allocation',      icon: <PieChart size={14} /> },
   { id: 'goals',           label: 'Goals',           icon: <Target size={14} /> },
   { id: 'milestones',      label: 'Milestones',      icon: <Flag size={14} /> },
+  { id: 'achievements',    label: 'Journey Rewards', icon: <Award size={14} /> },
   { id: 'simulation',      label: 'Simulation',      icon: <Activity size={14} /> },
   { id: 'couple-planning', label: 'Couple Plan',     icon: <Map size={14} /> },
   { id: 'family-planning', label: 'Family Dynasty',  icon: <Shield size={14} /> },
-  { id: 'achievements',    label: 'Journey Rewards', icon: <Award size={14} /> },
-  { id: 'settings',        label: 'Documentation',   icon: <FileText size={14} /> }
+  { id: 'documentation',   label: 'Documentation',   icon: <FileText size={14} /> },
+  { id: 'settings',        label: 'Settings',        icon: <Settings size={14} /> }
 ];
 
 export function FloatingNav({ page, setPage }) {

@@ -56,6 +56,69 @@ function greeting(stage, name, partner2) {
   }
 }
 
+function LockedStateCard({ title, desc, onConnect }) {
+  return (
+    <div style={{
+      position: 'absolute',
+      inset: 0,
+      background: 'rgba(255, 255, 255, 0.05)',
+      backdropFilter: 'blur(16px) saturate(180%)',
+      WebkitBackdropFilter: 'blur(16px) saturate(180%)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '24px',
+      borderRadius: '18px',
+      zIndex: 10,
+    }}>
+      <div style={{
+        background: 'var(--bg-card)',
+        border: '1.5px solid var(--border-mid)',
+        borderRadius: '20px',
+        padding: '28px',
+        textAlign: 'center',
+        boxShadow: '0 20px 48px rgba(0, 0, 0, 0.08)',
+        maxWidth: '320px',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: '16px'
+      }}>
+        {/* SVG Illustration */}
+        <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="18" cy="28" r="10" stroke={T.gold} strokeWidth="2.5" strokeDasharray="3 3" />
+          <circle cx="30" cy="22" r="10" stroke={T.rose} strokeWidth="2.5" />
+          <rect x="20" y="10" width="8" height="8" rx="1.5" fill="var(--bg-card)" stroke={T.gold} strokeWidth="2" />
+        </svg>
+
+        <div>
+          <h4 style={{ fontSize: '0.9rem', fontWeight: 800, color: 'var(--text)', marginBottom: '6px', fontFamily: T.fontBody }}>
+            {title || 'Shared Wealth Locked'}
+          </h4>
+          <p style={{ fontSize: '0.74rem', color: 'var(--text-muted)', lineHeight: 1.4, margin: 0 }}>
+            {desc || 'Connect your partner to unlock shared wealth planning.'}
+          </p>
+        </div>
+
+        <button 
+          onClick={onConnect}
+          className="btn-primary"
+          style={{
+            width: 'auto',
+            padding: '6px 16px',
+            fontSize: '0.75rem',
+            borderRadius: '100px',
+            background: `linear-gradient(135deg, ${T.gold} 0%, #a07d22 100%)`,
+            boxShadow: 'var(--sh-sm)'
+          }}
+        >
+          Connect Partner
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export function Dashboard({ setPage }) {
   const toast = useToast();
   const { 
@@ -823,11 +886,11 @@ export function Dashboard({ setPage }) {
                 ))}
               </div>
               {connectionStatus !== 'connected' && (
-                <div style={{ position: 'absolute', inset: 0, background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(2px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', borderRadius: 'var(--r-lg)', zIndex: 10 }}>
-                  <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-mid)', borderRadius: '12px', padding: '10px 14px', textAlign: 'center', boxShadow: 'var(--sh-sm)', maxWidth: '240px' }}>
-                    <span style={{ fontSize: '0.74rem', fontWeight: 700, color: 'var(--text-muted)' }}>🔒 Shared Timeline Sync Requires Partner Connection</span>
-                  </div>
-                </div>
+                <LockedStateCard 
+                  title="Timeline Sync Locked"
+                  desc="Connect your partner to unlock shared wealth planning."
+                  onConnect={() => setPage('partner')}
+                />
               )}
             </Card>
           </div>
@@ -909,12 +972,11 @@ export function Dashboard({ setPage }) {
             </div>
 
             {connectionStatus !== 'connected' && (
-              <div style={{ position: 'absolute', inset: 0, background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(2.5px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', borderRadius: 'var(--r-lg)', zIndex: 10 }}>
-                <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-mid)', borderRadius: '12px', padding: '12px 18px', textAlign: 'center', boxShadow: 'var(--sh-sm)', maxWidth: '280px' }}>
-                  <span style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>🔒 Combined Wealth View Locked</span>
-                  <span style={{ fontSize: '0.68rem', color: 'var(--text-faint)' }}>Connect your partner to unlock consolidated family net worth ledger.</span>
-                </div>
-              </div>
+              <LockedStateCard 
+                title="Consolidated Net Worth Locked"
+                desc="Connect your partner to unlock shared wealth planning."
+                onConnect={() => setPage('partner')}
+              />
             )}
           </Card>
 
@@ -943,12 +1005,11 @@ export function Dashboard({ setPage }) {
             </div>
 
             {connectionStatus !== 'connected' && (
-              <div style={{ position: 'absolute', inset: 0, background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(2.5px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', borderRadius: 'var(--r-lg)', zIndex: 10 }}>
-                <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-mid)', borderRadius: '12px', padding: '12px 18px', textAlign: 'center', boxShadow: 'var(--sh-sm)', maxWidth: '280px' }}>
-                  <span style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>🔒 Family Sync Features Locked</span>
-                  <span style={{ fontSize: '0.68rem', color: 'var(--text-faint)' }}>Connect your partner to unlock child planning trust sync.</span>
-                </div>
-              </div>
+              <LockedStateCard 
+                title="Generational Trust Locked"
+                desc="Connect your partner to unlock shared wealth planning."
+                onConnect={() => setPage('partner')}
+              />
             )}
           </Card>
         </div>

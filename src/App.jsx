@@ -19,6 +19,8 @@ import { WorkspacePage } from './components/workspace/WorkspacePage';
 import { CouplePlanningPage } from './components/welcome/CouplePlanningPage';
 import { FamilyPlanningPage } from './components/welcome/FamilyPlanningPage';
 import { SettingsPage } from './components/settings/SettingsPage';
+import { ProfilePage } from './components/profile/ProfilePage';
+import { DocumentationPage } from './components/docs/DocumentationPage';
 import { ThemeToggle } from './components/common/ThemeToggle';
 import { NotificationCenter } from './components/layout/NotificationCenter';
 import { ToastProvider } from './components/common/Toast';
@@ -244,7 +246,9 @@ export default function App() {
                   {page==='workspace'  && <WorkspacePage/>}
                   {page==='couple-planning' && <CouplePlanningPage/>}
                   {page==='family-planning' && <FamilyPlanningPage/>}
-                  {page==='settings' && <SettingsPage setActivePolicyDoc={setActivePolicyDoc} />}
+                  {page==='settings' && <SettingsPage setActivePolicyDoc={setActivePolicyDoc} setPage={setPage} />}
+                  {page==='profile' && <ProfilePage />}
+                  {page==='documentation' && <DocumentationPage />}
                 </motion.div>
               </AnimatePresence>
             </div>

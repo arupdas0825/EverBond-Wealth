@@ -22,6 +22,9 @@ export const useFinanceStore = create(
       dreamGoals: [],
       mindset:   'Balanced',
       theme:     'light',
+      profilePhoto: '',
+      bio: '',
+      joinDate: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
 
       // Visual Wealth Insights Center State
       historicalNetWorth: [],
@@ -681,6 +684,9 @@ export const useFinanceStore = create(
           partnerEverBondId,
           connectionStatus,
           relationshipDate,
+          profilePhoto,
+          bio,
+          country,
         } = profileData;
 
         const wasCompleted = get().onboardingComplete;
@@ -692,10 +698,15 @@ export const useFinanceStore = create(
           userName: partner1,
           partner2, 
           partnerName: partner2,
-          region, 
-          country: region,
-          currency 
+          region: region || country || 'India', 
+          country: country || region || 'India',
+          currency: currency || 'INR'
         };
+        if (profilePhoto !== undefined) update.profilePhoto = profilePhoto;
+        if (bio !== undefined) update.bio = bio;
+        if (!get().joinDate) {
+          update.joinDate = new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+        }
         if (stage) {
           update.stage = stage;
           update.relationshipStage = stage;

@@ -7,7 +7,7 @@ import { T } from '../../theme/tokens';
 export function ProfileChip({ setPage, onReset }) {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef(null);
-  const { partner1, theme, setTheme } = useFinanceStore();
+  const { partner1, theme, setTheme, everBondId } = useFinanceStore();
 
   useEffect(() => {
     const handleClick = (e) => {
@@ -107,8 +107,37 @@ export function ProfileChip({ setPage, onReset }) {
             animate="visible"
             exit="hidden"
             className="eb-glass-dropdown"
+            style={{ width: '220px', padding: '16px 12px' }}
           >
-            <button onClick={() => handleNav('settings')} className="eb-dropdown-item">
+            {/* Header section with user initials avatar, full name, and EverBond ID */}
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'center', padding: '0 8px 12px', borderBottom: '1px solid var(--border-mid)', marginBottom: '8px' }}>
+              <div style={{
+                width: '36px', 
+                height: '36px', 
+                borderRadius: '50%',
+                background: `linear-gradient(135deg, ${T.gold} 0%, #d4a017 100%)`,
+                color: '#fff', 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center',
+                fontSize: '0.85rem', 
+                fontWeight: 800, 
+                boxShadow: '0 4px 12px rgba(201, 168, 76, 0.2)'
+              }}>
+                {getInitials(partner1)}
+              </div>
+              <div style={{ minWidth: 0 }}>
+                <div style={{ fontWeight: 700, fontSize: '0.88rem', color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  {partner1 || 'User'}
+                </div>
+                <div style={{ fontSize: '0.68rem', color: 'var(--text-faint)', fontFamily: 'monospace', letterSpacing: '0.2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  {everBondId || 'EB-AWAITING-GEN'}
+                </div>
+              </div>
+            </div>
+
+            {/* Menu Items */}
+            <button onClick={() => handleNav('profile')} className="eb-dropdown-item">
               <span className="eb-dropdown-item-icon"><User size={14} /></span>
               Profile
             </button>
@@ -116,7 +145,7 @@ export function ProfileChip({ setPage, onReset }) {
               <span className="eb-dropdown-item-icon"><Settings size={14} /></span>
               Settings
             </button>
-            <button onClick={() => handleNav('settings')} className="eb-dropdown-item">
+            <button onClick={() => handleNav('documentation')} className="eb-dropdown-item">
               <span className="eb-dropdown-item-icon"><FileText size={14} /></span>
               Documentation
             </button>
@@ -130,7 +159,7 @@ export function ProfileChip({ setPage, onReset }) {
               Theme
             </button>
             
-            <div style={{ height: '1px', background: 'var(--border-mid)', margin: '4px 0' }} />
+            <div style={{ height: '1px', background: 'var(--border-mid)', margin: '6px 0' }} />
             
             <button 
               onClick={handleLogout} 

@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   LayoutDashboard, Wallet, Target, Heart, MoreHorizontal,
-  LineChart, BarChart3, Award, Settings, FileText, Activity, Users, Shield, Map
+  LineChart, BarChart3, Award, Settings, FileText, Activity, Users, Shield, Map, Flag
 } from 'lucide-react';
 import { useFinanceStore } from '../../store/useFinanceStore';
 import { T } from '../../theme/tokens';
@@ -13,21 +13,22 @@ export function MobileNav({ page, setPage, onReset }) {
   const moreRef = useRef(null);
 
   const MAIN_TABS = [
-    { key: "dashboard", icon: LayoutDashboard, label: "Dashboard" },
-    { key: "income",    icon: Wallet,          label: "Income" },
-    { key: "goals",     icon: Target,          label: "Goals" },
-    { key: "partner",   icon: Heart,           label: "Partner" }
+    { key: "dashboard",  icon: LayoutDashboard, label: "Dashboard" },
+    { key: "income",     icon: Wallet,          label: "Income" },
+    { key: "allocation", icon: BarChart3,       label: "Allocation" },
+    { key: "insights",   icon: LineChart,       label: "Insights" },
+    { key: "partner",    icon: Heart,           label: "Partner" }
   ];
 
   const MORE_TABS = [
-    { id: 'workspace',    label: 'Workspace',       icon: <Users size={16} /> },
-    { id: 'insights',     label: 'Insights',        icon: <LineChart size={16} /> },
-    { id: 'allocation',   label: 'Allocation',      icon: <BarChart3 size={16} /> },
-    { id: 'milestones',   label: 'Milestones',      icon: <Award size={16} /> },
-    { id: 'simulation',   label: 'Simulation',      icon: <Activity size={16} /> },
-    { id: 'couple-planning', label: 'Couple Plan',  icon: <Map size={16} /> },
-    { id: 'family-planning', label: 'Family Dynasty', icon: <Shield size={16} /> },
-    { id: 'settings',     label: 'Settings / Docs', icon: <Settings size={16} /> }
+    { id: 'goals',           label: 'Goals',           icon: <Target size={16} /> },
+    { id: 'milestones',      label: 'Milestones',      icon: <Flag size={16} /> },
+    { id: 'achievements',    label: 'Journey Rewards', icon: <Award size={16} /> },
+    { id: 'simulation',      label: 'Simulation',      icon: <Activity size={16} /> },
+    { id: 'couple-planning', label: 'Couple Plan',     icon: <Map size={16} /> },
+    { id: 'family-planning', label: 'Family Dynasty',  icon: <Shield size={16} /> },
+    { id: 'documentation',   label: 'Documentation',   icon: <FileText size={16} /> },
+    { id: 'settings',        label: 'Settings',        icon: <Settings size={16} /> }
   ];
 
   const bgGlass = theme === 'dark' ? 'rgba(30, 30, 30, 0.65)' : 'rgba(255, 255, 255, 0.7)';
