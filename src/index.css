@@ -150,39 +150,31 @@
   --sidebar-icon-opacity: 0.95;
 }
 
-/* Smooth transitions for theme switcher */
-body, 
+/* Smooth transitions for theme switching — minimal set only.
+   PERF: Removed body (scroll container), removed rarely-transitioning
+   selectors. Short 0.3s duration. No backdrop-filter transition (GPU-heavy). */
 .eb-app,
-.eb-sidebar, 
-.eb-main,
 .card, 
 .stat-card, 
-.btn-primary, 
-.btn-reset, 
 .eb-input, 
-.eb-select, 
-.onb-input-glow, 
-.onb-select-glow, 
-.alloc-row, 
-.wealth-table td, 
-.wealth-table th, 
-.legend-item, 
-.health-ring-inner, 
-.couple-chip, 
-.nav-item, 
-.page-title, 
-.page-desc, 
-.card-heading, 
-.card-sub, 
-.lock-title, 
-.lock-desc {
+.eb-select,
+.nav-item,
+.page-title,
+.card-heading {
   transition: 
-    background 0.4s cubic-bezier(0.16, 1, 0.3, 1), 
-    background-color 0.4s cubic-bezier(0.16, 1, 0.3, 1), 
-    border-color 0.4s cubic-bezier(0.16, 1, 0.3, 1), 
-    color 0.4s cubic-bezier(0.16, 1, 0.3, 1), 
-    box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1), 
-    backdrop-filter 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    background-color 0.3s cubic-bezier(0.16, 1, 0.3, 1), 
+    border-color 0.3s cubic-bezier(0.16, 1, 0.3, 1), 
+    color 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ── REDUCED MOTION ────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 /* ── RESET ─────────────────────────────────────────────── */
@@ -2645,7 +2637,11 @@ input,select{font-family:var(--fb)}
   background-size: 200% 200%;
   animation: premiumBgShift 35s ease infinite;
   transform: translateZ(0);
-  will-change: background-position;
+  /* PERF: contain prevents repaint propagation to parent layers */
+  contain: layout;
+}
+@media (prefers-reduced-motion: reduce) {
+  .premium-bg-shift { animation: none; }
 }
 
 @keyframes premiumBgShift {
