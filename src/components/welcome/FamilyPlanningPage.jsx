@@ -10,7 +10,7 @@ import {
 import { formatCurrency, formatCompact } from '../../utils/finance';
 
 export function FamilyPlanningPage() {
-  const { partner1, partner2, currency, getTotalSalary, partnerAccepted } = useFinanceStore();
+  const { partner1, partner2, currency, getTotalSalary, partnerAccepted, theme } = useFinanceStore();
   const total = getTotalSalary();
   
   // Simulation Toggle for testinglocked state
