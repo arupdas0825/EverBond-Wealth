@@ -221,32 +221,26 @@ export function NotificationCenter() {
       <motion.button
         className="eb-notif-bell-btn"
         onClick={toggleOpen}
-        whileHover={{ scale: 1.08 }}
+        whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.94 }}
         variants={bellVariants}
         initial="initial"
         animate="animate"
         aria-label={`Notifications, ${unreadCount} unread`}
         style={{
-          position: 'fixed',
-          top: '20px',
-          right: '76px', // Offsets it neatly from the ThemeToggle (which is at right: 20px)
-          zIndex: 1999,  // Just below ThemeToggle (zIndex 2000)
-          width: '44px',
-          height: '44px',
+          width: '38px',
+          height: '38px',
           borderRadius: '50%',
-          background: theme === 'light' ? 'rgba(255, 252, 248, 0.42)' : 'rgba(11, 15, 25, 0.42)',
-          backdropFilter: 'blur(20px) saturate(180%)',
-          WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-          border: theme === 'light' ? '1px solid rgba(184, 144, 42, 0.2)' : '1px solid rgba(255, 255, 255, 0.1)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           cursor: 'pointer',
-          boxShadow: theme === 'light' ? '0 8px 32px rgba(184, 144, 42, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.4)' : '0 8px 32px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.08)',
           color: theme === 'light' ? T.gold : '#f5f5f7',
           outline: 'none',
-          transition: 'background 0.4s ease, border-color 0.4s ease, color 0.4s ease'
+          position: 'relative',
+          background: 'transparent',
+          border: 'none',
+          transition: 'all 0.2s ease'
         }}
       >
         <Bell size={20} />

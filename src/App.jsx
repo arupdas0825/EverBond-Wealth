@@ -208,18 +208,18 @@ export default function App() {
       <CursorSpotlight />
       <OnboardingGuard>
         <div className="eb-app">
-          <ThemeToggle />
-          <NotificationCenter />
+          <div className="eb-top-actions">
+            <ThemeToggle />
+            <NotificationCenter />
+            <ProfileChip setPage={setPage} onReset={() => setShowResetModal(true)} />
+          </div>
           {isMobile && (
             <div className="eb-mobile-header">
               <Logo size={32} />
             </div>
           )}
           {!isMobile && (
-            <>
-              <FloatingNav page={page} setPage={setPage} />
-              <ProfileChip setPage={setPage} onReset={() => setShowResetModal(true)} />
-            </>
+            <FloatingNav page={page} setPage={setPage} />
           )}
           <main className="eb-main">
             <div className="eb-page">

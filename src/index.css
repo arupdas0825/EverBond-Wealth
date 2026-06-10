@@ -2178,36 +2178,158 @@ input,select{font-family:var(--fb)}
   border-radius: 10px;
 }
 
-/* Adjust ThemeToggle on Desktop to give space for NotificationBell */
-@media (min-width: 768px) {
-  /* No special override needed since bell is positioned at right: 76px and theme toggle is at right: 20px */
+/* ── TOP ACTIONS NAVIGATION BAR ─────────────────────────── */
+
+.eb-top-actions {
+  position: fixed;
+  top: 16px;
+  right: 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px; /* Spacing between elements: 16px–20px */
+  padding: 6px 12px;
+  border-radius: 999px;
+  z-index: 9999;
+  
+  /* Glassmorphism styling */
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+  
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* On Mobile, reposition ThemeToggle and Bell to stay aligned nicely */
-@media (max-width: 767px) {
-  .eb-notif-bell-btn {
-    top: 12px !important;
-    right: 64px !important;
-    width: 40px !important;
-    height: 40px !important;
-    box-shadow: none !important;
-    background: transparent !important;
-    border: none !important;
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
+[data-theme="dark"] .eb-top-actions {
+  background: rgba(15, 20, 30, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* Theme Toggle Button Reset (flow inside flex) */
+.eb-top-actions button.eb-theme-btn-reset,
+.eb-top-actions button[aria-label="Toggle Theme"] {
+  position: static !important;
+  width: 38px !important;
+  height: 38px !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  border: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  color: var(--text-muted) !important;
+  border-radius: 50% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+.eb-top-actions button.eb-theme-btn-reset:hover,
+.eb-top-actions button[aria-label="Toggle Theme"]:hover {
+  color: var(--gold) !important;
+  background: rgba(0, 0, 0, 0.04) !important;
+}
+[data-theme="dark"] .eb-top-actions button.eb-theme-btn-reset:hover,
+[data-theme="dark"] .eb-top-actions button[aria-label="Toggle Theme"]:hover {
+  color: #fff !important;
+  background: rgba(255, 255, 255, 0.06) !important;
+}
+
+/* Notification Bell Button Reset */
+.eb-top-actions button.eb-notif-bell-btn {
+  position: static !important;
+  width: 38px !important;
+  height: 38px !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  border: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  color: var(--text-muted) !important;
+  border-radius: 50% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+.eb-top-actions button.eb-notif-bell-btn:hover {
+  color: var(--gold) !important;
+  background: rgba(0, 0, 0, 0.04) !important;
+}
+[data-theme="dark"] .eb-top-actions button.eb-notif-bell-btn:hover {
+  color: #fff !important;
+  background: rgba(255, 255, 255, 0.06) !important;
+}
+
+/* Profile Chip Button Reset */
+.eb-top-actions .eb-profile-container {
+  position: relative !important;
+  top: auto !important;
+  right: auto !important;
+}
+.eb-top-actions button.eb-profile-chip-btn {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  max-width: 140px;
+  overflow: hidden;
+  padding: 4px 8px 4px 4px !important;
+  height: 38px;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  border-radius: 999px !important;
+  cursor: pointer !important;
+}
+.eb-top-actions button.eb-profile-chip-btn:hover {
+  background: rgba(0, 0, 0, 0.04) !important;
+}
+[data-theme="dark"] .eb-top-actions button.eb-profile-chip-btn:hover {
+  background: rgba(255, 255, 255, 0.06) !important;
+}
+
+/* Text Truncation for profile name */
+.eb-profile-name {
+  max-width: 60px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+/* Responsive Overrides */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .eb-profile-name {
+    max-width: 40px; /* Tablet constraint */
   }
-  
-  /* ThemeToggle position adjustment for mobile header */
-  button[aria-label="Toggle Theme"] {
+}
+
+@media (max-width: 767px) {
+  .eb-top-actions {
     top: 12px !important;
     right: 16px !important;
-    width: 40px !important;
     height: 40px !important;
-    box-shadow: none !important;
-    background: transparent !important;
+    gap: 12px !important;
+    padding: 2px 6px !important;
+    background: transparent !important; /* blend inside header */
     border: none !important;
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
+    box-shadow: none !important;
+  }
+  
+  .eb-profile-name, 
+  .eb-profile-chevron {
+    display: none !important; /* Mobile: hide username and chevron */
+  }
+  
+  .eb-top-actions button.eb-profile-chip-btn {
+    padding: 0 !important; /* mobile padding reset */
+    width: 32px !important;
+    height: 32px !important;
   }
 }
 

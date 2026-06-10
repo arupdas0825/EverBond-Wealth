@@ -1,18 +1,53 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { User, Link, Settings, FileText, Trash2, ChevronDown } from 'lucide-react';
+import { User, Settings, FileText, LogOut, ChevronDown, Sun, Moon } from 'lucide-react';
 import { useFinanceStore } from '../../store/useFinanceStore';
 import { T } from '../../theme/tokens';
+
+function ProfileAvatar({ name, size = 30 }) {
+  const [imgFailed, setImgFailed] = useState(false);
+  
+  const getInitials = (n) => {
+    if (!n) return 'U';
+    return n.substring(0, 2).toUpperCase();
+  };
+
+  if (imgFailed || !name) {
+    return (
+      <div style={{
+        width: `${size}px`, height: `${size}px`, borderRadius: '50%',
+        background: `linear-gradient(135deg, ${T.gold} 0%, #d4a017 100%)`,
+        color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
+        fontSize: '0.75rem', fontWeight: 800, letterSpacing: '0.5px',
+        flexShrink: 0
+      }}>
+        {getInitials(name)}
+      </div>
+    );
+  }
+
+  return (
+    <img 
+      src="/AD.jpeg" 
+      alt={name} 
+      onError={() => setImgFailed(true)}
+      style={{
+        width: `${size}px`,
+        height: `${size}px`,
+        borderRadius: '50%',
+        objectFit: 'cover',
+        border: '1.5px solid var(--gold-border)',
+        flexShrink: 0,
+        boxShadow: 'var(--sh-xs)'
+      }}
+    />
+  );
+}
 
 export function ProfileChip({ setPage, onReset }) {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef(null);
-  const { partner1, theme } = useFinanceStore();
-
-  const getInitials = (name) => {
-    if (!name) return 'U';
-    return name.substring(0, 2).toUpperCase();
-  };
+  const { partner1, theme, setTheme } = useFinanceStore();
 
   useEffect(() => {
     const handleClick = (e) => {
@@ -29,46 +64,37 @@ export function ProfileChip({ setPage, onReset }) {
     setIsOpen(false);
   };
 
+  const handleLogout = () => {
+    setIsOpen(false);
+    // Reset onboarding Complete state to return to WelcomeScreen
+    useFinanceStore.getState().setProfile({ onboardingComplete: false, started: false });
+    window.location.reload();
+  };
+
   return (
-    <div className="hide-on-mobile" ref={menuRef} style={{
-      position: 'fixed',
-      top: '24px',
-      right: '32px',
-      zIndex: 9999
-    }}>
+    <div className="eb-profile-container" ref={menuRef} style={{ position: 'relative' }}>
       <motion.button
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.4, delay: 0.1 }}
-        whileHover={{ scale: 1.04 }}
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.96 }}
         onClick={() => setIsOpen(!isOpen)}
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '10px',
-          padding: '6px 14px 6px 6px',
-          borderRadius: '999px',
-          border: 'none',
-          background: theme === 'dark' ? 'rgba(30,30,30,0.6)' : 'rgba(255,255,255,0.7)',
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
-          border: theme === 'dark' ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(255,255,255,0.3)',
-          boxShadow: '0 12px 40px rgba(0,0,0,0.08)',
-          cursor: 'pointer'
-        }}
+        className="eb-profile-chip-btn"
       >
-        <div style={{
-          width: '32px', height: '32px', borderRadius: '50%',
-          background: `linear-gradient(135deg, ${T.gold} 0%, #d4a017 100%)`,
-          color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: '0.8rem', fontWeight: 800, letterSpacing: '1px'
-        }}>
-          {getInitials(partner1)}
-        </div>
-        <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text)' }}>
+        <ProfileAvatar name={partner1} size={30} />
+        
+        <span className="eb-profile-name">
           {partner1 || 'User'}
         </span>
-        <ChevronDown size={14} style={{ color: 'var(--text-faint)', transform: isOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
+        
+        <ChevronDown 
+          className="eb-profile-chevron" 
+          size={12} 
+          style={{ 
+            color: 'var(--text-faint)', 
+            transform: isOpen ? 'rotate(180deg)' : 'none', 
+            transition: 'transform 0.2s',
+            flexShrink: 0
+          }} 
+        />
       </motion.button>
 
       <AnimatePresence>
@@ -82,7 +108,7 @@ export function ProfileChip({ setPage, onReset }) {
               position: 'absolute',
               top: 'calc(100% + 12px)',
               right: 0,
-              width: '220px',
+              width: '200px',
               background: theme === 'dark' ? 'rgba(30,30,30,0.85)' : 'rgba(255,255,255,0.9)',
               backdropFilter: 'blur(20px)',
               WebkitBackdropFilter: 'blur(20px)',
@@ -92,31 +118,35 @@ export function ProfileChip({ setPage, onReset }) {
               boxShadow: '0 20px 40px rgba(0,0,0,0.15)',
               display: 'flex',
               flexDirection: 'column',
-              gap: '4px'
+              gap: '4px',
+              zIndex: 10000
             }}
           >
             <button onClick={() => handleNav('settings')} style={menuItemStyle} className="hover-bg">
               <User size={14} /> Profile
             </button>
-            <button onClick={() => handleNav('partner')} style={menuItemStyle} className="hover-bg">
-              <Link size={14} /> Partner Connection
-            </button>
             <button onClick={() => handleNav('settings')} style={menuItemStyle} className="hover-bg">
               <Settings size={14} /> Settings
             </button>
-            {/* Navigates to settings for Documentation */}
             <button onClick={() => handleNav('settings')} style={menuItemStyle} className="hover-bg">
               <FileText size={14} /> Documentation
+            </button>
+            <button 
+              onClick={() => { setIsOpen(false); setTheme(theme === 'light' ? 'dark' : 'light'); }} 
+              style={menuItemStyle} 
+              className="hover-bg"
+            >
+              {theme === 'light' ? <Moon size={14} /> : <Sun size={14} />} Theme
             </button>
             
             <div style={{ height: '1px', background: 'var(--border-mid)', margin: '4px 0' }} />
             
             <button 
-              onClick={() => { setIsOpen(false); onReset(); }} 
+              onClick={handleLogout} 
               style={{ ...menuItemStyle, color: T.rose }} 
               className="hover-bg"
             >
-              <Trash2 size={14} /> Reset Platform
+              <LogOut size={14} /> Logout
             </button>
           </motion.div>
         )}
@@ -126,11 +156,18 @@ export function ProfileChip({ setPage, onReset }) {
 }
 
 const menuItemStyle = {
-  display: 'flex', alignItems: 'center', gap: '8px',
-  padding: '10px 12px', borderRadius: '10px',
-  border: 'none', background: 'transparent',
+  display: 'flex', 
+  alignItems: 'center', 
+  gap: '8px',
+  padding: '10px 12px', 
+  borderRadius: '10px',
+  border: 'none', 
+  background: 'transparent',
   color: 'var(--text-muted)',
-  fontSize: '0.8rem', fontWeight: 500,
-  cursor: 'pointer', textAlign: 'left',
-  transition: 'all 0.2s ease'
+  fontSize: '0.8rem', 
+  fontWeight: 500,
+  cursor: 'pointer', 
+  textAlign: 'left',
+  transition: 'all 0.2s ease',
+  width: '100%'
 };
