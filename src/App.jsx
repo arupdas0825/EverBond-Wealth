@@ -74,6 +74,53 @@ function OnboardingGuard({ children }) {
   );
 }
 
+function CursorSpotlight() {
+  const [position, setPosition] = useState({ x: -100, y: -100 });
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    // Only run on desktop/devices with a mouse pointer
+    const isDesktop = window.matchMedia('(pointer: fine)').matches;
+    if (!isDesktop) return;
+
+    const handleMouseMove = (e) => {
+      setPosition({ x: e.clientX, y: e.clientY });
+      if (!visible) setVisible(true);
+    };
+
+    const handleMouseLeave = () => {
+      setVisible(false);
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseleave', handleMouseLeave);
+
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseleave', handleMouseLeave);
+    };
+  }, [visible]);
+
+  if (!visible) return null;
+
+  return (
+    <div
+      style={{
+        position: 'fixed',
+        left: position.x - 150,
+        top: position.y - 150,
+        width: '300px',
+        height: '300px',
+        borderRadius: '50%',
+        background: 'radial-gradient(circle, rgba(201, 168, 76, 0.035) 0%, transparent 70%)',
+        pointerEvents: 'none',
+        zIndex: 99999,
+        transform: 'translate3d(0, 0, 0)'
+      }}
+    />
+  );
+}
+
 export default function App() {
   const theme = useFinanceStore(s=>s.theme);
   const initEverBondId = useFinanceStore(s => s.initEverBondId);
@@ -158,6 +205,7 @@ export default function App() {
 
   return (
     <ToastProvider>
+      <CursorSpotlight />
       <OnboardingGuard>
         <div className="eb-app">
           <ThemeToggle />
@@ -175,19 +223,30 @@ export default function App() {
           )}
           <main className="eb-main">
             <div className="eb-page">
-              {page==='dashboard'  && <Dashboard setPage={setPage}/>}
-              {page==='insights'   && <WealthInsightsPage/>}
-              {page==='income'     && <IncomePage/>}
-              {page==='allocation' && <AllocationPage/>}
-              {page==='goals'      && <GoalsPage/>}
-              {page==='milestones' && <MilestonePage/>}
-              {page==='achievements' && <AchievementsPage/>}
-              {page==='simulation' && <SimulationPage/>}
-              {page==='partner'    && <PartnerPage setPage={setPage}/>}
-              {page==='workspace'  && <WorkspacePage/>}
-              {page==='couple-planning' && <CouplePlanningPage/>}
-              {page==='family-planning' && <FamilyPlanningPage/>}
-              {page==='settings' && <SettingsPage setActivePolicyDoc={setActivePolicyDoc} />}
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={page}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.25, ease: 'easeInOut' }}
+                  style={{ width: '100%', height: '100%' }}
+                >
+                  {page==='dashboard'  && <Dashboard setPage={setPage}/>}
+                  {page==='insights'   && <WealthInsightsPage/>}
+                  {page==='income'     && <IncomePage/>}
+                  {page==='allocation' && <AllocationPage/>}
+                  {page==='goals'      && <GoalsPage/>}
+                  {page==='milestones' && <MilestonePage/>}
+                  {page==='achievements' && <AchievementsPage/>}
+                  {page==='simulation' && <SimulationPage/>}
+                  {page==='partner'    && <PartnerPage setPage={setPage}/>}
+                  {page==='workspace'  && <WorkspacePage/>}
+                  {page==='couple-planning' && <CouplePlanningPage/>}
+                  {page==='family-planning' && <FamilyPlanningPage/>}
+                  {page==='settings' && <SettingsPage setActivePolicyDoc={setActivePolicyDoc} />}
+                </motion.div>
+              </AnimatePresence>
             </div>
           </main>
           {isMobile && <MobileNav page={page} setPage={setPage} onReset={() => setShowResetModal(true)}/>}

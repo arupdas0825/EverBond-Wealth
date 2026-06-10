@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
 import { 
   Sparkles, ArrowRight, Lock, Shield, Heart, Check, X, 
   ChevronRight, Calendar, Users, DollarSign, Award, Compass, 
@@ -46,11 +46,104 @@ const sectionScrollVariants = {
   }
 };
 
+// Letter reveal animation component for headings
+const letterVariants = {
+  hidden: { opacity: 0, y: 15 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] }
+  }
+};
+
+const AnimatedText = ({ text }) => {
+  const words = text.split(" ");
+  return (
+    <span style={{ display: 'inline-block' }}>
+      {words.map((word, wordIdx) => (
+        <span key={wordIdx} style={{ display: 'inline-block', whiteSpace: 'nowrap', marginRight: '0.25em' }}>
+          {Array.from(word).map((char, charIdx) => (
+            <motion.span
+              key={charIdx}
+              variants={letterVariants}
+              style={{ display: 'inline-block' }}
+            >
+              {char}
+            </motion.span>
+          ))}
+        </span>
+      ))}
+    </span>
+  );
+};
+
+// Subtle character reveal component for quotes
+const QuoteReveal = ({ text }) => {
+  const letters = Array.from(text);
+  
+  const container = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: { staggerChildren: 0.012 }
+    }
+  };
+  
+  const child = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { duration: 0.2 } }
+  };
+  
+  return (
+    <motion.span variants={container} initial="hidden" whileInView="visible" viewport={{ once: true }}>
+      {letters.map((char, index) => (
+        <motion.span key={index} variants={child}>
+          {char}
+        </motion.span>
+      ))}
+    </motion.span>
+  );
+};
+
+const line1Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.03,
+      delayChildren: 0.1
+    }
+  }
+};
+
+const line2Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.03,
+      delayChildren: 0.25
+    }
+  }
+};
+
 export function LandingPage({ onStartJourney }) {
   const theme = useFinanceStore(s => s.theme);
   const [activeStage, setActiveStage] = useState('Single');
   const [particles, setParticles] = useState([]);
   const [imgFailed, setImgFailed] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Setup Framer Motion scroll hook for Hero parallax
+  const { scrollY } = useScroll();
+  const heroY = useTransform(scrollY, [0, 600], [0, 150]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1000); // 1-second loading screen
+    return () => clearTimeout(timer);
+  }, []);
 
   // Generate drift particles
   useEffect(() => {
@@ -185,15 +278,69 @@ export function LandingPage({ onStartJourney }) {
   ];
 
   return (
-    <div className="lp-container" style={{
-      background: 'var(--bg)',
-      color: 'var(--text)',
-      width: '100%',
-      minHeight: '100vh',
-      fontFamily: T.fontBody,
-      position: 'relative',
-      overflowX: 'hidden'
-    }}>
+    <>
+      <AnimatePresence mode="wait">
+        {isLoading && (
+          <motion.div
+            key="loading-screen"
+            initial={{ opacity: 1 }}
+            exit={{ 
+              opacity: 0,
+              filter: 'blur(10px)',
+              transition: { duration: 0.45, ease: [0.16, 1, 0.3, 1] }
+            }}
+            style={{
+              position: 'fixed',
+              inset: 0,
+              background: 'var(--bg)',
+              zIndex: 99999,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '24px'
+            }}
+          >
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.5, ease: 'easeOut' }}
+            >
+              <Logo size={80} showText={false} />
+            </motion.div>
+            <div style={{ width: '120px', height: '3px', background: 'var(--border-mid)', borderRadius: '2px', overflow: 'hidden', position: 'relative' }}>
+              <motion.div
+                initial={{ left: '-100%' }}
+                animate={{ left: '0%' }}
+                transition={{ duration: 1.0, ease: 'easeInOut' }}
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  bottom: 0,
+                  width: '100%',
+                  background: 'linear-gradient(90deg, var(--gold-mid), var(--gold))'
+                }}
+              />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={!isLoading ? { opacity: 1 } : { opacity: 0 }}
+        transition={{ duration: 0.6 }}
+        className="lp-container" 
+        style={{
+          background: 'var(--bg)',
+          color: 'var(--text)',
+          width: '100%',
+          minHeight: '100vh',
+          fontFamily: T.fontBody,
+          position: 'relative',
+          overflowX: 'hidden'
+        }}
+      >
       
       {/* ── Floating Particle Canvas ── */}
       <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none', zIndex: 0 }}>
@@ -234,7 +381,7 @@ export function LandingPage({ onStartJourney }) {
         }}
         transition={{
           repeat: Infinity,
-          duration: 30,
+          duration: 15,
           ease: "easeInOut"
         }}
         style={{
@@ -258,7 +405,7 @@ export function LandingPage({ onStartJourney }) {
         }}
         transition={{
           repeat: Infinity,
-          duration: 35,
+          duration: 18,
           ease: "easeInOut"
         }}
         style={{
@@ -282,7 +429,7 @@ export function LandingPage({ onStartJourney }) {
         }}
         transition={{
           repeat: Infinity,
-          duration: 40,
+          duration: 20,
           ease: "easeInOut"
         }}
         style={{
@@ -300,25 +447,28 @@ export function LandingPage({ onStartJourney }) {
       />
 
       {/* ── SECTION 1: HERO SECTION ── */}
-      <section style={{
-        minHeight: '100vh',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '80px 24px 100px',
-        textAlign: 'center',
-        position: 'relative',
-        zIndex: 1,
-        maxWidth: '1200px',
-        margin: '0 auto'
-      }}>
+      <motion.section 
+        style={{
+          y: heroY,
+          minHeight: '100vh',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '80px 24px 100px',
+          textAlign: 'center',
+          position: 'relative',
+          zIndex: 1,
+          maxWidth: '1200px',
+          margin: '0 auto'
+        }}
+      >
         
-        {/* Brand Header — Premium Page Load Fade-in + Upwards Motion & Subtle Slow Loop Float */}
+        {/* Brand Header — Premium Page Load Fade-in + Upwards Motion & Subtle Scale */}
         <motion.div 
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={!isLoading ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.9 }}
+          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
           style={{ marginBottom: '60px' }}
         >
           <motion.div
@@ -329,11 +479,8 @@ export function LandingPage({ onStartJourney }) {
           </motion.div>
         </motion.div>
 
-        {/* Headline — Premium Staggered Luxury Line-by-Line Reveal */}
-        <motion.h1 
-          variants={titleContainerVariants}
-          initial="hidden"
-          animate="visible"
+        {/* Headline — Premium Staggered Luxury Line-by-Line Character Reveal */}
+        <h1 
           style={{
             fontFamily: T.fontDisplay,
             fontSize: 'clamp(2.4rem, 6vw, 4.8rem)',
@@ -345,13 +492,23 @@ export function LandingPage({ onStartJourney }) {
             color: 'var(--text)'
           }}
         >
-          <motion.span variants={titleLineVariants} style={{ display: 'block' }}>
-            Build Wealth Through
+          <motion.span 
+            variants={line1Variants} 
+            initial="hidden" 
+            animate={!isLoading ? "visible" : "hidden"} 
+            style={{ display: 'block' }}
+          >
+            <AnimatedText text="Build Wealth Through" />
           </motion.span>
-          <motion.span variants={titleLineVariants} style={{ display: 'block' }}>
-            Every Stage of{' '}
+          <motion.span 
+            variants={line2Variants} 
+            initial="hidden" 
+            animate={!isLoading ? "visible" : "hidden"} 
+            style={{ display: 'block' }}
+          >
+            <AnimatedText text="Every Stage of " />
             <span style={{ position: 'relative', display: 'inline-block', fontStyle: 'italic', fontWeight: '400', fontFamily: T.fontDisplay }}>
-              Life
+              <AnimatedText text="Life" />
               <svg style={{ position: 'absolute', bottom: '-4px', left: 0, width: '100%', height: '12px' }} viewBox="0 0 100 10" preserveAspectRatio="none">
                 <motion.path 
                   d="M0,7 C30,2 70,2 100,7" 
@@ -360,19 +517,19 @@ export function LandingPage({ onStartJourney }) {
                   fill="none" 
                   strokeLinecap="round" 
                   initial={{ pathLength: 0 }}
-                  animate={{ pathLength: 1 }}
-                  transition={{ delay: 1.4, duration: 0.8, ease: "easeOut" }}
+                  animate={!isLoading ? { pathLength: 1 } : { pathLength: 0 }}
+                  transition={{ delay: 1.2, duration: 0.8, ease: "easeOut" }}
                 />
               </svg>
             </span>
           </motion.span>
-        </motion.h1>
+        </h1>
 
         {/* Dynamic Selector Relationship Stage Chips with Soft Hover Glow, Scale, & 4-second Gold/Accent Pulse */}
         <motion.div 
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.8, delay: 0.4 }}
+          initial={{ opacity: 0, filter: 'blur(8px)' }}
+          animate={!isLoading ? { opacity: 1, filter: 'blur(0px)' } : { opacity: 0, filter: 'blur(8px)' }}
+          transition={{ duration: 0.6, ease: 'easeOut', delay: 0.6 }}
           style={{
             display: 'flex',
             justifyContent: 'center',
@@ -394,27 +551,13 @@ export function LandingPage({ onStartJourney }) {
               <motion.button 
                 key={stageName}
                 onClick={() => setActiveStage(stageName)}
+                className={isActive ? "stage-badge-selected" : ""}
                 whileHover={{ 
-                  scale: 1.03,
+                  scale: 1.05,
                   boxShadow: `0 4px 15px rgba(201, 168, 76, 0.25)`,
                   borderColor: T.goldMid
                 }}
                 whileTap={{ scale: 0.98 }}
-                animate={isActive ? {
-                  borderColor: T.goldMid,
-                  boxShadow: [
-                    `0 0 0 0px rgba(201, 168, 76, 0.3)`,
-                    `0 0 0 10px rgba(201, 168, 76, 0)`,
-                    `0 0 0 0px rgba(201, 168, 76, 0.3)`
-                  ]
-                } : {}}
-                transition={isActive ? {
-                  boxShadow: {
-                    repeat: Infinity,
-                    duration: 4,
-                    ease: "easeInOut"
-                  }
-                } : {}}
                 style={{
                   background: 'var(--bg-card)',
                   border: `1px solid ${isActive ? T.goldMid : 'var(--border)'}`,
@@ -445,9 +588,9 @@ export function LandingPage({ onStartJourney }) {
 
         {/* Subheadline */}
         <motion.p 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.5 }}
+          initial={{ opacity: 0 }}
+          animate={!isLoading ? { opacity: 1 } : { opacity: 0 }}
+          transition={{ duration: 0.6, ease: 'easeOut', delay: 0.8 }}
           style={{
             fontSize: 'clamp(1.05rem, 2vw, 1.25rem)',
             color: 'var(--text-muted)',
@@ -460,10 +603,7 @@ export function LandingPage({ onStartJourney }) {
         </motion.p>
 
         {/* CTAs */}
-        <motion.div 
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.6 }}
+        <div 
           style={{
             display: 'flex',
             gap: '18px',
@@ -475,12 +615,18 @@ export function LandingPage({ onStartJourney }) {
           <motion.button 
             onClick={onStartJourney}
             className="btn-primary"
+            initial={{ opacity: 0, y: 20 }}
+            animate={!isLoading ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+            transition={{ duration: 0.5, ease: 'easeOut', delay: 1.0 }}
             whileHover={{
-              y: -3,
-              scale: 1.02,
+              scale: 1.03,
               boxShadow: '0 12px 30px rgba(184, 144, 42, 0.45)'
             }}
-            whileTap={{ scale: 0.97, y: 0 }}
+            whileTap={{ 
+              scale: 0.97, 
+              y: 1, 
+              transition: { type: 'spring', stiffness: 400, damping: 15 } 
+            }}
             style={{
               padding: '16px 36px',
               fontSize: '1rem',
@@ -501,13 +647,17 @@ export function LandingPage({ onStartJourney }) {
           
           <motion.a 
             href="#features"
+            initial={{ opacity: 0, y: 20 }}
+            animate={!isLoading ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+            transition={{ duration: 0.5, ease: 'easeOut', delay: 1.15 }}
             whileHover={{
               scale: 1.02,
+              y: -2,
               borderColor: T.goldMid,
-              boxShadow: '0 6px 20px rgba(184, 144, 42, 0.2)',
+              boxShadow: '0 8px 20px rgba(184, 144, 42, 0.2)',
               background: 'var(--bg-warm)'
             }}
-            whileTap={{ scale: 0.97 }}
+            whileTap={{ scale: 0.98 }}
             style={{
               padding: '16px 32px',
               fontSize: '0.95rem',
@@ -525,7 +675,7 @@ export function LandingPage({ onStartJourney }) {
           >
             Explore Features
           </motion.a>
-        </motion.div>
+        </div>
 
         {/* Animated Scroll Indicator (↓ Explore More with Luxury Pulse) */}
         <motion.div 
@@ -543,7 +693,7 @@ export function LandingPage({ onStartJourney }) {
             <div style={{ width: '1px', height: '32px', background: 'var(--border-str)', margin: '0 auto' }} />
           </a>
         </motion.div>
-      </section>
+      </motion.section>
 
       {/* ── SECTION 2: LIFE JOURNEY VISUAL ── */}
       <motion.section
@@ -831,12 +981,8 @@ export function LandingPage({ onStartJourney }) {
       </motion.section>
 
       {/* ── SECTION 4: FEATURE SHOWCASE (BENTO GRID) ── */}
-      <motion.section
+      <section
         id="features"
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, margin: "-120px" }}
-        variants={sectionScrollVariants}
         style={{
         padding: '100px 24px',
         maxWidth: '1100px',
@@ -862,6 +1008,10 @@ export function LandingPage({ onStartJourney }) {
         }}>
           {/* Card 1: Wealth Dashboard (Double Width) */}
           <motion.div 
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
             whileHover={{ y: -4, scale: 1.01, boxShadow: 'var(--sh-md)' }}
             style={{
               gridColumn: 'span 8',
@@ -916,6 +1066,10 @@ export function LandingPage({ onStartJourney }) {
 
           {/* Card 2: Goal Tracking */}
           <motion.div 
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
             whileHover={{ y: -4, scale: 1.01, boxShadow: 'var(--sh-md)' }}
             style={{
               gridColumn: 'span 4',
@@ -943,6 +1097,10 @@ export function LandingPage({ onStartJourney }) {
 
           {/* Card 3: Milestone Planning */}
           <motion.div 
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.3 }}
             whileHover={{ y: -4, scale: 1.01, boxShadow: 'var(--sh-md)' }}
             style={{
               gridColumn: 'span 4',
@@ -970,6 +1128,10 @@ export function LandingPage({ onStartJourney }) {
 
           {/* Card 4: Investment Simulation (Double Width) */}
           <motion.div 
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.4 }}
             whileHover={{ y: -4, scale: 1.01, boxShadow: 'var(--sh-md)' }}
             style={{
               gridColumn: 'span 8',
@@ -1023,6 +1185,10 @@ export function LandingPage({ onStartJourney }) {
 
           {/* Card 5: Relationship Timeline */}
           <motion.div 
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
             whileHover={{ y: -4, scale: 1.01, boxShadow: 'var(--sh-md)' }}
             style={{
               gridColumn: 'span 3',
@@ -1043,6 +1209,10 @@ export function LandingPage({ onStartJourney }) {
 
           {/* Card 6: Partner Connection */}
           <motion.div 
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
             whileHover={{ y: -4, scale: 1.01, boxShadow: 'var(--sh-md)' }}
             style={{
               gridColumn: 'span 3',
@@ -1063,6 +1233,10 @@ export function LandingPage({ onStartJourney }) {
 
           {/* Card 7: Family Wealth Planning */}
           <motion.div 
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.3 }}
             whileHover={{ y: -4, scale: 1.01, boxShadow: 'var(--sh-md)' }}
             style={{
               gridColumn: 'span 3',
@@ -1083,6 +1257,10 @@ export function LandingPage({ onStartJourney }) {
 
           {/* Card 8: Financial Growth Tracking */}
           <motion.div 
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.4 }}
             whileHover={{ y: -4, scale: 1.01, boxShadow: 'var(--sh-md)' }}
             style={{
               gridColumn: 'span 3',
@@ -1113,7 +1291,7 @@ export function LandingPage({ onStartJourney }) {
             }
           }
         `}} />
-      </motion.section>
+      </section>
 
       {/* ── SECTION 5: WHY EVERBOND IS DIFFERENT ── */}
       <motion.section
@@ -1323,11 +1501,8 @@ export function LandingPage({ onStartJourney }) {
       </motion.section>
 
       {/* ── SECTION 7: CREATOR SECTION ── */}
-      <motion.section
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, margin: "-120px" }}
-        variants={sectionScrollVariants}
+      <section
+        id="creator-vision"
         style={{
         padding: '100px 24px',
         background: 'var(--bg-warm)',
@@ -1341,6 +1516,10 @@ export function LandingPage({ onStartJourney }) {
           </div>
 
           <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
             whileHover={{ y: -3, scale: 1.01, boxShadow: 'var(--sh-lg)' }}
             style={{
               background: 'var(--bg-card)',
@@ -1370,29 +1549,37 @@ export function LandingPage({ onStartJourney }) {
             }} />
 
             {/* Profile Avatar placeholder with initials */}
-            {!imgFailed ? (
-              <img
-                src="/AD.jpeg"
-                alt="Arup Das"
-                className="vision-profile-img"
-                onError={() => setImgFailed(true)}
-              />
-            ) : (
-              <div style={{
-                width: '80px',
-                height: '80px',
-                borderRadius: '50%',
-                background: `linear-gradient(135deg, ${T.goldMid} 0%, ${T.gold} 100%)`,
-                margin: '0 auto',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                boxShadow: 'var(--sh-gold)',
-                border: '3px solid #fff'
-              }}>
-                <span style={{ color: '#fff', fontSize: '1.8rem', fontFamily: T.fontDisplay, fontWeight: 700 }}>AD</span>
-              </div>
-            )}
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              whileInView={{ scale: 1, opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
+              style={{ display: 'inline-block', margin: '0 auto' }}
+            >
+              {!imgFailed ? (
+                <img
+                  src="/AD.jpeg"
+                  alt="Arup Das"
+                  className="vision-profile-img"
+                  onError={() => setImgFailed(true)}
+                />
+              ) : (
+                <div style={{
+                  width: '80px',
+                  height: '80px',
+                  borderRadius: '50%',
+                  background: `linear-gradient(135deg, ${T.goldMid} 0%, ${T.gold} 100%)`,
+                  margin: '0 auto',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: 'var(--sh-gold)',
+                  border: '3px solid #fff'
+                }}>
+                  <span style={{ color: '#fff', fontSize: '1.8rem', fontFamily: T.fontDisplay, fontWeight: 700 }}>AD</span>
+                </div>
+              )}
+            </motion.div>
 
             <div>
               <h3 style={{ fontFamily: T.fontDisplay, fontSize: '1.6rem', fontWeight: 700, color: 'var(--text)', marginBottom: '4px' }}>Arup Das</h3>
@@ -1410,12 +1597,12 @@ export function LandingPage({ onStartJourney }) {
               margin: '0 auto',
               fontFamily: T.fontDisplay
             }}>
-              "I built EverBond Wealth to make financial planning more personal, relationship-driven, and meaningful. Before you commit your capital, align your dreams."
+              <QuoteReveal text='"I built EverBond Wealth to make financial planning more personal, relationship-driven, and meaningful. Before you commit your capital, align your dreams."' />
             </p>
           </motion.div>
 
         </div>
-      </motion.section>
+      </section>
 
       {/* ── SECTION 8: FINAL CTA ── */}
       <motion.section
@@ -1536,6 +1723,7 @@ export function LandingPage({ onStartJourney }) {
         </div>
       </footer>
 
-    </div>
+    </motion.div>
+    </>
   );
 }

@@ -2361,3 +2361,54 @@ input,select{font-family:var(--fb)}
     height: 96px;
   }
 }
+
+/* Selected Stage Badge Gold Shimmer and Animated Highlight */
+.stage-badge-selected {
+  position: relative;
+  overflow: hidden;
+  border-color: var(--gold-mid) !important;
+  box-shadow: 0 0 15px rgba(201, 168, 76, 0.35) !important;
+}
+
+.stage-badge-selected::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    45deg,
+    transparent 45%,
+    rgba(201, 168, 76, 0.25) 50%,
+    transparent 55%
+  );
+  transform: rotate(45deg);
+  animation: goldShimmer 4s infinite linear;
+}
+
+@keyframes goldShimmer {
+  0% {
+    transform: translate(-100%, -100%) rotate(45deg);
+  }
+  100% {
+    transform: translate(100%, 100%) rotate(45deg);
+  }
+}
+
+/* Documentation Card Styling with Lift & Glow */
+.doc-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-mid);
+  border-radius: var(--r-md);
+  padding: 28px;
+  margin-bottom: 32px;
+  box-shadow: var(--sh-sm);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease;
+}
+
+.doc-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08), 0 0 16px rgba(201, 168, 76, 0.18);
+  border-color: var(--gold-mid);
+}

@@ -368,8 +368,16 @@ export function DocumentationModal({ isOpen, onClose }) {
               </div>
             ) : (
               <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '60px' }}>
-                {filteredSections.map(section => (
-                  <div key={section.id} ref={el => sectionRefs.current[section.id] = el}>
+                 {filteredSections.map(section => (
+                  <motion.div 
+                    key={section.id} 
+                    ref={el => sectionRefs.current[section.id] = el}
+                    className="doc-card"
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: "-50px" }}
+                    transition={{ duration: 0.5, ease: 'easeOut' }}
+                  >
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }} className="group">
                       <h3 style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--text)' }}>
                         {section.title}
@@ -389,7 +397,7 @@ export function DocumentationModal({ isOpen, onClose }) {
                     <div style={{ fontSize: '1.05rem', lineHeight: 1.7 }}>
                       {renderMarkdownText(section.content)}
                     </div>
-                  </div>
+                  </motion.div>
                 ))}
                 {/* Bottom spacer */}
                 <div style={{ height: '60vh' }} />
