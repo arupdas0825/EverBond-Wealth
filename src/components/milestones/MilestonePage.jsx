@@ -9,7 +9,6 @@ import {
 } from '../../utils/milestones';
 import { formatCurrency, formatCompact } from '../../utils/finance';
 import { T } from '../../theme/tokens';
-import { Logo } from '../common/Logo';
 
 const CATEGORIES = [
   { id: 'car',       label: 'Car / Vehicle', icon: '🚗', color: '#B8902A' }, // gold
@@ -121,7 +120,6 @@ export function MilestonePage() {
       <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px' }}>
         <div>
           <div className="page-eyebrow" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Logo size={20} showText={false} />
             <span>Milestone Planner</span>
           </div>
           <h1 className="page-title">{stage === 'Single' ? 'Solo' : 'Shared'} <em>Milestones</em></h1>

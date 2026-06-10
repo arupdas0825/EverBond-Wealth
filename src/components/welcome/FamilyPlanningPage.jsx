@@ -8,7 +8,6 @@ import {
   UserPlus, QrCode, ToggleLeft, ToggleRight, Info, Check, CheckCircle2, ChevronRight
 } from 'lucide-react';
 import { formatCurrency, formatCompact } from '../../utils/finance';
-import { Logo } from '../common/Logo';
 
 export function FamilyPlanningPage() {
   const { partner1, partner2, currency, getTotalSalary, partnerAccepted } = useFinanceStore();

@@ -9,7 +9,6 @@ import {
 } from '../../utils/finance';
 import { T } from '../../theme/tokens';
 import { Card } from '../common/Card';
-import { Logo } from '../common/Logo';
 
 import { Lock } from 'lucide-react';
 
@@ -59,9 +58,6 @@ export function SimulationPage() {
             High-fidelity SIP projection using the Excel formula:
             <strong style={{color:T.goldMid}}> FV = PMT × [((1+r)ⁿ − 1) / r] × (1+r)</strong>
           </p>
-        </div>
-        <div style={{ flexShrink: 0 }} className="desktop-only-logo">
-          <Logo size={36} />
         </div>
       </div>
 

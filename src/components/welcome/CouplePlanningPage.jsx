@@ -5,7 +5,6 @@ import { T } from '../../theme/tokens';
 import { Card } from '../common/Card';
 import { Heart, Sparkles, CheckSquare, ShieldCheck, Compass, Info, Lock } from 'lucide-react';
 import { formatCurrency } from '../../utils/finance';
-import { Logo } from '../common/Logo';
 
 export function CouplePlanningPage() {
   const { partner1, partner2, currency, getTotalSalary, partnerAccepted } = useFinanceStore();
@@ -39,9 +38,6 @@ export function CouplePlanningPage() {
           <p className="page-desc">
             Collaborative financial planner. Track consensus splits and joint lifestyle targets live.
           </p>
-        </div>
-        <div style={{ flexShrink: 0 }} className="desktop-only-logo">
-          <Logo size={36} />
         </div>
       </div>
 

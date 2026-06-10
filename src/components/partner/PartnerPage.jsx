@@ -6,7 +6,6 @@ import { T } from '../../theme/tokens';
 import { useToast } from '../common/Toast';
 import { isValidEverBondId, formatEverBondId } from '../../utils/everbondId';
 import { Card } from '../common/Card';
-import { Logo } from '../common/Logo';
 import {
   Users, Copy, Check, Heart, Key, Calendar, Link2, UserCheck,
   Sparkles, Lock, Shield, Target, TrendingUp, Crown, X, ArrowRight,
@@ -771,9 +770,6 @@ function PartnerPageContent({ setPage }) {
           <div className="page-eyebrow">EverBond Workspace Node</div>
           <h1 className="page-title">Relationship <em>Hub</em></h1>
           <p className="page-desc">Synchronize nodes, automate joint allocations, and build combined dynastic accounts.</p>
-        </div>
-        <div style={{ flexShrink: 0 }} className="desktop-only-logo">
-          <Logo size={36} />
         </div>
       </div>
 

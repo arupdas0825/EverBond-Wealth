@@ -6,7 +6,6 @@ import { CURRENCIES } from '../../constants/presets';
 import { T } from '../../theme/tokens';
 import { Card } from '../common/Card';
 import { Heart, Lock } from 'lucide-react';
-import { Logo } from '../common/Logo';
 
 const MODES=[
   {key:'Conservative',icon:'🛡️',desc:'60% Needs · 30% Invest\nSafety-first approach'},
@@ -41,9 +40,6 @@ export function IncomePage() {
           <div className="page-eyebrow">Shared Engine</div>
           <h1 className="page-title">Income &amp; <em>Mode</em></h1>
           <p className="page-desc">Configure combined income and risk profile. All allocations update live.</p>
-        </div>
-        <div style={{ flexShrink: 0 }} className="desktop-only-logo">
-          <Logo size={36} />
         </div>
       </div>
       <div className="grid-2 mb-20">

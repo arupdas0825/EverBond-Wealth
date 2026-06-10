@@ -6,7 +6,6 @@ import {
 } from '../../utils/finance';
 import { T } from '../../theme/tokens';
 import { Lock, Crown } from 'lucide-react';
-import { Logo } from '../common/Logo';
 
 const GOAL_DEFS = [
   { key:'child',      icon:'🎓', name:'Child Education',   color:T.goldMid, retPct:10, tag:'Education Fund', lockedAt: 'Committed' },
@@ -52,9 +51,6 @@ export function GoalsPage() {
           <p className="page-desc">
             Set your targets. Monthly allocations are auto-calculated from the Excel engine based on your current life stage.
           </p>
-        </div>
-        <div style={{ flexShrink: 0 }} className="desktop-only-logo">
-          <Logo size={36} />
         </div>
       </div>
 

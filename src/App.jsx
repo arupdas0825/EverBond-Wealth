@@ -267,14 +267,24 @@ export default function App() {
       <CursorSpotlight />
       <OnboardingGuard>
         <div className="eb-app">
+          {!isMobile && (
+            <div className="eb-desktop-brand" style={{
+              position: 'fixed',
+              top: '20px',
+              left: '24px',
+              zIndex: 100
+            }}>
+              <Logo size={36} showText={true} />
+            </div>
+          )}
           <div className="eb-top-actions">
             <ThemeToggle />
             <NotificationCenter />
             <ProfileChip setPage={setPage} onReset={() => setShowResetModal(true)} />
           </div>
           {isMobile && (
-            <div className="eb-mobile-header">
-              <Logo size={28} />
+            <div className="eb-mobile-header" style={{ display: 'flex', justifyContent: 'flex-start', paddingLeft: '16px' }}>
+              <Logo size={28} showText={false} />
             </div>
           )}
           {!isMobile && (

@@ -6,8 +6,6 @@ import { totalMilestoneContribution } from '../../utils/milestones';
 import { T } from '../../theme/tokens';
 import { Card } from '../common/Card';
 
-import { Logo } from '../common/Logo';
-
 const TT = {
   borderRadius: '14px',
   border: '1px solid var(--border-mid)',
@@ -80,9 +78,6 @@ export function AllocationPage() {
           <p className="page-desc">
             Granular asset-class distribution — every number sourced directly from the Excel brain.
           </p>
-        </div>
-        <div style={{ flexShrink: 0 }} className="desktop-only-logo">
-          <Logo size={36} />
         </div>
       </div>
 
