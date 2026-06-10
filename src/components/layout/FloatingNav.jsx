@@ -116,7 +116,7 @@ export function FloatingNav({ page, setPage }) {
       top: '24px',
       left: '50%',
       transform: 'translateX(-50%)',
-      zIndex: 9999,
+      zIndex: 100,
       display: 'flex',
       alignItems: 'center'
     }}>

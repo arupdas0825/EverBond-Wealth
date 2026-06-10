@@ -2189,7 +2189,7 @@ input,select{font-family:var(--fb)}
   gap: 16px; /* Spacing: 16px */
   padding: 6px 12px;
   border-radius: 999px;
-  z-index: 9999;
+  z-index: 100;
   
   /* Apple Liquid Glass styling */
   background: rgba(255, 255, 255, 0.65);
