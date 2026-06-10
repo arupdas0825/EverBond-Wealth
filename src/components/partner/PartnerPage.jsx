@@ -18,6 +18,64 @@ import jsQR from 'jsqr';
 // Safe resolution for Vite CommonJS bundling:
 const QRCode = QRCodeModule.QRCode || QRCodeModule.default || QRCodeModule;
 
+/* ── SafeQRCode: crash-proof QR renderer ─────────────────── */
+class SafeQRCode extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false };
+  }
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  render() {
+    if (this.state.hasError) {
+      // Fallback: show the raw value as text
+      const raw = this.props.value || '';
+      let displayId = 'EB-PENDING';
+      try {
+        const parsed = JSON.parse(raw);
+        displayId = parsed.userId || displayId;
+      } catch { /* raw string */ }
+      return (
+        <div style={{
+          width: this.props.size || 120,
+          height: this.props.size || 120,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          border: '2px dashed #b8902a',
+          borderRadius: '12px',
+          padding: '8px',
+          textAlign: 'center',
+          background: '#fffdf8'
+        }}>
+          <span style={{ fontSize: '0.55rem', color: '#999', marginBottom: '4px' }}>Your ID</span>
+          <strong style={{ fontSize: '0.65rem', color: '#b8902a', fontFamily: 'monospace', wordBreak: 'break-all' }}>
+            {displayId}
+          </strong>
+        </div>
+      );
+    }
+    if (!QRCode) {
+      return (
+        <div style={{ fontSize: '0.7rem', color: '#b8902a', textAlign: 'center', padding: '12px' }}>
+          QR unavailable. Share ID: {this.props.value}
+        </div>
+      );
+    }
+    return (
+      <QRCode
+        value={this.props.value}
+        size={this.props.size || 120}
+        fgColor="#1A1714"
+        bgColor="#ffffff"
+        level="H"
+      />
+    );
+  }
+}
+
 /* ── Animation variants ─────────────────────────────────── */
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -600,6 +658,91 @@ function PartnerPageContent({ setPage }) {
     };
   }, []);
 
+  // ── MISSING HANDLER DEFINITIONS (root cause of crash) ──────────
+
+  // Input change handler for Partner ID field (formats as user types)
+  const handleIdInputChange = (e) => {
+    let val = e.target.value.toUpperCase();
+    setPartnerIdInput(val);
+  };
+
+  // Download QR Code as PNG image
+  const handleDownloadQR = () => {
+    try {
+      const svg = document.querySelector('#qr-code-svg svg');
+      if (!svg) {
+        // Fallback: copy ID instead
+        if (navigator.clipboard && everBondId) {
+          navigator.clipboard.writeText(everBondId);
+          toast.success('EverBond ID copied to clipboard!');
+        } else {
+          toast.info('QR code not ready yet. Try again in a moment.');
+        }
+        return;
+      }
+      const serializer = new XMLSerializer();
+      const svgStr = serializer.serializeToString(svg);
+      const blob = new Blob([svgStr], { type: 'image/svg+xml' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `EverBond-QR-${everBondId || 'connect'}.svg`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      toast.success('QR downloaded!');
+    } catch (err) {
+      toast.error('Download failed. Copy your EverBond ID manually.');
+    }
+  };
+
+  // Copy shareable invite link / EverBond ID to clipboard
+  const handleCopyInviteLink = () => {
+    const shareText = `Connect with me on EverBond! My ID: ${everBondId || 'EB-PENDING'} — Download EverBond to get started.`;
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(shareText)
+        .then(() => toast.success('Invite link copied to clipboard!'))
+        .catch(() => toast.error('Could not copy to clipboard.'));
+    } else {
+      // Fallback for older browsers
+      try {
+        const textArea = document.createElement('textarea');
+        textArea.value = shareText;
+        textArea.style.position = 'fixed';
+        textArea.style.opacity = '0';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        toast.success('Invite link copied!');
+      } catch {
+        toast.error('Copy failed. Share your ID manually: ' + (everBondId || 'EB-PENDING'));
+      }
+    }
+  };
+
+  // Decline an incoming connection request
+  const handleDeclineRequest = () => {
+    declineRequest();
+    toast.info('Connection request declined.');
+  };
+
+  // Mobile version link (opens instructions or current URL with mobile hint)
+  const handleOpenMobileVersionSim = () => {
+    setIsDesktopModalOpen(false);
+    // On mobile browsers this opens the same page. On desktop, shows instructions.
+    try {
+      const currentUrl = window.location.href;
+      window.open(currentUrl, '_blank');
+    } catch {
+      toast.info('Open EverBond on your mobile device to use the QR scanner.');
+    }
+  };
+
+  // ────────────────────────────────────────────────────────────────
+
   const isManualIdValid = isValidEverBondId(formatEverBondId(partnerIdInput));
 
   return (
@@ -899,6 +1042,7 @@ function PartnerPageContent({ setPage }) {
 
                   {/* Dynamic QR Code Canvas */}
                   <motion.div 
+                    id="qr-code-svg"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ duration: 0.5 }}
@@ -914,13 +1058,7 @@ function PartnerPageContent({ setPage }) {
                       justifyContent: 'center'
                     }}
                   >
-                    <QRCode
-                      value={generateQRValue()}
-                      size={120}
-                      fgColor="#1A1714"
-                      bgColor="#ffffff"
-                      level="H"
-                    />
+                    <SafeQRCode value={generateQRValue()} size={120} />
                   </motion.div>
 
                   <div style={{ display: 'flex', gap: '8px', width: '100%' }}>

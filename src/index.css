@@ -2698,3 +2698,32 @@ input,select{font-family:var(--fb)}
 .eb-dropdown-item:hover .eb-dropdown-item-icon {
   transform: scale(1.08); /* Icon scales: 1 -> 1.08 */
 }
+
+/* ── PARTNER PAGE SPECIFIC ───────────────────────────────── */
+
+/* 2-column on desktop, stacks on mobile */
+.responsive-split {
+  display: grid;
+  grid-template-columns: 1fr 1.6fr;
+  gap: 24px;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .responsive-split {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+}
+
+/* Desktop-only logo: visible only on wide screens */
+.desktop-only-logo {
+  display: flex;
+  align-items: center;
+}
+
+@media (max-width: 767px) {
+  .desktop-only-logo {
+    display: none !important;
+  }
+}
