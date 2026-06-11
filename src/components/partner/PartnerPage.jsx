@@ -293,8 +293,8 @@ function PartnerPageContent({ setPage }) {
   // Store bindings
   const {
     everBondId,
-    coupleId,
-    familyId,
+    userId,
+    partnerId,
     partnerEverBondId,
     connectionStatus,
     requestSentAt,

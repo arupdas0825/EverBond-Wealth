@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { generatePersonalId, generateCoupleId, generateFamilyId, generateEverBondId } from '../utils/everbondId';
+import { generatePersonalId, generateRelationshipId, generateFamilyId, generateEverBondId } from '../utils/everbondId';
 import { generateInsightsData } from '../utils/insightsData';
 
 export const useFinanceStore = create(
@@ -128,14 +128,16 @@ export const useFinanceStore = create(
       ],
 
       // ── EverBond ID Partner Linking System ──
-      everBondId:          '',              // User's permanent EB-[NAME_4]-[HEX_4] (generated on profile save)
-      coupleId:            '',              // Permanent Couple ID (EB-COUPLE-XXXX-XXXX)
-      familyId:            '',              // Permanent Family ID (EB-FAMILY-XXXX-XXXXX)
-      partnerEverBondId:   '',              // Partner's EverBond ID
+      userId:              '',              // User's permanent EB-[NAME_4]-[HEX_4]
+      everBondId:          '',              // Kept for backward compatibility
+      partnerId:           '',              // Partner's permanent EverBond ID
+      partnerEverBondId:   '',              // Kept for backward compatibility
+      relationshipStatus:  'Single',        // 'Single' | 'Committed' | 'Married'
+      relationshipId:      '',              // Unique relationship identifier (REL-[YEAR]-[NUM])
+      familyId:            '',              // Unique family identifier (FAM-[YEAR]-[NUM])
       connectionStatus:    'none',          // 'none' | 'pending' | 'received' | 'connected'
       requestSentAt:       null,            // ISO timestamp when request was sent
       relationshipDate:    '',              // Anniversary / relationship date
-      relationshipId:      '',              // Unique relationship identifier
       
       // Future backend preparation fields
       requestSent:         false,           // User sent a connection request
@@ -272,9 +274,9 @@ export const useFinanceStore = create(
 
       setStage: stage => {
         const currentFamilyId = get().familyId;
-        const patch = { stage, relationshipStage: stage };
+        const patch = { stage, relationshipStage: stage, relationshipStatus: stage };
         if (stage === 'Married' && !currentFamilyId) {
-          patch.familyId = generateFamilyId(get().partner1, get().partner2);
+          patch.familyId = generateFamilyId();
         }
 
         const stageNames = {
@@ -326,12 +328,13 @@ export const useFinanceStore = create(
 
       // ── EverBond ID Actions ──
 
-      /** Generate and persist an EverBond ID if one doesn't exist */
       initEverBondId: () => {
-        const current = get().everBondId;
-        // If empty or in old 6-character format, generate a new personalized / default Personal ID
+        const current = get().userId || get().everBondId;
         if (!current || current.length <= 9) {
-          set({ everBondId: generatePersonalId(get().partner1 || 'USER') });
+          const generated = generatePersonalId(get().partner1 || 'USER');
+          set({ userId: generated, everBondId: generated });
+        } else if (!get().userId || !get().everBondId) {
+          set({ userId: current, everBondId: current });
         }
       },
 
@@ -437,19 +440,13 @@ export const useFinanceStore = create(
 
       /** Accept/complete the connection (either pending or received) */
       acceptConnection: ({ partnerName }) => {
-        const relId = `REL-${Math.floor(100000 + Math.random() * 900000)}`;
+        const relId = generateRelationshipId();
         const incoming = get().incomingRequest;
         
         const resolvedName = partnerName || (incoming ? incoming.senderName : '') || get().partnerName || 'Partner';
         const resolvedId = get().partnerEverBondId || (incoming ? incoming.senderEverBondId : '') || 'EB-UNKNOWN';
         const resolvedDate = get().relationshipDate || (incoming ? incoming.relationshipDate : '');
         
-        // Generate Couple ID once connection is established
-        let resolvedCoupleId = get().coupleId;
-        if (!resolvedCoupleId) {
-          resolvedCoupleId = generateCoupleId();
-        }
-
         get().addNotification({
           type: 'partner',
           title: 'Partner Connected Successfully',
@@ -491,7 +488,6 @@ export const useFinanceStore = create(
           partnerId: resolvedId,
           relationshipDate: resolvedDate,
           relationshipId: relId,
-          coupleId: resolvedCoupleId,
           connectedAt: new Date().toISOString(),
           requestSent: false,
           requestReceived: false,
@@ -543,7 +539,6 @@ export const useFinanceStore = create(
           relationshipDate: '',
           requestSentAt: null,
           relationshipId: '',
-          coupleId: '',
           familyId: '',
           partner2: '',
           partnerName: '',
@@ -587,7 +582,7 @@ export const useFinanceStore = create(
 
       addTimelineEvent: ({ type, title, description, createdBy, isMilestone }) => {
         const user = createdBy || get().partner1 || 'User';
-        const relId = get().relationshipId || get().coupleId || 'single-node';
+        const relId = get().relationshipId || 'single-node';
         const newEvent = {
           eventId: `ev-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
           type,
@@ -693,22 +688,24 @@ export const useFinanceStore = create(
         if (stage) {
           update.stage = stage;
           update.relationshipStage = stage;
+          update.relationshipStatus = stage;
           // Generate Family ID if stage is Married
           if (stage === 'Married' && !get().familyId) {
-            update.familyId = generateFamilyId(partner1 || get().partner1, partner2 || get().partner2);
+            update.familyId = generateFamilyId();
           }
         }
         if (p1Salary !== undefined) update.p1Salary = p1Salary;
         if (p2Salary !== undefined) update.p2Salary = p2Salary;
         
         // Check and personalize Personal ID based on user name
-        const existingId = everBondId || get().everBondId;
+        const existingId = userId || everBondId || get().userId || get().everBondId;
+        let finalId = existingId;
         if (!existingId || existingId.length <= 9 || (partner1 && !existingId.includes(partner1.trim().toUpperCase().replace(/[^A-Z]/g, '').slice(0, 4)))) {
           // If empty, old format, or doesn't match the new partner1 name, generate a new personalized one!
-          update.everBondId = generatePersonalId(partner1);
-        } else {
-          update.everBondId = existingId;
+          finalId = generatePersonalId(partner1);
         }
+        update.userId = finalId;
+        update.everBondId = finalId;
 
         if (partnerEverBondId !== undefined) {
           update.partnerEverBondId = partnerEverBondId;
@@ -1004,14 +1001,16 @@ export const useFinanceStore = create(
           relationshipVerified: false,
           
           // Reset EverBond ID system (regenerate fresh ID)
+          userId: newId,
           everBondId: newId,
-          coupleId: '',
-          familyId: '',
+          partnerId: '',
           partnerEverBondId: '',
+          relationshipStatus: 'Single',
+          relationshipId: '',
+          familyId: '',
           connectionStatus: 'none',
           requestSentAt: null,
           relationshipDate: '',
-          relationshipId: '',
           requestSent: false,
           requestReceived: false,
           connectedAt: null,
@@ -1022,7 +1021,6 @@ export const useFinanceStore = create(
           partnerAccepted: false,
           verificationStatus: 'unverified',
           invitationCode: '',
-          partnerId: '',
 
           notifications: [
             {

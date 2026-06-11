@@ -43,48 +43,23 @@ export function generateEverBondId() {
 }
 
 /**
- * Generate a new Couple EverBond ID
- * @returns {string} e.g. "EB-COUPLE-AS22-7K9X"
+ * Generate a new Relationship ID (Internal)
+ * @returns {string} e.g. "REL-2026-001"
  */
-export function generateCoupleId() {
-  let p1 = '';
-  let p2 = '';
-  
-  // Generate AS22 part
-  for (let i = 0; i < 4; i++) {
-    p1 += CHARSET.charAt(Math.floor(Math.random() * CHARSET.length));
-  }
-  // Generate 7K9X part
-  for (let i = 0; i < 4; i++) {
-    p2 += CHARSET.charAt(Math.floor(Math.random() * CHARSET.length));
-  }
-  
-  return `EB-COUPLE-${p1}-${p2}`;
+export function generateRelationshipId() {
+  const year = new Date().getFullYear();
+  const randNum = String(Math.floor(100 + Math.random() * 900)); // 3 digits
+  return `REL-${year}-${randNum}`;
 }
 
 /**
- * Generate a new Family EverBond ID
- * @param {string} partner1 - First partner's name
- * @param {string} partner2 - Second partner's name
- * @returns {string} e.g. "EB-FAMILY-AS22-RUPTA"
+ * Generate a new Family ID (Internal)
+ * @returns {string} e.g. "FAM-2026-001"
  */
-export function generateFamilyId(partner1, partner2) {
-  let p1 = '';
-  // Generate first part (4 random alphanumeric characters)
-  for (let i = 0; i < 4; i++) {
-    p1 += CHARSET.charAt(Math.floor(Math.random() * CHARSET.length));
-  }
-  
-  // Construct personalized 5-char name part (e.g. RUPTA)
-  let p1Part = (partner1 || 'FAM').trim().toUpperCase().replace(/[^A-Z]/g, '').slice(0, 3);
-  if (p1Part.length < 3) p1Part = (p1Part + 'FAM').slice(0, 3);
-  
-  let p2Part = (partner2 || 'LY').trim().toUpperCase().replace(/[^A-Z]/g, '').slice(0, 2);
-  if (p2Part.length < 2) p2Part = (p2Part + 'LY').slice(0, 2);
-  
-  const p2 = `${p1Part}${p2Part}`; // 5 uppercase characters
-  
-  return `EB-FAMILY-${p1}-${p2}`;
+export function generateFamilyId() {
+  const year = new Date().getFullYear();
+  const randNum = String(Math.floor(100 + Math.random() * 900)); // 3 digits
+  return `FAM-${year}-${randNum}`;
 }
 
 /**
@@ -95,7 +70,7 @@ export function generateFamilyId(partner1, partner2) {
 export function isValidEverBondId(id) {
   if (!id || typeof id !== 'string') return false;
   const cleaned = id.trim().toUpperCase();
-  return /^EB-[A-Z]{4}-[0-9A-F]{4}$/.test(cleaned) || /^EB-[A-Z0-9]{6}$/.test(cleaned);
+  return /^EB-[A-Z]{4}-[0-9A-F]{4}$/.test(cleaned);
 }
 
 /**
