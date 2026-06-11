@@ -1394,7 +1394,7 @@ function PartnerPageContent({ setPage }) {
                     {/* Feature 2: Shared Notes */}
                     <motion.div
                       whileHover={{ scale: 1.02, x: 6 }}
-                      onClick={() => setPage('workspace')}
+                      onClick={() => toast.info("Notes synchronization will be activated upon database integration.")}
                       style={{ border: '1px solid var(--border-mid)', borderRadius: '16px', padding: '16px', cursor: 'pointer', background: 'var(--bg-card)' }}
                     >
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>

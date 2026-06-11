@@ -30,7 +30,6 @@ const GoalsPage         = lazy(() => import('./components/goals/GoalsPage').then
 const MilestonePage     = lazy(() => import('./components/milestones/MilestonePage').then(m => ({ default: m.MilestonePage })));
 const SimulationPage    = lazy(() => import('./components/simulation/SimulationPage').then(m => ({ default: m.SimulationPage })));
 const PartnerPage       = lazy(() => import('./components/partner/PartnerPage').then(m => ({ default: m.PartnerPage })));
-const WorkspacePage     = lazy(() => import('./components/workspace/WorkspacePage').then(m => ({ default: m.WorkspacePage })));
 const CouplePlanningPage = lazy(() => import('./components/welcome/CouplePlanningPage').then(m => ({ default: m.CouplePlanningPage })));
 const FamilyPlanningPage = lazy(() => import('./components/welcome/FamilyPlanningPage').then(m => ({ default: m.FamilyPlanningPage })));
 const SettingsPage      = lazy(() => import('./components/settings/SettingsPage').then(m => ({ default: m.SettingsPage })));
@@ -279,7 +278,6 @@ function PageRenderer({ page, setPage, setActivePolicyDoc, setShowResetModal }) 
       case 'simulation':      return <SimulationPage />;
       case 'partner':         return <PartnerPage setPage={setPage} />;
       case 'partner-committed': return <PartnerPage setPage={setPage} />;
-      case 'workspace':       return <WorkspacePage />;
       case 'couple-planning': return <CouplePlanningPage />;
       case 'family-planning': return <FamilyPlanningPage setPage={setPage} />;
       case 'partner-family':    return <FamilyPlanningPage setPage={setPage} />;
@@ -301,7 +299,6 @@ function PageRenderer({ page, setPage, setActivePolicyDoc, setShowResetModal }) 
       'simulation': 'Wealth Simulation',
       'partner': 'Committed Partner Journey',
       'partner-committed': 'Committed Partner Journey',
-      'workspace': 'Family Dynasty Workspace',
       'couple-planning': 'Couple Planning',
       'family-planning': 'Family Dynasty',
       'partner-family': 'Family Dynasty',

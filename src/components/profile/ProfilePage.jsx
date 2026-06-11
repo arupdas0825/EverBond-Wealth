@@ -103,7 +103,7 @@ export function ProfilePage() {
         className="eb-settings-grid"
       >
         {/* PROFILE CARD */}
-        <motion.div variants={itemVariants} className="span-8">
+        <motion.div variants={itemVariants} className="span-12">
           <Card gold style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: '32px', position: 'relative' }}>
             <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.gold, display: 'block', marginBottom: '24px' }}>EverBond Identity Node</span>
             
@@ -227,99 +227,6 @@ export function ProfilePage() {
                 <div>
                   <div style={{ fontSize: '0.68rem', color: 'var(--text-faint)', textTransform: 'uppercase', fontWeight: 800 }}>Member Since</div>
                   <div style={{ fontSize: '0.88rem', fontWeight: 700, color: 'var(--text)' }}>{joinDate || 'June 2026'}</div>
-                </div>
-              </div>
-            </div>
-          </Card>
-        </motion.div>
-
-        {/* CONNECTION STATS CARD */}
-        <motion.div variants={itemVariants} className="span-4">
-          <Card style={{ display: 'flex', flexDirection: 'column', justify: 'space-between', height: '100%' }}>
-            <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.gold, display: 'block', marginBottom: '20px' }}>Ecosystem Status</span>
-
-            {connectionStatus === 'connected' ? (
-              <div style={{ background: 'linear-gradient(135deg, rgba(78, 155, 120, 0.05) 0%, rgba(78, 155, 120, 0.0) 100%)', border: '1px solid rgba(78, 155, 120, 0.15)', borderRadius: T.radiusSm, padding: '16px', display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '20px' }}>
-                <Heart size={20} fill={T.rose} style={{ color: T.rose }} />
-                <div>
-                  <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text)' }}>Synced with {partner2}</div>
-                  <div style={{ fontSize: '0.7rem', color: 'var(--text-faint)' }}>Double-node ledger consensus</div>
-                </div>
-              </div>
-            ) : (
-              <div style={{ background: 'linear-gradient(135deg, rgba(217, 102, 122, 0.05) 0%, rgba(217, 102, 122, 0.0) 100%)', border: '1px solid rgba(217, 102, 122, 0.15)', borderRadius: T.radiusSm, padding: '16px', display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '20px' }}>
-                <Shield size={20} style={{ color: T.rose }} />
-                <div>
-                  <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text)' }}>Sovereign Solo Node</div>
-                  <div style={{ fontSize: '0.7rem', color: 'var(--text-faint)' }}>Link partner to double stats</div>
-                </div>
-              </div>
-            )}
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Total Capital Pool</span>
-                <strong style={{ fontSize: '0.92rem', color: 'var(--text)' }}>{fmt(netWorth)}</strong>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Monthly Income Node</span>
-                <strong style={{ fontSize: '0.92rem', color: 'var(--text)' }}>{fmt(p1Salary || 100000)}</strong>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Active Goals</span>
-                <strong style={{ fontSize: '0.92rem', color: 'var(--text)' }}>{milestones.length} Active</strong>
-              </div>
-            </div>
-
-            <div style={{ height: '1px', background: 'var(--border-mid)', margin: '20px 0' }} />
-
-            {/* Financial Health Indicators */}
-            <div>
-              <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.gold, display: 'block', marginBottom: '14px' }}>Financial Health Indicators</span>
-              
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                {/* Score */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <Activity size={14} style={{ color: health.value >= 75 ? T.sage : T.gold }} />
-                    <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Financial Health Score</span>
-                  </div>
-                  <strong style={{ fontSize: '0.92rem', color: health.value >= 75 ? T.sage : T.gold }}>
-                    {health.label} ({health.value}/100)
-                  </strong>
-                </div>
-
-                {/* Emergency Coverage */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <Shield size={14} style={{ color: T.gold }} />
-                    <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Emergency Coverage</span>
-                  </div>
-                  <strong style={{ fontSize: '0.92rem', color: 'var(--text)' }}>
-                    {emergencyCoverage}
-                  </strong>
-                </div>
-
-                {/* Goal Completion Rate */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <Target size={14} style={{ color: T.gold }} />
-                    <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Goal Completion Rate</span>
-                  </div>
-                  <strong style={{ fontSize: '0.92rem', color: 'var(--text)' }}>
-                    {goalCompletionRate}%
-                  </strong>
-                </div>
-
-                {/* Savings Rate */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <Percent size={14} style={{ color: T.gold }} />
-                    <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Savings Rate</span>
-                  </div>
-                  <strong style={{ fontSize: '0.92rem', color: 'var(--text)' }}>
-                    {savingsRatePct}%
-                  </strong>
                 </div>
               </div>
             </div>

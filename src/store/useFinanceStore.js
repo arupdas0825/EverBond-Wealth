@@ -205,67 +205,7 @@ export const useFinanceStore = create(
       // Milestones
       milestones: [],
 
-      // ── Workspace Mock Data ──
-      workspaceNotes: [
-        { id: 'wn-1', title: 'Dream Home Master Plan', content: 'We need to start saving for the down payment.\n\n[ ] Check mortgage rates\n[ ] Decide on location\n[ ] Budget review', type: 'General', isPinned: true, createdAt: new Date(Date.now() - 24*3600*1000).toISOString(), updatedAt: new Date(Date.now() - 24*3600*1000).toISOString(), createdBy: 'System' },
-        { id: 'wn-2', title: 'Europe Trip Budget', content: 'Target: ₹5,00,000 by next year.', type: 'General', isPinned: false, createdAt: new Date(Date.now() - 2*24*3600*1000).toISOString(), updatedAt: new Date(Date.now() - 2*24*3600*1000).toISOString(), createdBy: 'System' },
-        { id: 'wn-3', title: 'Should we increase SIP?', content: 'Decision: Yes, we decided to increase by 20% next month.', type: 'Decision Log', isPinned: false, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), createdBy: 'System' }
-      ],
-      workspaceTasks: [
-        { id: 'wt-1', title: 'Review Budget', assignedTo: 'Unassigned', dueDate: '', status: 'Pending', boardId: null },
-        { id: 'wt-2', title: 'Update Savings Goal', assignedTo: 'Partner', dueDate: '', status: 'In Progress', boardId: null }
-      ],
-      workspaceBoards: [
-        { id: 'wb-1', title: 'Home Planning', type: 'planning' },
-        { id: 'wb-2', title: 'Travel Planning', type: 'planning' }
-      ],
-      workspaceActivities: [
-        { id: 'wa-1', user: 'System', action: 'created a note', target: 'Dream Home Master Plan', timestamp: new Date(Date.now() - 24*3600*1000).toISOString() }
-      ],
-
       // ── Actions ──
-
-      // ── Workspace Actions ──
-      addWorkspaceNote: (note) => set(s => {
-        const newNote = { ...note, id: `wn-${Date.now()}`, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
-        get().addWorkspaceActivity({ user: get().partner1 || 'User', action: 'created a note', target: newNote.title });
-        return { workspaceNotes: [newNote, ...s.workspaceNotes] };
-      }),
-      updateWorkspaceNote: (id, patch) => set(s => {
-        const notes = s.workspaceNotes.map(n => n.id === id ? { ...n, ...patch, updatedAt: new Date().toISOString() } : n);
-        const note = notes.find(n => n.id === id);
-        if (note) get().addWorkspaceActivity({ user: get().partner1 || 'User', action: 'updated note', target: note.title });
-        return { workspaceNotes: notes };
-      }),
-      deleteWorkspaceNote: (id) => set(s => {
-        const note = s.workspaceNotes.find(n => n.id === id);
-        if (note) get().addWorkspaceActivity({ user: get().partner1 || 'User', action: 'deleted note', target: note.title });
-        return { workspaceNotes: s.workspaceNotes.filter(n => n.id !== id) };
-      }),
-      togglePinWorkspaceNote: (id) => set(s => ({
-        workspaceNotes: s.workspaceNotes.map(n => n.id === id ? { ...n, isPinned: !n.isPinned } : n)
-      })),
-
-      addWorkspaceTask: (task) => set(s => {
-        const newTask = { ...task, id: `wt-${Date.now()}` };
-        get().addWorkspaceActivity({ user: get().partner1 || 'User', action: 'created task', target: newTask.title });
-        return { workspaceTasks: [newTask, ...s.workspaceTasks] };
-      }),
-      updateWorkspaceTask: (id, patch) => set(s => {
-        const tasks = s.workspaceTasks.map(t => t.id === id ? { ...t, ...patch } : t);
-        const task = tasks.find(t => t.id === id);
-        if (task && patch.status === 'Completed') {
-          get().addWorkspaceActivity({ user: get().partner1 || 'User', action: 'completed task', target: task.title });
-        }
-        return { workspaceTasks: tasks };
-      }),
-      deleteWorkspaceTask: (id) => set(s => ({
-        workspaceTasks: s.workspaceTasks.filter(t => t.id !== id)
-      })),
-
-      addWorkspaceActivity: (activity) => set(s => ({
-        workspaceActivities: [{ ...activity, id: `wa-${Date.now()}`, timestamp: new Date().toISOString() }, ...s.workspaceActivities].slice(0, 50)
-      })),
 
       syncInsightsData: () => {
         const data = generateInsightsData(get());
@@ -1171,10 +1111,6 @@ export const useFinanceStore = create(
           wealthForecast: [],
           savingsRate: null,
           partnerWealthData: null,
-          workspaceNotes: [],
-          workspaceTasks: [],
-          workspaceBoards: [],
-          workspaceActivities: [],
         });
       },
 

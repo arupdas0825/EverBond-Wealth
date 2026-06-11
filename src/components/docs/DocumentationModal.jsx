@@ -70,7 +70,6 @@ Long-term financial independence roadmap.
 • Shared Notes
 • Activity Timeline
 • Notifications
-• Achievement System
 • Wealth Charts
 • Settings Center
     `
