@@ -12,6 +12,7 @@ import { ToastProvider } from './components/common/Toast';
 import { CookieConsent } from './components/common/CookieConsent';
 import { PrivacyDrawer } from './components/common/PrivacyDrawer';
 import { ResetModal } from './components/common/ResetModal';
+import { RouteGuardScreen } from './components/common/RouteGuardScreen';
 import './index.css';
 
 /* ═══════════════════════════════════════════════════════════
@@ -175,6 +176,97 @@ function CursorSpotlight() {
  * lazy-loaded chunks show the skeleton fallback during load.
  */
 function PageRenderer({ page, setPage, setActivePolicyDoc, setShowResetModal }) {
+  const { relationshipStatus, partnerLinked, setStage } = useFinanceStore();
+  const status = relationshipStatus || 'Single';
+
+  // 1. Guard against Single Journey
+  if (page === 'single') {
+    if (status === 'Committed') {
+      return (
+        <RouteGuardScreen 
+          title="Single Journey Locked"
+          description="Committed accounts cannot access Single Journey mode. Downgrades are not permitted."
+          onBack={() => setPage('dashboard')}
+        />
+      );
+    }
+    if (status === 'Married') {
+      return (
+        <RouteGuardScreen 
+          title="Single Journey Unavailable"
+          description="This account is configured for Family Dynasty planning."
+          onBack={() => setPage('dashboard')}
+        />
+      );
+    }
+  }
+
+  // 2. Guard against Committed Partner page
+  if (page === 'partner' || page === 'partner-committed') {
+    if (status === 'Single') {
+      return (
+        <RouteGuardScreen 
+          title="Committed Partner Locked"
+          description="Upgrade your financial journey to a verified partner experience to unlock shared planning and dual-income wealth management."
+          onAction={() => {
+            setStage('Committed');
+            setPage('partner-committed');
+          }}
+          actionText="Upgrade Journey"
+          onBack={() => setPage('dashboard')}
+        />
+      );
+    }
+    if (status === 'Married') {
+      return (
+        <RouteGuardScreen 
+          title="Committed Partner Unavailable"
+          description="This account is configured for Family Dynasty planning."
+          onBack={() => setPage('dashboard')}
+        />
+      );
+    }
+  }
+
+  // 3. Guard against Family Dynasty page
+  if (page === 'partner-family' || page === 'family-planning') {
+    if (status === 'Single') {
+      return (
+        <RouteGuardScreen 
+          title="Family Dynasty Locked"
+          description="Build a verified family connection to unlock multi-generational wealth planning and legacy management."
+          onBack={() => setPage('dashboard')}
+        />
+      );
+    }
+    if (status === 'Committed') {
+      if (!partnerLinked) {
+        return (
+          <RouteGuardScreen 
+            title="Family Dynasty Locked"
+            description="Build a verified family connection to unlock multi-generational wealth planning and legacy management."
+            lockReason="Connect your partner to unlock Family Dynasty."
+            onAction={() => setPage('partner-committed')}
+            actionText="Connect Partner"
+            onBack={() => setPage('dashboard')}
+          />
+        );
+      }
+    }
+    if (status === 'Married') {
+      if (!partnerLinked) {
+        return (
+          <RouteGuardScreen 
+            title="Family Dynasty Locked"
+            description="Build a verified family connection to unlock multi-generational wealth planning and legacy management."
+            lockReason="Please connect a spouse node to activate Family Dynasty."
+            onBack={() => setPage('dashboard')}
+          />
+        );
+      }
+    }
+  }
+
   const renderPage = () => {
     switch (page) {
       case 'dashboard':       return <Dashboard setPage={setPage} />;
@@ -239,6 +331,30 @@ export default function App() {
   // Reset scroll on page change
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+  }, [page]);
+
+  // Synchronize URL hash with page state for hash-based routing
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.replace('#/', '');
+      if (hash === 'single') setPage('single');
+      else if (hash === 'partner' || hash === 'partner-committed') setPage('partner-committed');
+      else if (hash === 'family-dynasty' || hash === 'partner-family') setPage('partner-family');
+      else if (hash) setPage(hash);
+    };
+    window.addEventListener('hashchange', handleHashChange);
+    handleHashChange(); // Sync initial hash
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
+
+  // Update URL hash when state changes
+  useEffect(() => {
+    let path = page;
+    if (page === 'partner-committed') path = 'partner';
+    else if (page === 'partner-family') path = 'family-dynasty';
+    if (window.location.hash !== `#/${path}`) {
+      window.location.hash = `#/${path}`;
+    }
   }, [page]);
 
   // Throttled resize listener (1 update per animation frame max)

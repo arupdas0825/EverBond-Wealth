@@ -275,8 +275,17 @@ export const useFinanceStore = create(
       setStage: stage => {
         const currentFamilyId = get().familyId;
         const patch = { stage, relationshipStage: stage, relationshipStatus: stage };
-        if (stage === 'Married' && !currentFamilyId) {
-          patch.familyId = generateFamilyId();
+        if (stage === 'Married') {
+          if (!currentFamilyId) {
+            patch.familyId = generateFamilyId();
+          }
+          patch.partnerLinked = true;
+          patch.partnerAccepted = true;
+          patch.connectionStatus = 'connected';
+          if (!get().partner2 && !get().partnerName) {
+            patch.partner2 = 'Spouse';
+            patch.partnerName = 'Spouse';
+          }
         }
 
         const stageNames = {
@@ -690,15 +699,24 @@ export const useFinanceStore = create(
           update.relationshipStage = stage;
           update.relationshipStatus = stage;
           // Generate Family ID if stage is Married
-          if (stage === 'Married' && !get().familyId) {
-            update.familyId = generateFamilyId();
+          if (stage === 'Married') {
+            if (!get().familyId) {
+              update.familyId = generateFamilyId();
+            }
+            update.partnerLinked = true;
+            update.partnerAccepted = true;
+            update.connectionStatus = 'connected';
+            if (!partner2 && !get().partner2) {
+              update.partner2 = 'Spouse';
+              update.partnerName = 'Spouse';
+            }
           }
         }
         if (p1Salary !== undefined) update.p1Salary = p1Salary;
         if (p2Salary !== undefined) update.p2Salary = p2Salary;
         
         // Check and personalize Personal ID based on user name
-        const existingId = userId || everBondId || get().userId || get().everBondId;
+        const existingId = everBondId || get().userId || get().everBondId;
         let finalId = existingId;
         if (!existingId || existingId.length <= 9 || (partner1 && !existingId.includes(partner1.trim().toUpperCase().replace(/[^A-Z]/g, '').slice(0, 4)))) {
           // If empty, old format, or doesn't match the new partner1 name, generate a new personalized one!
