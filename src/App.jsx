@@ -12,7 +12,6 @@ import { ToastProvider } from './components/common/Toast';
 import { CookieConsent } from './components/common/CookieConsent';
 import { PrivacyDrawer } from './components/common/PrivacyDrawer';
 import { ResetModal } from './components/common/ResetModal';
-import { ErrorBoundary } from './components/common/ErrorBoundary';
 import './index.css';
 
 /* ═══════════════════════════════════════════════════════════
@@ -302,17 +301,12 @@ export default function App() {
                   transition={{ duration: 0.15, ease: 'easeOut' }}
                   style={{ width: '100%' }}
                 >
-                  <ErrorBoundary
-                    title={page === 'partner-family' ? "Unable to load Family Dynasty workspace." : "Unable to load workspace page."}
-                    onBackToDashboard={() => setPage('dashboard')}
-                  >
-                    <PageRenderer
-                      page={page}
-                      setPage={setPage}
-                      setActivePolicyDoc={setActivePolicyDoc}
-                      setShowResetModal={setShowResetModal}
-                    />
-                  </ErrorBoundary>
+                  <PageRenderer
+                    page={page}
+                    setPage={setPage}
+                    setActivePolicyDoc={setActivePolicyDoc}
+                    setShowResetModal={setShowResetModal}
+                  />
                 </motion.div>
               </AnimatePresence>
             </div>

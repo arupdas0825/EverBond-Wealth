@@ -662,113 +662,94 @@ export function WelcomeScreen() {
               exit="exit"
               transition={{ duration: 0.25, ease: 'easeInOut' }}
               className="liquid-glass"
-              style={{ padding: '24px 32px' }}
+              style={{ padding: '20px 24px' }}
             >
-              <div className="text-center" style={{ marginBottom: '16px' }}>
-                <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.12em', color: T.gold }}>Financial Personality Setup</span>
-                <h2 style={{ fontFamily: T.fontDisplay, fontSize: '1.75rem', fontWeight: 600, color: 'var(--onb-title)', marginTop: '4px' }}>
+              <div className="text-center" style={{ marginBottom: '12px' }}>
+                <span style={{ fontSize: '0.62rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.12em', color: T.gold }}>Financial Personality Setup</span>
+                <h2 style={{ fontFamily: T.fontDisplay, fontSize: '1.6rem', fontWeight: 600, color: 'var(--onb-title)', marginTop: '2px', marginBottom: '8px' }}>
                   Choose Your Financial Style
                 </h2>
               </div>
 
-              {/* Financial Style Selectable Cards */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginBottom: '20px' }}>
-                
-                {/* CONSERVATIVE */}
-                <div 
-                  className={`onb-card-option ${mindset === 'Conservative' ? 'selected' : ''}`}
-                  onClick={() => setMindset('Conservative')}
-                  style={{ 
-                    borderLeft: `3px solid ${T.sky}`,
-                    padding: '10px 12px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'center',
-                    gap: '4px',
-                    minHeight: '64px'
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <Shield size={16} style={{ color: T.sky, flexShrink: 0 }} />
-                    <h3 className="onb-card-title" style={{ fontSize: '0.9rem', margin: 0, fontWeight: 700 }}>Conservative</h3>
-                  </div>
-                  <p className="onb-card-desc" style={{ color: 'var(--onb-desc)', fontSize: '0.7rem', margin: 0, lineHeight: '1.2' }}>Focus on stability & lower risk.</p>
-                </div>
+              {/* Financial Style Segmented Selector */}
+              <div className="segmented-selector">
+                {[
+                  { name: 'Conservative', icon: Shield, color: T.sky },
+                  { name: 'Balanced', icon: Compass, color: T.goldMid },
+                  { name: 'Aggressive', icon: TrendingUp, color: T.rose }
+                ].map((item) => {
+                  const Icon = item.icon;
+                  const isSelected = mindset === item.name;
+                  return (
+                    <button
+                      key={item.name}
+                      type="button"
+                      className={`segmented-item ${isSelected ? 'selected' : ''}`}
+                      onClick={() => setMindset(item.name)}
+                    >
+                      <Icon size={14} style={{ color: isSelected ? '#000000' : item.color, flexShrink: 0 }} />
+                      <span>{item.name}</span>
+                    </button>
+                  );
+                })}
+              </div>
 
-                {/* BALANCED */}
-                <div 
-                  className={`onb-card-option ${mindset === 'Balanced' ? 'selected' : ''}`}
-                  onClick={() => setMindset('Balanced')}
-                  style={{ 
-                    borderLeft: `3px solid ${T.goldMid}`,
-                    padding: '10px 12px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'center',
-                    gap: '4px',
-                    minHeight: '64px'
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <Compass size={16} style={{ color: T.goldMid, flexShrink: 0 }} />
-                    <h3 className="onb-card-title" style={{ fontSize: '0.9rem', margin: 0, fontWeight: 700 }}>Balanced</h3>
-                  </div>
-                  <p className="onb-card-desc" style={{ color: 'var(--onb-desc)', fontSize: '0.7rem', margin: 0, lineHeight: '1.2' }}>A mix of growth & security.</p>
-                </div>
-
-                {/* AGGRESSIVE */}
-                <div 
-                  className={`onb-card-option ${mindset === 'Aggressive' ? 'selected' : ''}`}
-                  onClick={() => setMindset('Aggressive')}
-                  style={{ 
-                    borderLeft: `3px solid ${T.rose}`,
-                    padding: '10px 12px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'center',
-                    gap: '4px',
-                    minHeight: '64px'
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <TrendingUp size={16} style={{ color: T.rose, flexShrink: 0 }} />
-                    <h3 className="onb-card-title" style={{ fontSize: '0.9rem', margin: 0, fontWeight: 700 }}>Aggressive</h3>
-                  </div>
-                  <p className="onb-card-desc" style={{ color: 'var(--onb-desc)', fontSize: '0.7rem', margin: 0, lineHeight: '1.2' }}>Higher growth potential & risk.</p>
-                </div>
-
+              {/* Financial Style dynamic description */}
+              <div style={{ 
+                fontSize: '0.72rem', 
+                color: 'var(--onb-desc)', 
+                textAlign: 'center', 
+                marginBottom: '16px',
+                minHeight: '28px',
+                lineHeight: '1.3',
+                padding: '0 8px'
+              }}>
+                {mindset === 'Conservative' && 'Focus on stability, capital preservation, and safety-first growth.'}
+                {mindset === 'Balanced' && 'A moderate risk approach combining steady growth with capital protection.'}
+                {mindset === 'Aggressive' && 'Maximizing long-term wealth compounding with higher growth potential.'}
               </div>
 
               {/* Optional Goal Section */}
-              <div style={{ borderTop: '1px solid var(--onb-border)', paddingTop: '16px', marginTop: '12px' }}>
-                <div className="text-center" style={{ marginBottom: '12px' }}>
-                  <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.12em', color: T.gold }}>Optional Section</span>
-                  <h3 style={{ fontFamily: T.fontDisplay, fontSize: '1.35rem', fontWeight: 600, color: 'var(--onb-title)', marginTop: '2px' }}>
+              <div style={{ borderTop: '1px solid var(--onb-border)', paddingTop: '12px', marginTop: '4px' }}>
+                <div className="text-center" style={{ marginBottom: '8px' }}>
+                  <span style={{ fontSize: '0.62rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.12em', color: T.gold }}>Goal Alignment</span>
+                  <h3 style={{ fontFamily: T.fontDisplay, fontSize: '1.25rem', fontWeight: 600, color: 'var(--onb-title)', marginTop: '2px', marginBottom: '8px' }}>
                     Select Your Primary Goal
                   </h3>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '16px' }}>
-                  {DREAM_GOALS.map(g => (
-                    <div 
-                      key={g.key}
-                      className={`onb-card-option ${dreamGoals.includes(g.key) ? 'selected' : ''}`}
-                      onClick={() => handleGoalToggle(g.key)}
-                      style={{ 
-                        padding: '10px 12px', 
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        gap: '10px',
-                        minHeight: '52px'
-                      }}
-                    >
-                      <span style={{ fontSize: '1.2rem', flexShrink: 0 }}>{g.icon}</span>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '1px', textAlign: 'left' }}>
-                        <div style={{ fontWeight: 700, fontSize: '0.8rem', color: 'var(--onb-title)', lineHeight: '1.2' }}>{g.label}</div>
-                        <div style={{ fontSize: '0.68rem', color: 'var(--onb-desc)', lineHeight: '1.15' }}>{g.desc}</div>
+                <div className="goals-container">
+                  {DREAM_GOALS.map(g => {
+                    const isSelected = dreamGoals.includes(g.key);
+                    return (
+                      <div 
+                        key={g.key}
+                        className={`goal-chip ${isSelected ? 'selected' : ''}`}
+                        onClick={() => handleGoalToggle(g.key)}
+                        style={{
+                          minWidth: isSelected ? '170px' : '130px',
+                        }}
+                      >
+                        <div className="goal-chip-header">
+                          <span className="goal-chip-icon">{g.icon}</span>
+                          <span className="goal-chip-label">{g.label}</span>
+                        </div>
+                        <AnimatePresence initial={false}>
+                          {isSelected && (
+                            <motion.div
+                              initial={{ opacity: 0, height: 0 }}
+                              animate={{ opacity: 1, height: 'auto', marginTop: 4 }}
+                              exit={{ opacity: 0, height: 0 }}
+                              transition={{ duration: 0.2 }}
+                              style={{ overflow: 'hidden' }}
+                            >
+                              <p className="goal-chip-desc">{g.desc}</p>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
 
@@ -776,28 +757,24 @@ export function WelcomeScreen() {
               <div style={{
                 background: 'rgba(255, 255, 255, 0.02)',
                 border: '1px solid var(--border-mid)',
-                borderRadius: T.radiusSm,
-                padding: '10px 14px',
-                marginTop: '12px',
+                borderRadius: '12px',
+                padding: '8px 12px',
+                marginTop: '4px',
                 marginBottom: '16px',
                 textAlign: 'left',
                 display: 'flex',
                 flexDirection: 'column',
-                gap: '8px',
+                gap: '6px',
               }}>
-                <span style={{ fontSize: '0.62rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.gold, display: 'block' }}>
-                  Acknowledge & Start Journey
-                </span>
-                
                 {/* Checkbox 1: Terms */}
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', cursor: 'pointer' }} onClick={() => setAgreeTerms(!agreeTerms)}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }} onClick={() => setAgreeTerms(!agreeTerms)}>
                   <input 
                     type="checkbox" 
                     checked={agreeTerms} 
                     onChange={() => {}} 
-                    style={{ marginTop: '2px', cursor: 'pointer', accentColor: T.gold }} 
+                    style={{ cursor: 'pointer', accentColor: T.gold, width: '13px', height: '13px', flexShrink: 0 }} 
                   />
-                  <span style={{ fontSize: '0.74rem', color: 'var(--onb-desc)', lineHeight: '1.3' }}>
+                  <span style={{ fontSize: '0.7rem', color: 'var(--onb-desc)', lineHeight: '1.2' }}>
                     I agree to the <span 
                       style={{ color: T.gold, textDecoration: 'underline', fontWeight: 700 }}
                       onClick={(e) => { e.stopPropagation(); setActivePolicyDoc('terms'); }}
@@ -808,15 +785,15 @@ export function WelcomeScreen() {
                 </div>
 
                 {/* Checkbox 2: Privacy */}
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', cursor: 'pointer' }} onClick={() => setAgreePrivacy(!agreePrivacy)}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }} onClick={() => setAgreePrivacy(!agreePrivacy)}>
                   <input 
                     type="checkbox" 
                     checked={agreePrivacy} 
                     onChange={() => {}} 
-                    style={{ marginTop: '2px', cursor: 'pointer', accentColor: T.gold }} 
+                    style={{ cursor: 'pointer', accentColor: T.gold, width: '13px', height: '13px', flexShrink: 0 }} 
                   />
-                  <span style={{ fontSize: '0.74rem', color: 'var(--onb-desc)', lineHeight: '1.3' }}>
-                    I acknowledge the <span 
+                  <span style={{ fontSize: '0.7rem', color: 'var(--onb-desc)', lineHeight: '1.2' }}>
+                    I agree to the <span 
                       style={{ color: T.gold, textDecoration: 'underline', fontWeight: 700 }}
                       onClick={(e) => { e.stopPropagation(); setActivePolicyDoc('privacy'); }}
                     >
@@ -826,15 +803,15 @@ export function WelcomeScreen() {
                 </div>
 
                 {/* Checkbox 3: Estimates */}
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', cursor: 'pointer' }} onClick={() => setAgreeProjections(!agreeProjections)}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }} onClick={() => setAgreeProjections(!agreeProjections)}>
                   <input 
                     type="checkbox" 
                     checked={agreeProjections} 
                     onChange={() => {}} 
-                    style={{ marginTop: '2px', cursor: 'pointer', accentColor: T.gold }} 
+                    style={{ cursor: 'pointer', accentColor: T.gold, width: '13px', height: '13px', flexShrink: 0 }} 
                   />
-                  <span style={{ fontSize: '0.74rem', color: 'var(--onb-desc)', lineHeight: '1.3' }}>
-                    I understand that financial projections are mathematical estimates and not investment advice
+                  <span style={{ fontSize: '0.7rem', color: 'var(--onb-desc)', lineHeight: '1.2' }}>
+                    I understand projections are estimates
                   </span>
                 </div>
               </div>
