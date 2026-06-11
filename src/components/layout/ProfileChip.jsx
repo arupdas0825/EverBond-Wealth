@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { User, Settings, FileText, LogOut, ChevronDown, Sun, Moon, AlertTriangle } from 'lucide-react';
 import { useFinanceStore } from '../../store/useFinanceStore';
 import { useToast } from '../common/Toast';
@@ -98,23 +98,10 @@ export function ProfileChip({ setPage, onReset }) {
     return name.substring(0, 2).toUpperCase();
   };
 
-  // Dropdown animation: fade + translateY Spec (180ms open, 140ms close)
-  const dropdownVariants = {
-    hidden: {
-      opacity: 0,
-      y: -8,
-      transition: { duration: 0.14, ease: 'easeOut' }
-    },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.18, ease: 'easeOut' }
-    }
-  };
 
   return (
     <>
-      <div className="eb-profile-container" ref={menuRef} style={{ position: 'relative' }}>
+      <div className={`eb-profile-container ${isOpen ? 'eb-open' : ''}`} ref={menuRef} style={{ position: 'relative' }}>
         <motion.button
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.96 }}
@@ -156,80 +143,69 @@ export function ProfileChip({ setPage, onReset }) {
           />
         </motion.button>
 
-        <AnimatePresence>
-          {isOpen && (
-            <motion.div
-              variants={dropdownVariants}
-              initial="hidden"
-              animate="visible"
-              exit="hidden"
-              className="eb-profile-dropdown-glass"
-              style={{ width: '240px' }}
-            >
-              {/* Header: avatar, name, EverBond ID (Solid User Card) */}
-              <div className="eb-profile-user-card">
-                <div style={{
-                  width: '36px',
-                  height: '36px',
-                  borderRadius: '50%',
-                  background: `linear-gradient(135deg, ${T.gold} 0%, #d4a017 100%)`,
-                  color: '#fff',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '0.85rem',
-                  fontWeight: 800,
-                  boxShadow: '0 4px 12px rgba(201, 168, 76, 0.2)',
-                  flexShrink: 0
-                }}>
-                  {getInitials(partner1)}
-                </div>
-                <div style={{ minWidth: 0 }}>
-                  <div style={{ fontWeight: 700, fontSize: '0.88rem', color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {partner1 || 'User'}
-                  </div>
-                  <div style={{ fontSize: '0.68rem', color: 'var(--text-faint)', fontFamily: 'monospace', letterSpacing: '0.2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {everBondId || 'EB-AWAITING-GEN'}
-                  </div>
-                </div>
+        <div className="eb-profile-dropdown-glass" style={{ width: '240px' }}>
+          {/* Header: avatar, name, EverBond ID (Solid User Card) */}
+          <div className="eb-profile-user-card">
+            <div style={{
+              width: '36px',
+              height: '36px',
+              borderRadius: '50%',
+              background: `linear-gradient(135deg, ${T.gold} 0%, #d4a017 100%)`,
+              color: '#fff',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '0.85rem',
+              fontWeight: 800,
+              boxShadow: '0 4px 12px rgba(201, 168, 76, 0.2)',
+              flexShrink: 0
+            }}>
+              {getInitials(partner1)}
+            </div>
+            <div style={{ minWidth: 0 }}>
+              <div style={{ fontWeight: 700, fontSize: '0.88rem', color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {partner1 || 'User'}
               </div>
+              <div style={{ fontSize: '0.68rem', color: 'var(--text-faint)', fontFamily: 'monospace', letterSpacing: '0.2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {everBondId || 'EB-AWAITING-GEN'}
+              </div>
+            </div>
+          </div>
 
-              {/* Menu Items */}
-              <button onClick={() => handleNav('profile')} className="eb-profile-menu-item">
-                <span className="eb-dropdown-item-icon"><User size={14} /></span>
-                Profile
-              </button>
-              <button onClick={() => handleNav('settings')} className="eb-profile-menu-item">
-                <span className="eb-dropdown-item-icon"><Settings size={14} /></span>
-                Settings
-              </button>
-              <button onClick={() => handleNav('documentation')} className="eb-profile-menu-item">
-                <span className="eb-dropdown-item-icon"><FileText size={14} /></span>
-                Documentation
-              </button>
-              <button
-                onClick={() => { setIsOpen(false); setTheme(theme === 'light' ? 'dark' : 'light'); }}
-                className="eb-profile-menu-item"
-              >
-                <span className="eb-dropdown-item-icon">
-                  {theme === 'light' ? <Moon size={14} /> : <Sun size={14} />}
-                </span>
-                Theme
-              </button>
+          {/* Menu Items */}
+          <button onClick={() => handleNav('profile')} className="eb-profile-menu-item">
+            <span className="eb-dropdown-item-icon"><User size={14} /></span>
+            Profile
+          </button>
+          <button onClick={() => handleNav('settings')} className="eb-profile-menu-item">
+            <span className="eb-dropdown-item-icon"><Settings size={14} /></span>
+            Settings
+          </button>
+          <button onClick={() => handleNav('documentation')} className="eb-profile-menu-item">
+            <span className="eb-dropdown-item-icon"><FileText size={14} /></span>
+            Documentation
+          </button>
+          <button
+            onClick={() => { setIsOpen(false); setTheme(theme === 'light' ? 'dark' : 'light'); }}
+            className="eb-profile-menu-item"
+          >
+            <span className="eb-dropdown-item-icon">
+              {theme === 'light' ? <Moon size={14} /> : <Sun size={14} />}
+            </span>
+            Theme
+          </button>
 
-              <div style={{ height: '1px', background: 'var(--border-mid)', margin: '6px 0' }} />
+          <div style={{ height: '1px', background: 'var(--border-mid)', margin: '6px 0' }} />
 
-              <button
-                onClick={handleLogoutClick}
-                className="eb-profile-menu-item"
-                style={{ color: T.rose }}
-              >
-                <span className="eb-dropdown-item-icon" style={{ color: T.rose }}><LogOut size={14} /></span>
-                Sign Out
-              </button>
-            </motion.div>
-          )}
-        </AnimatePresence>
+          <button
+            onClick={handleLogoutClick}
+            className="eb-profile-menu-item"
+            style={{ color: T.rose }}
+          >
+            <span className="eb-dropdown-item-icon" style={{ color: T.rose }}><LogOut size={14} /></span>
+            Sign Out
+          </button>
+        </div>
       </div>
 
       {/* ── Logout Confirmation Modal (portalled to body) ── */}

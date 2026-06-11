@@ -28,6 +28,50 @@ const MORE_TABS = [
   { id: 'settings',        label: 'Settings',        icon: <Settings size={14} /> }
 ];
 
+const NavButton = React.memo(({ tab, isActive, onClick }) => {
+  return (
+    <motion.button
+      onClick={onClick}
+      whileHover={{ scale: 1.02 }}
+      transition={{ duration: 0.2 }}
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: '6px',
+        padding: '8px 16px',
+        borderRadius: '999px',
+        border: 'none',
+        cursor: 'pointer',
+        fontSize: '0.85rem',
+        fontWeight: isActive ? 700 : 600,
+        color: isActive ? '#fff' : 'var(--text-muted)',
+        background: 'transparent',
+        position: 'relative',
+        outline: 'none'
+      }}
+    >
+      {isActive && (
+        <motion.div
+          layoutId="activeTabPill"
+          style={{
+            position: 'absolute',
+            inset: 0,
+            borderRadius: '999px',
+            background: `linear-gradient(135deg, ${T.gold} 0%, #d4a017 100%)`,
+            zIndex: 0,
+            boxShadow: `0 4px 14px ${T.gold}40`
+          }}
+          transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+        />
+      )}
+      <span style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', gap: '6px' }}>
+        {tab.icon}
+        {tab.label}
+      </span>
+    </motion.button>
+  );
+});
+
 export function FloatingNav({ page, setPage }) {
   const [isMoreOpen, setIsMoreOpen] = useState(false);
   const [isPartnerOpen, setIsPartnerOpen] = useState(false);
@@ -35,121 +79,19 @@ export function FloatingNav({ page, setPage }) {
   const moreRef = useRef(null);
   const partnerRef = useRef(null);
   
-  const openTimeout = useRef(null);
-  const closeTimeout = useRef(null);
-  
-  const partnerOpenTimeout = useRef(null);
-  const partnerCloseTimeout = useRef(null);
-  
   const theme = useFinanceStore(s => s.theme);
 
-  // Screen width detection to toggle hover behavior for width >= 1024px
-  const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1024);
-  useEffect(() => {
-    const handleResize = () => setWindowWidth(window.innerWidth);
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-  const isHoverMode = windowWidth >= 1024;
-
-  // Smart hover and accessibility focus state management for More dropdown
-  const handleMoreMouseEnter = () => {
-    if (!isHoverMode) return;
-    if (closeTimeout.current) {
-      clearTimeout(closeTimeout.current);
-      closeTimeout.current = null;
-    }
-    setIsMoreOpen(true);
-    setIsPartnerOpen(false); // Close Partner when More is hovered
-  };
-
-  const handleMoreMouseLeave = () => {
-    if (!isHoverMode) return;
-    if (closeTimeout.current) {
-      clearTimeout(closeTimeout.current);
-    }
-    closeTimeout.current = setTimeout(() => {
-      setIsMoreOpen(false);
-      closeTimeout.current = null;
-    }, 150); // close dropdown after 150ms
-  };
-
-  const handleMoreFocus = () => {
-    if (closeTimeout.current) {
-      clearTimeout(closeTimeout.current);
-      closeTimeout.current = null;
-    }
-    setIsMoreOpen(true);
-    setIsPartnerOpen(false);
-  };
-
-  const handleMoreBlur = (e) => {
-    if (moreRef.current && !moreRef.current.contains(e.relatedTarget)) {
-      if (closeTimeout.current) {
-        clearTimeout(closeTimeout.current);
-      }
-      closeTimeout.current = setTimeout(() => {
-        setIsMoreOpen(false);
-        closeTimeout.current = null;
-      }, 150);
-    }
-  };
-
-  // Smart hover and accessibility focus state management for Partner dropdown
-  const handlePartnerMouseEnter = () => {
-    if (!isHoverMode) return;
-    if (partnerCloseTimeout.current) {
-      clearTimeout(partnerCloseTimeout.current);
-      partnerCloseTimeout.current = null;
-    }
-    setIsPartnerOpen(true);
-    setIsMoreOpen(false); // Close More when Partner is hovered
-  };
-
-  const handlePartnerMouseLeave = () => {
-    if (!isHoverMode) return;
-    if (partnerCloseTimeout.current) {
-      clearTimeout(partnerCloseTimeout.current);
-    }
-    partnerCloseTimeout.current = setTimeout(() => {
-      setIsPartnerOpen(false);
-      partnerCloseTimeout.current = null;
-    }, 150); // close dropdown after 150ms
-  };
-
-  const handlePartnerFocus = () => {
-    if (partnerCloseTimeout.current) {
-      clearTimeout(partnerCloseTimeout.current);
-      partnerCloseTimeout.current = null;
-    }
-    setIsPartnerOpen(true);
-    setIsMoreOpen(false);
-  };
-
-  const handlePartnerBlur = (e) => {
-    if (partnerRef.current && !partnerRef.current.contains(e.relatedTarget)) {
-      if (partnerCloseTimeout.current) {
-        clearTimeout(partnerCloseTimeout.current);
-      }
-      partnerCloseTimeout.current = setTimeout(() => {
-        setIsPartnerOpen(false);
-        partnerCloseTimeout.current = null;
-      }, 150);
-    }
-  };
-
-  const handlePartnerClick = (e) => {
+  const handlePartnerClick = useCallback((e) => {
     e.stopPropagation();
     setIsPartnerOpen(prev => !prev);
     setIsMoreOpen(false);
-  };
+  }, []);
 
-  const handleMoreClick = (e) => {
+  const handleMoreClick = useCallback((e) => {
     e.stopPropagation();
     setIsMoreOpen(prev => !prev);
     setIsPartnerOpen(false);
-  };
-
+  }, []);
 
   useEffect(() => {
     const handleClick = (e) => {
@@ -204,49 +146,18 @@ export function FloatingNav({ page, setPage }) {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  // Cleanup timers on component unmount
-  useEffect(() => {
-    return () => {
-      if (openTimeout.current) clearTimeout(openTimeout.current);
-      if (closeTimeout.current) clearTimeout(closeTimeout.current);
-      if (partnerOpenTimeout.current) clearTimeout(partnerOpenTimeout.current);
-      if (partnerCloseTimeout.current) clearTimeout(partnerCloseTimeout.current);
-    };
-  }, []);
-
-  const handleNav = (id) => {
+  const handleNav = useCallback((id) => {
     setPage(id);
     setIsMoreOpen(false);
-  };
+  }, [setPage]);
 
-  const handlePartnerNav = (id) => {
+  const handlePartnerNav = useCallback((id) => {
     setPage(id);
     setIsPartnerOpen(false);
-  };
+  }, [setPage]);
 
   const activeInMore = MORE_TABS.some(t => t.id === page);
   const activeInPartner = page === 'partner-committed' || page === 'partner-family';
-
-  const dropdownVariants = {
-    hidden: { 
-      opacity: 0, 
-      y: -8,
-      transition: {
-        duration: 0.14,
-        ease: 'easeOut'
-      }
-    },
-    visible: { 
-      opacity: 1, 
-      y: 0,
-      transition: {
-        duration: 0.18,
-        ease: 'easeOut'
-      }
-    }
-  };
-
-  const isLight = theme === 'light';
 
   return (
     <div className="hide-on-mobile" style={{
@@ -259,76 +170,36 @@ export function FloatingNav({ page, setPage }) {
       alignItems: 'center'
     }}>
       <motion.div 
-      initial={{ opacity: 0, y: -20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '4px',
-        padding: '6px 8px',
-        borderRadius: '999px',
-        background: theme === 'dark' ? 'rgba(15, 20, 30, 0.65)' : 'rgba(255, 255, 255, 0.65)',
-        backdropFilter: 'blur(20px) saturate(180%)',
-        WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-        border: theme === 'dark' ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid rgba(255, 255, 255, 0.25)',
-        boxShadow: theme === 'dark' ? '0 10px 40px rgba(0, 0, 0, 0.35)' : '0 10px 40px rgba(0, 0, 0, 0.08)'
-      }}
-    >
-        {MAIN_TABS.map(tab => {
-          const isActive = page === tab.id;
-          return (
-            <motion.button
-              key={tab.id}
-              onClick={() => handleNav(tab.id)}
-              whileHover={{ scale: 1.02 }}
-              transition={{ duration: 0.2 }}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                padding: '8px 16px',
-                borderRadius: '999px',
-                border: 'none',
-                cursor: 'pointer',
-                fontSize: '0.85rem',
-                fontWeight: isActive ? 700 : 600,
-                color: isActive ? '#fff' : 'var(--text-muted)',
-                background: 'transparent',
-                position: 'relative',
-                outline: 'none'
-              }}
-            >
-              {isActive && (
-                <motion.div
-                  layoutId="activeTabPill"
-                  style={{
-                    position: 'absolute',
-                    inset: 0,
-                    borderRadius: '999px',
-                    background: `linear-gradient(135deg, ${T.gold} 0%, #d4a017 100%)`,
-                    zIndex: 0,
-                    boxShadow: `0 4px 14px ${T.gold}40`
-                  }}
-                  transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-                />
-              )}
-              <span style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', gap: '6px' }}>
-                {tab.icon}
-                {tab.label}
-              </span>
-            </motion.button>
-          );
-        })}
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '4px',
+          padding: '6px 8px',
+          borderRadius: '999px',
+          background: theme === 'dark' ? 'rgba(15, 20, 30, 0.65)' : 'rgba(255, 255, 255, 0.65)',
+          backdropFilter: 'blur(12px) saturate(180%)',
+          WebkitBackdropFilter: 'blur(12px) saturate(180%)',
+          border: theme === 'dark' ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid rgba(255, 255, 255, 0.25)',
+          boxShadow: theme === 'dark' ? '0 10px 40px rgba(0, 0, 0, 0.35)' : '0 10px 40px rgba(0, 0, 0, 0.08)'
+        }}
+      >
+        {MAIN_TABS.map(tab => (
+          <NavButton
+            key={tab.id}
+            tab={tab}
+            isActive={page === tab.id}
+            onClick={() => handleNav(tab.id)}
+          />
+        ))}
 
         {/* Partner Dropdown */}
         <div 
           ref={partnerRef} 
+          className={`eb-nav-dropdown-container partner-container ${isPartnerOpen ? 'eb-open' : ''}`}
           style={{ position: 'relative' }}
-          onMouseEnter={isHoverMode ? handlePartnerMouseEnter : undefined}
-          onMouseLeave={isHoverMode ? handlePartnerMouseLeave : undefined}
-          onFocus={handlePartnerFocus}
-          onBlur={handlePartnerBlur}
         >
           <motion.button
             whileHover={{ scale: 1.02 }}
@@ -369,51 +240,38 @@ export function FloatingNav({ page, setPage }) {
             </span>
           </motion.button>
 
-          <AnimatePresence>
-            {isPartnerOpen && (
-              <motion.div
-                variants={dropdownVariants}
-                initial="hidden"
-                animate="visible"
-                exit="hidden"
-                className="eb-partner-glass-dropdown"
-              >
-                {PARTNER_TABS.map(tab => {
-                  const isItemActive = page === tab.id;
-                  return (
-                    <button
-                      key={tab.id}
-                      onClick={() => handlePartnerNav(tab.id)}
-                      className="eb-dropdown-item"
-                      style={{
-                        background: isItemActive ? 'var(--gold-pale)' : 'transparent',
-                        color: isItemActive ? T.gold : (theme === 'dark' ? '#f3f4f6' : '#111827'),
-                        fontWeight: isItemActive ? 700 : 600
-                      }}
-                    >
-                      <span 
-                        className="eb-dropdown-item-icon" 
-                        style={{ color: isItemActive ? T.gold : (theme === 'dark' ? '#9ca3af' : '#374151') }}
-                      >
-                        {tab.icon}
-                      </span>
-                      {tab.label}
-                    </button>
-                  );
-                })}
-              </motion.div>
-            )}
-          </AnimatePresence>
+          <div className="eb-partner-glass-dropdown">
+            {PARTNER_TABS.map(tab => {
+              const isItemActive = page === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => handlePartnerNav(tab.id)}
+                  className="eb-dropdown-item"
+                  style={{
+                    background: isItemActive ? 'var(--gold-pale)' : 'transparent',
+                    color: isItemActive ? T.gold : (theme === 'dark' ? '#f3f4f6' : '#111827'),
+                    fontWeight: isItemActive ? 700 : 600
+                  }}
+                >
+                  <span 
+                    className="eb-dropdown-item-icon" 
+                    style={{ color: isItemActive ? T.gold : (theme === 'dark' ? '#9ca3af' : '#374151') }}
+                  >
+                    {tab.icon}
+                  </span>
+                  {tab.label}
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         {/* More Dropdown */}
         <div 
           ref={moreRef} 
+          className={`eb-nav-dropdown-container more-container ${isMoreOpen ? 'eb-open' : ''}`}
           style={{ position: 'relative' }}
-          onMouseEnter={isHoverMode ? handleMoreMouseEnter : undefined}
-          onMouseLeave={isHoverMode ? handleMoreMouseLeave : undefined}
-          onFocus={handleMoreFocus}
-          onBlur={handleMoreBlur}
         >
           <motion.button
             whileHover={{ scale: 1.02 }}
@@ -454,44 +312,34 @@ export function FloatingNav({ page, setPage }) {
             </span>
           </motion.button>
 
-          <AnimatePresence>
-            {isMoreOpen && (
-              <motion.div
-                variants={dropdownVariants}
-                initial="hidden"
-                animate="visible"
-                exit="hidden"
-                className="eb-glass-dropdown"
-              >
-                {MORE_TABS.map(tab => {
-                  const isItemActive = page === tab.id;
-                  return (
-                    <button
-                      key={tab.id}
-                      onClick={() => handleNav(tab.id)}
-                      className="eb-dropdown-item"
-                      style={{
-                        background: isItemActive ? 'var(--gold-pale)' : 'transparent',
-                        color: isItemActive ? T.gold : (theme === 'dark' ? '#f3f4f6' : '#111827'),
-                        fontWeight: isItemActive ? 700 : 600
-                      }}
-                    >
-                      <span 
-                        className="eb-dropdown-item-icon" 
-                        style={{ color: isItemActive ? T.gold : (theme === 'dark' ? '#9ca3af' : '#374151') }}
-                      >
-                        {tab.icon}
-                      </span>
-                      {tab.label}
-                    </button>
-                  );
-                })}
-              </motion.div>
-            )}
-          </AnimatePresence>
+          <div className="eb-glass-dropdown">
+            {MORE_TABS.map(tab => {
+              const isItemActive = page === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => handleNav(tab.id)}
+                  className="eb-dropdown-item"
+                  style={{
+                    background: isItemActive ? 'var(--gold-pale)' : 'transparent',
+                    color: isItemActive ? T.gold : (theme === 'dark' ? '#f3f4f6' : '#111827'),
+                    fontWeight: isItemActive ? 700 : 600
+                  }}
+                >
+                  <span 
+                    className="eb-dropdown-item-icon" 
+                    style={{ color: isItemActive ? T.gold : (theme === 'dark' ? '#9ca3af' : '#374151') }}
+                  >
+                    {tab.icon}
+                  </span>
+                  {tab.label}
+                </button>
+              );
+            })}
+          </div>
         </div>
 
-    </motion.div>
+      </motion.div>
     </div>
   );
 }
