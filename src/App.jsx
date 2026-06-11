@@ -190,8 +190,8 @@ function PageRenderer({ page, setPage, setActivePolicyDoc, setShowResetModal }) 
       case 'partner-committed': return <PartnerPage setPage={setPage} />;
       case 'workspace':       return <WorkspacePage />;
       case 'couple-planning': return <CouplePlanningPage />;
-      case 'family-planning': return <FamilyPlanningPage />;
-      case 'partner-family':    return <FamilyPlanningPage />;
+      case 'family-planning': return <FamilyPlanningPage setPage={setPage} />;
+      case 'partner-family':    return <FamilyPlanningPage setPage={setPage} />;
       case 'settings':        return <SettingsPage setActivePolicyDoc={setActivePolicyDoc} setPage={setPage} />;
       case 'profile':         return <ProfilePage />;
       case 'documentation':   return <DocumentationPage />;

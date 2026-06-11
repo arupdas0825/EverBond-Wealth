@@ -9,12 +9,251 @@ import {
 } from 'lucide-react';
 import { formatCurrency, formatCompact } from '../../utils/finance';
 
-export function FamilyPlanningPage() {
-  const { partner1, partner2, currency, getTotalSalary, partnerAccepted } = useFinanceStore();
+export function FamilyPlanningPage({ setPage }) {
+  const { 
+    partner1, 
+    partner2, 
+    currency, 
+    getTotalSalary, 
+    partnerAccepted,
+    relationshipStage,
+    stage,
+    partnerLinked
+  } = useFinanceStore();
+  
   const total = getTotalSalary();
   
-  // Simulation Toggle for testinglocked state
-  const [isSimulatedLinked, setIsSimulatedLinked] = useState(partnerAccepted || true);
+  const isLinked = partnerLinked || partnerAccepted;
+  
+  // Simulation Toggle for testing locked state
+  const [isSimulatedLinked, setIsSimulatedLinked] = useState(isLinked);
+
+  const currentStage = (relationshipStage || stage || 'Single').toLowerCase();
+  
+  let lockReason = "Family Dynasty requires a verified partner connection.";
+  if (currentStage === 'committed') {
+    lockReason = "Connect your partner to unlock Family Dynasty.";
+  } else if (currentStage === 'married') {
+    lockReason = "Connect your spouse to unlock Family Dynasty.";
+  }
+
+  if (!isLinked) {
+    return (
+      <div className="fade-in" style={{ paddingBottom: '40px', maxWidth: '800px', margin: '0 auto' }}>
+        {/* PREMIUM LOCK CARD */}
+        <div className="liquid-glass" style={{
+          padding: '40px 32px',
+          textAlign: 'center',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: '24px',
+          position: 'relative',
+          overflow: 'hidden',
+          marginBottom: '32px'
+        }}>
+          {/* Animated background glows */}
+          <div style={{
+            position: 'absolute',
+            top: '-50%',
+            left: '-50%',
+            width: '200%',
+            height: '200%',
+            background: 'radial-gradient(circle at center, rgba(184, 144, 42, 0.08) 0%, transparent 60%)',
+            pointerEvents: 'none',
+            zIndex: 0
+          }} />
+
+          <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
+            {/* Visual Vector: Locked Vault & Family Tree */}
+            <div style={{
+              width: '120px',
+              height: '120px',
+              borderRadius: '50%',
+              background: 'radial-gradient(circle, rgba(184, 144, 42, 0.12) 0%, transparent 70%)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              position: 'relative',
+              marginBottom: '8px'
+            }}>
+              {/* Outer rotating ring */}
+              <div style={{
+                position: 'absolute',
+                inset: 0,
+                borderRadius: '50%',
+                border: `2px dashed ${T.gold}40`,
+                animation: 'scanRotate 20s linear infinite'
+              }} />
+              
+              {/* Lock Shield Icon */}
+              <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke={T.gold} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ filter: 'drop-shadow(0 0 8px rgba(184, 144, 42, 0.4))' }}>
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                <rect x="9" y="11" width="6" height="4" rx="1" fill="rgba(184,144,42,0.2)" />
+                <path d="M10 11V9a2 2 0 0 1 4 0v2" />
+              </svg>
+            </div>
+
+            {/* Title & Description */}
+            <h1 style={{
+              fontFamily: T.fontDisplay,
+              fontSize: '2rem',
+              fontWeight: 700,
+              color: 'var(--onb-title)',
+              letterSpacing: '-0.02em',
+              margin: 0
+            }}>
+              Family Dynasty Locked
+            </h1>
+            
+            <p style={{
+              fontSize: '0.95rem',
+              color: 'var(--onb-desc)',
+              lineHeight: '1.6',
+              maxWidth: '520px',
+              margin: '0 auto'
+            }}>
+              Build a verified family connection to unlock multi-generational wealth planning, inheritance strategy and family legacy tools.
+            </p>
+
+            {/* Stage-based lock reason */}
+            <div style={{
+              background: 'rgba(184, 144, 42, 0.08)',
+              border: `1px solid ${T.gold}30`,
+              borderRadius: '12px',
+              padding: '10px 20px',
+              fontSize: '0.85rem',
+              fontWeight: 600,
+              color: T.gold,
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              marginTop: '8px'
+            }}>
+              <span>🔒</span> <span>{lockReason}</span>
+            </div>
+
+            {/* CTA Buttons */}
+            <div style={{
+              display: 'flex',
+              gap: '12px',
+              width: '100%',
+              maxWidth: '360px',
+              justifyContent: 'center',
+              marginTop: '12px',
+              flexWrap: 'wrap'
+            }}>
+              <button 
+                onClick={() => setPage('partner')}
+                className="onb-btn-continue"
+                style={{ 
+                  flex: 1, 
+                  minWidth: '160px',
+                  borderRadius: '12px',
+                  fontSize: '0.9rem',
+                  padding: '12px 24px'
+                }}
+              >
+                Connect Partner
+              </button>
+              <button 
+                onClick={() => setPage('dashboard')}
+                className="onb-btn-back"
+                style={{ 
+                  flex: 1, 
+                  minWidth: '160px',
+                  borderRadius: '12px',
+                  fontSize: '0.9rem',
+                  padding: '12px 24px'
+                }}
+              >
+                Back to Dashboard
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* UNLOCK PREVIEW: BLURRED FEATURES */}
+        <div style={{ marginTop: '32px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px', justifyContent: 'center' }}>
+            <div style={{ height: '1px', background: 'var(--onb-border)', flex: 1 }} />
+            <span style={{
+              fontSize: '0.72rem',
+              fontWeight: 800,
+              textTransform: 'uppercase',
+              letterSpacing: '0.08em',
+              color: T.goldMid
+            }}>
+              Features Included in Family Dynasty
+            </span>
+            <div style={{ height: '1px', background: 'var(--onb-border)', flex: 1 }} />
+          </div>
+
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
+            gap: '16px',
+            pointerEvents: 'none',
+            userSelect: 'none',
+            opacity: 0.6
+          }}>
+            {[
+              {
+                title: 'Family Wealth Tree',
+                desc: 'Visual map of multi-generational trust allocations and joint asset pools.'
+              },
+              {
+                title: 'Inheritance Planner',
+                desc: 'Automated estate distribution run-rates and vesting schedule controls.'
+              },
+              {
+                title: 'Estate Vault',
+                desc: 'Dual-signature secure repository for Wills, Trusts, and POA agreements.'
+              },
+              {
+                title: 'Successor Tracking',
+                desc: 'Milestone release conditions and educational trust payout monitoring.'
+              },
+              {
+                title: 'Legacy Dashboard',
+                desc: 'Generational compounding projections and family capital net worth tracker.'
+              },
+              {
+                title: 'Family Permissions',
+                desc: 'Granular access control, dual-handshake rules, and signature requirements.'
+              }
+            ].map((feature, idx) => (
+              <div 
+                key={idx} 
+                className="liquid-glass"
+                style={{
+                  padding: '18px',
+                  borderRadius: '16px',
+                  border: '1px solid rgba(255, 255, 255, 0.06)',
+                  background: 'rgba(255, 255, 255, 0.02)',
+                  filter: 'blur(3.5px)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '6px',
+                  textAlign: 'left'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span style={{ fontSize: '0.9rem', color: T.gold }}>✦</span>
+                  <h4 style={{ margin: 0, fontSize: '0.9rem', fontWeight: 700, color: 'var(--onb-title)' }}>
+                    {feature.title}
+                  </h4>
+                </div>
+                <p style={{ margin: 0, fontSize: '0.74rem', color: 'var(--onb-desc)', lineHeight: '1.4' }}>
+                  {feature.desc}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // States
   const [compoundingYears, setCompoundingYears] = useState(30);
