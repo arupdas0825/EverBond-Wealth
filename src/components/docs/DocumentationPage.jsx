@@ -6,7 +6,7 @@ import { Card } from '../common/Card';
 import { useToast } from '../common/Toast';
 import { 
   BookOpen, Search, Copy, Check, ChevronRight, Info, Shield, 
-  Map, Sparkles, Target, Zap, Users, ShieldAlert, Award
+  Map, Sparkles, Target, Zap, Users, ShieldAlert
 } from 'lucide-react';
 
 const DOC_SECTIONS = [
@@ -86,23 +86,6 @@ Simulate personal raise rates (e.g. 7% per annum) to project raises in monthly i
 
 • **Multi-Decade Forecasts**
 Examine area charts showing Conservative (7%), Base (10%), and Optimistic (12%) growth projections over 30 years.
-    `
-  },
-  {
-    id: 'achievements',
-    title: 'Achievements',
-    icon: <Award size={18} />,
-    content: `
-EverBond encourages financial health through a gamified achievement and leveling system.
-
-• **XP Rewards**
-Perform tasks like adding income nodes, creating goals, linking partners, and making shared notes to earn Experience Points (XP).
-
-• **Evolving Levels**
-Accumulate XP to increase your Journey Level. Each level signifies a stronger command over your financial future.
-
-• **Premium Badges**
-Unlock achievements like "First Step" (onboarding), "Connection Sent", and "First Shared Note" to build a timeline of achievements.
     `
   },
   {

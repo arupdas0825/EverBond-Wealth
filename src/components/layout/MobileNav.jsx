@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   LayoutDashboard, Wallet, Target, Heart, MoreHorizontal,
-  LineChart, BarChart3, Award, Settings, FileText, Activity, Users, Shield, Map, Flag
+  LineChart, BarChart3, Settings, FileText, Activity, Users, Shield, Map, Flag
 } from 'lucide-react';
 import { useFinanceStore } from '../../store/useFinanceStore';
 import { T } from '../../theme/tokens';
@@ -31,7 +31,6 @@ export function MobileNav({ page, setPage, onReset }) {
   const MORE_TABS = [
     { id: 'goals',           label: 'Goals',           icon: <Target size={16} /> },
     { id: 'milestones',      label: 'Milestones',      icon: <Flag size={16} /> },
-    { id: 'achievements',    label: 'Journey Rewards', icon: <Award size={16} /> },
     { id: 'simulation',      label: 'Simulation',      icon: <Activity size={16} /> },
     { id: 'documentation',   label: 'Documentation',   icon: <FileText size={16} /> },
     { id: 'settings',        label: 'Settings',        icon: <Settings size={16} /> }

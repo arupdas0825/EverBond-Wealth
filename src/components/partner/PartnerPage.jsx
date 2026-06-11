@@ -1451,21 +1451,6 @@ function PartnerPageContent({ setPage }) {
                       </p>
                     </motion.div>
 
-                    {/* Feature 6: Achievements */}
-                    <motion.div
-                      whileHover={{ scale: 1.02, x: 6 }}
-                      onClick={() => setPage('achievements')}
-                      style={{ border: '1px solid var(--border-mid)', borderRadius: '16px', padding: '16px', cursor: 'pointer', background: 'var(--bg-card)' }}
-                    >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-                        <Crown size={16} style={{ color: T.gold }} />
-                        <strong style={{ fontSize: '0.85rem' }}>Achievements</strong>
-                      </div>
-                      <p style={{ fontSize: '0.72rem', color: 'var(--text-faint)', margin: 0, lineHeight: 1.4 }}>
-                        Complete collaborative journey tasks and earn XP tags.
-                      </p>
-                    </motion.div>
-
                   </div>
                 </Card>
               </motion.div>

@@ -2,7 +2,6 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { generatePersonalId, generateCoupleId, generateFamilyId, generateEverBondId } from '../utils/everbondId';
 import { generateInsightsData } from '../utils/insightsData';
-import { getAchievementData, calculateJourneyLevel } from '../constants/achievements';
 
 export const useFinanceStore = create(
   persist(
@@ -34,11 +33,6 @@ export const useFinanceStore = create(
       wealthForecast: [],
       savingsRate: null,
       partnerWealthData: null,
-
-      // Achievements & Journey Rewards
-      achievements: [],
-      userLevel: 1,
-      totalXP: 0,
 
       // Notifications System
       notifications: [
@@ -233,7 +227,6 @@ export const useFinanceStore = create(
       addWorkspaceNote: (note) => set(s => {
         const newNote = { ...note, id: `wn-${Date.now()}`, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
         get().addWorkspaceActivity({ user: get().partner1 || 'User', action: 'created a note', target: newNote.title });
-        if (s.workspaceNotes.length === 0) get().unlockAchievement('first-shared-note');
         return { workspaceNotes: [newNote, ...s.workspaceNotes] };
       }),
       updateWorkspaceNote: (id, patch) => set(s => {
@@ -261,7 +254,6 @@ export const useFinanceStore = create(
         const task = tasks.find(t => t.id === id);
         if (task && patch.status === 'Completed') {
           get().addWorkspaceActivity({ user: get().partner1 || 'User', action: 'completed task', target: task.title });
-          get().unlockAchievement('task-master');
         }
         return { workspaceTasks: tasks };
       }),
@@ -276,38 +268,6 @@ export const useFinanceStore = create(
       syncInsightsData: () => {
         const data = generateInsightsData(get());
         set(data);
-      },
-
-      unlockAchievement: (id) => {
-        const { achievements, totalXP } = get();
-        if (achievements.find(a => a.id === id)) return;
-        
-        const achievementData = getAchievementData(id);
-        if (!achievementData) return;
-
-        const newXP = totalXP + achievementData.xp;
-        const newLevel = calculateJourneyLevel(newXP);
-        const oldLevel = get().userLevel;
-        
-        get().addNotification({
-          type: 'system',
-          title: `Achievement Unlocked: ${achievementData.title}`,
-          description: `You earned ${achievementData.xp} XP! ${achievementData.description}`
-        });
-
-        if (newLevel > oldLevel) {
-          get().addNotification({
-            type: 'system',
-            title: `Level Up!`,
-            description: `Congratulations! You reached Journey Level ${newLevel}.`
-          });
-        }
-
-        set({
-          achievements: [...achievements, { id, unlockedAt: new Date().toISOString(), progress: 100 }],
-          totalXP: newXP,
-          userLevel: newLevel
-        });
       },
 
       setStage: stage => {
@@ -335,10 +295,6 @@ export const useFinanceStore = create(
           description: `Stage set to ${stageNames[stage] || stage}. Dashboard systems calibrated.`,
           isMilestone: stage === 'Married' || stage === 'Committed'
         });
-
-        if (stage === 'Married') {
-          get().unlockAchievement('dynasty');
-        }
 
         set(patch);
         get().syncInsightsData();
@@ -392,8 +348,6 @@ export const useFinanceStore = create(
           title: 'Partner Connection Request Sent',
           description: `Cryptographic linkage code generated for partner ID: ${partnerEverBondId}.`
         });
-
-        get().unlockAchievement('connection-sent');
 
         set({
           partnerEverBondId,
@@ -527,8 +481,6 @@ export const useFinanceStore = create(
           description: `Consolidated allocations, joint target setting, and savings splits are now active.`,
           isMilestone: true
         });
-
-        get().unlockAchievement('bonded');
 
         set({
           connectionStatus: 'connected',
@@ -817,11 +769,6 @@ export const useFinanceStore = create(
           });
         }
 
-        if (!wasCompleted) {
-          get().unlockAchievement('first-step');
-        }
-        get().unlockAchievement('profile-builder');
-
         set(update);
         get().syncInsightsData();
       },
@@ -839,7 +786,6 @@ export const useFinanceStore = create(
             title: 'Income Added',
             description: `Primary salary updated to ${get().currency} ${v.toLocaleString()}.`
           });
-          get().unlockAchievement('income-creator');
         }
         set({ p1Salary: v });
         get().syncInsightsData();
@@ -931,7 +877,6 @@ export const useFinanceStore = create(
                   title: 'Goal Created',
                   description: `Dream target for "${name}" established at ${get().currency} ${t[key].toLocaleString()}.`
                 });
-                get().unlockAchievement('journey-started');
               }
             } else if (t[key] !== oldTargets[key]) {
               get().addNotification({
@@ -964,7 +909,6 @@ export const useFinanceStore = create(
           title: 'Goal Created',
           description: `Linear milestone goal "${m.name || 'Untitled'}" scheduled for ${m.targetDate}.`
         });
-        get().unlockAchievement('milestone-maker');
         set(s => ({ milestones: [...s.milestones, newMilestone] }));
         get().syncInsightsData();
       },

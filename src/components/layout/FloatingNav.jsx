@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   LayoutDashboard, LineChart, Wallet, Target, 
-  ChevronDown, PieChart, Flag, Award, Activity, Heart, 
+  ChevronDown, PieChart, Flag, Activity, Heart, 
   FileText, Map, Shield, Settings
 } from 'lucide-react';
 import { T } from '../../theme/tokens';
@@ -23,7 +23,6 @@ const PARTNER_TABS = [
 const MORE_TABS = [
   { id: 'goals',           label: 'Goals',           icon: <Target size={14} /> },
   { id: 'milestones',      label: 'Milestones',      icon: <Flag size={14} /> },
-  { id: 'achievements',    label: 'Journey Rewards', icon: <Award size={14} /> },
   { id: 'simulation',      label: 'Simulation',      icon: <Activity size={14} /> },
   { id: 'documentation',   label: 'Documentation',   icon: <FileText size={14} /> },
   { id: 'settings',        label: 'Settings',        icon: <Settings size={14} /> }

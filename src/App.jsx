@@ -26,7 +26,6 @@ const IncomePage        = lazy(() => import('./components/income/IncomePage').th
 const AllocationPage    = lazy(() => import('./components/allocation/AllocationPage').then(m => ({ default: m.AllocationPage })));
 const GoalsPage         = lazy(() => import('./components/goals/GoalsPage').then(m => ({ default: m.GoalsPage })));
 const MilestonePage     = lazy(() => import('./components/milestones/MilestonePage').then(m => ({ default: m.MilestonePage })));
-const AchievementsPage  = lazy(() => import('./components/achievements/AchievementsPage').then(m => ({ default: m.AchievementsPage })));
 const SimulationPage    = lazy(() => import('./components/simulation/SimulationPage').then(m => ({ default: m.SimulationPage })));
 const PartnerPage       = lazy(() => import('./components/partner/PartnerPage').then(m => ({ default: m.PartnerPage })));
 const WorkspacePage     = lazy(() => import('./components/workspace/WorkspacePage').then(m => ({ default: m.WorkspacePage })));
@@ -184,7 +183,6 @@ function PageRenderer({ page, setPage, setActivePolicyDoc, setShowResetModal }) 
       case 'allocation':      return <AllocationPage />;
       case 'goals':           return <GoalsPage />;
       case 'milestones':      return <MilestonePage />;
-      case 'achievements':    return <AchievementsPage />;
       case 'simulation':      return <SimulationPage />;
       case 'partner':         return <PartnerPage setPage={setPage} />;
       case 'partner-committed': return <PartnerPage setPage={setPage} />;

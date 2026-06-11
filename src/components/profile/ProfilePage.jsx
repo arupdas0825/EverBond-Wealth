@@ -4,13 +4,14 @@ import { useFinanceStore } from '../../store/useFinanceStore';
 import { T } from '../../theme/tokens';
 import { Card } from '../common/Card';
 import { ProfileEditModal } from './ProfileEditModal';
-import { User, Shield, MapPin, DollarSign, Calendar, Target, Award, Edit3, ArrowRight, Heart } from 'lucide-react';
+import { User, Shield, MapPin, DollarSign, Calendar, Target, Edit3, ArrowRight, Heart, Activity, Percent } from 'lucide-react';
+import { calculateFinancialSnapshot, calculateHealthScore } from '../../utils/finance';
 
 export function ProfilePage() {
   const store = useFinanceStore();
   const { 
     partner1, partner2, stage, country, currency, joinDate, bio, profilePhoto,
-    everBondId, p1Salary, p2Salary, connectionStatus, milestones = [], userLevel = 1, totalXP = 0
+    everBondId, p1Salary, p2Salary, connectionStatus, milestones = []
   } = store;
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -38,6 +39,22 @@ export function ProfilePage() {
   const soloNetWorth = (p1Salary || 100000) * 12 + 150000;
   const combinedNetWorth = ((p1Salary || 100000) + (p2Salary || 80000)) * 15 + 350000;
   const netWorth = connectionStatus === 'connected' ? combinedNetWorth : soloNetWorth;
+
+  // Metric computations for Financial Health Indicators
+  const mode = store.mode || 'Balanced';
+  const totalSalary = (p1Salary || 0) + (connectionStatus === 'connected' ? (p2Salary || 0) : 0);
+  const snap = calculateFinancialSnapshot(totalSalary || 100000, mode);
+  const health = calculateHealthScore(snap);
+
+  const savingsRatePct = totalSalary > 0 
+    ? Math.round((snap.budget.investments / totalSalary) * 100)
+    : 30;
+
+  const emergencyCoverage = connectionStatus === 'connected' ? '5.2 Months' : '3.5 Months';
+
+  const goalCompletionRate = milestones.length > 0
+    ? Math.round(milestones.reduce((acc, m) => acc + (Math.min(100, (m.monthlySaved / m.targetCost) * 100) || 0), 0) / milestones.length)
+    : 45;
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -256,22 +273,54 @@ export function ProfilePage() {
 
             <div style={{ height: '1px', background: 'var(--border-mid)', margin: '20px 0' }} />
 
-            {/* User Level and XP */}
+            {/* Financial Health Indicators */}
             <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <Award size={15} style={{ color: T.gold }} /> Journey Level
-                </span>
-                <strong style={{ fontSize: '0.92rem', color: T.gold }}>Lvl {userLevel}</strong>
-              </div>
+              <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.gold, display: 'block', marginBottom: '14px' }}>Financial Health Indicators</span>
               
-              <div style={{ width: '100%', height: '6px', background: 'var(--onb-border)', borderRadius: '100px', overflow: 'hidden' }}>
-                <div style={{ width: `${Math.min((totalXP % 1000) / 10, 100)}%`, height: '100%', background: `linear-gradient(90deg, ${T.goldMid}, ${T.gold})` }} />
-              </div>
-              
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.68rem', color: 'var(--text-faint)', marginTop: '6px' }}>
-                <span>XP Progress</span>
-                <span>{totalXP % 1000} / 1000 XP</span>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {/* Score */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <Activity size={14} style={{ color: health.value >= 75 ? T.sage : T.gold }} />
+                    <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Financial Health Score</span>
+                  </div>
+                  <strong style={{ fontSize: '0.92rem', color: health.value >= 75 ? T.sage : T.gold }}>
+                    {health.label} ({health.value}/100)
+                  </strong>
+                </div>
+
+                {/* Emergency Coverage */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <Shield size={14} style={{ color: T.gold }} />
+                    <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Emergency Coverage</span>
+                  </div>
+                  <strong style={{ fontSize: '0.92rem', color: 'var(--text)' }}>
+                    {emergencyCoverage}
+                  </strong>
+                </div>
+
+                {/* Goal Completion Rate */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <Target size={14} style={{ color: T.gold }} />
+                    <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Goal Completion Rate</span>
+                  </div>
+                  <strong style={{ fontSize: '0.92rem', color: 'var(--text)' }}>
+                    {goalCompletionRate}%
+                  </strong>
+                </div>
+
+                {/* Savings Rate */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <Percent size={14} style={{ color: T.gold }} />
+                    <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Savings Rate</span>
+                  </div>
+                  <strong style={{ fontSize: '0.92rem', color: 'var(--text)' }}>
+                    {savingsRatePct}%
+                  </strong>
+                </div>
               </div>
             </div>
           </Card>

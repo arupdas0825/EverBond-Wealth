@@ -146,7 +146,7 @@ export function SettingsPage({ setActivePolicyDoc, setPage }) {
                 { label: 'Push Notifications', desc: 'Alerts on browser window status', state: pushNotif, setter: setPushNotif },
                 { label: 'Couple Notifications', desc: 'Sync events and partner changes', state: coupleNotif, setter: setCoupleNotif },
                 { label: 'Goal Notifications', desc: 'Target reach rates and alerts', state: goalNotif, setter: setGoalNotif },
-                { label: 'Milestone Alerts', desc: 'Milestone updates and achievements', state: milestoneAlerts, setter: setMilestoneAlerts }
+                { label: 'Milestone Alerts', desc: 'Milestone updates and targets', state: milestoneAlerts, setter: setMilestoneAlerts }
               ].map((notif, idx) => (
                 <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div>
