@@ -13,6 +13,7 @@ import { CookieConsent } from './components/common/CookieConsent';
 import { PrivacyDrawer } from './components/common/PrivacyDrawer';
 import { ResetModal } from './components/common/ResetModal';
 import { RouteGuardScreen } from './components/common/RouteGuardScreen';
+import { ErrorBoundary } from './components/common/ErrorBoundary';
 import './index.css';
 
 /* ═══════════════════════════════════════════════════════════
@@ -289,9 +290,39 @@ function PageRenderer({ page, setPage, setActivePolicyDoc, setShowResetModal }) 
     }
   };
 
+  const getPageTitle = (p) => {
+    const mapping = {
+      'dashboard': 'Dashboard',
+      'insights': 'Wealth Insights',
+      'income': 'Income Ledger',
+      'allocation': 'Asset Allocation',
+      'goals': 'Financial Goals',
+      'milestones': 'Milestones & Targets',
+      'simulation': 'Wealth Simulation',
+      'partner': 'Committed Partner Journey',
+      'partner-committed': 'Committed Partner Journey',
+      'workspace': 'Family Dynasty Workspace',
+      'couple-planning': 'Couple Planning',
+      'family-planning': 'Family Dynasty',
+      'partner-family': 'Family Dynasty',
+      'settings': 'Settings & Policy',
+      'profile': 'Profile & Identity',
+      'documentation': 'Documentation'
+    };
+    return mapping[p] || 'EverBond Section';
+  };
+
   return (
     <Suspense fallback={<PageSkeleton />}>
-      {renderPage()}
+      <ErrorBoundary
+        key={page}
+        title={`${getPageTitle(page)} Unavailable`}
+        description={`The ${getPageTitle(page)} module encountered an unexpected error. You can continue using the rest of the application.`}
+        showDashboardButton={page !== 'dashboard'}
+        setPage={setPage}
+      >
+        {renderPage()}
+      </ErrorBoundary>
     </Suspense>
   );
 }
@@ -392,9 +423,15 @@ export default function App() {
             </div>
           )}
           <div className="eb-top-actions">
-            <ThemeToggle />
-            <NotificationCenter />
-            <ProfileChip setPage={setPage} onReset={() => setShowResetModal(true)} />
+            <ErrorBoundary mini={true}>
+              <ThemeToggle />
+            </ErrorBoundary>
+            <ErrorBoundary mini={true}>
+              <NotificationCenter />
+            </ErrorBoundary>
+            <ErrorBoundary mini={true}>
+              <ProfileChip setPage={setPage} onReset={() => setShowResetModal(true)} />
+            </ErrorBoundary>
           </div>
           {isMobile && (
             <div className="eb-mobile-header" style={{ display: 'flex', justifyContent: 'flex-start', paddingLeft: '16px' }}>
@@ -402,7 +439,9 @@ export default function App() {
             </div>
           )}
           {!isMobile && (
-            <FloatingNav page={page} setPage={setPage} />
+            <ErrorBoundary mini={true}>
+              <FloatingNav page={page} setPage={setPage} />
+            </ErrorBoundary>
           )}
           <main className="eb-main">
             <div className="eb-page">
@@ -425,7 +464,11 @@ export default function App() {
               </AnimatePresence>
             </div>
           </main>
-          {isMobile && <MobileNav page={page} setPage={setPage} onReset={() => setShowResetModal(true)}/>}
+          {isMobile && (
+            <ErrorBoundary mini={true}>
+              <MobileNav page={page} setPage={setPage} onReset={() => setShowResetModal(true)} />
+            </ErrorBoundary>
+          )}
         </div>
       </OnboardingGuard>
 

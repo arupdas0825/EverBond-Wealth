@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { User, Settings, FileText, LogOut, ChevronDown, Sun, Moon, AlertTriangle } from 'lucide-react';
 import { useFinanceStore } from '../../store/useFinanceStore';
 import { useToast } from '../common/Toast';
