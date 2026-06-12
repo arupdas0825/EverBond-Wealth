@@ -10,6 +10,7 @@ import {
 import { formatCurrency, formatCompact } from '../../utils/finance';
 
 export function FamilyPlanningPage({ setPage }) {
+  const [dynastyConsentChecked, setDynastyConsentChecked] = useState(false);
   const { 
     partner1, 
     partner2, 
@@ -22,235 +23,101 @@ export function FamilyPlanningPage({ setPage }) {
   } = useFinanceStore();
   
   const total = getTotalSalary();
-  
   const isLinked = partnerLinked || partnerAccepted;
-  
-  // Simulation Toggle for testing locked state
-  const [isSimulatedLinked, setIsSimulatedLinked] = useState(isLinked);
-
   const currentStage = (relationshipStage || stage || 'Single').toLowerCase();
   
-  let lockReason = "Family Dynasty requires a verified partner connection.";
-  if (currentStage === 'committed') {
-    lockReason = "Connect your partner to unlock Family Dynasty.";
-  } else if (currentStage === 'married') {
-    lockReason = "Connect your spouse to unlock Family Dynasty.";
-  }
-
   if (!isLinked) {
     return (
-      <div className="fade-in" style={{ paddingBottom: '40px', maxWidth: '800px', margin: '0 auto' }}>
-        {/* PREMIUM LOCK CARD */}
-        <div className="liquid-glass" style={{
-          padding: '40px 32px',
-          textAlign: 'center',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: '24px',
-          position: 'relative',
-          overflow: 'hidden',
-          marginBottom: '32px'
-        }}>
+      <div className="fade-in" style={{ paddingBottom: '40px', maxWidth: '560px', margin: '40px auto' }}>
+        <Card style={{ padding: '36px 28px', position: 'relative', overflow: 'hidden' }}>
           {/* Animated background glows */}
           <div style={{
             position: 'absolute',
-            top: '-50%',
-            left: '-50%',
-            width: '200%',
-            height: '200%',
-            background: 'radial-gradient(circle at center, rgba(184, 144, 42, 0.08) 0%, transparent 60%)',
-            pointerEvents: 'none',
-            zIndex: 0
+            top: '-20%',
+            left: '-20%',
+            width: '140%',
+            height: '140%',
+            background: 'radial-gradient(circle at center, rgba(184, 144, 42, 0.04) 0%, transparent 60%)',
+            pointerEvents: 'none'
           }} />
 
-          <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
-            {/* Visual Vector: Locked Vault & Family Tree */}
+          <div style={{ textAlign: 'center', marginBottom: '28px', position: 'relative', zIndex: 1 }}>
             <div style={{
-              width: '120px',
-              height: '120px',
+              width: '56px',
+              height: '56px',
               borderRadius: '50%',
-              background: 'radial-gradient(circle, rgba(184, 144, 42, 0.12) 0%, transparent 70%)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              position: 'relative',
-              marginBottom: '8px'
-            }}>
-              {/* Outer rotating ring */}
-              <div style={{
-                position: 'absolute',
-                inset: 0,
-                borderRadius: '50%',
-                border: `2px dashed ${T.gold}40`,
-                animation: 'scanRotate 20s linear infinite'
-              }} />
-              
-              {/* Lock Shield Icon */}
-              <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke={T.gold} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ filter: 'drop-shadow(0 0 8px rgba(184, 144, 42, 0.4))' }}>
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                <rect x="9" y="11" width="6" height="4" rx="1" fill="rgba(184,144,42,0.2)" />
-                <path d="M10 11V9a2 2 0 0 1 4 0v2" />
-              </svg>
-            </div>
-
-            {/* Title & Description */}
-            <h1 style={{
-              fontFamily: T.fontDisplay,
-              fontSize: '2rem',
-              fontWeight: 700,
-              color: 'var(--onb-title)',
-              letterSpacing: '-0.02em',
-              margin: 0
-            }}>
-              Family Dynasty Locked
-            </h1>
-            
-            <p style={{
-              fontSize: '0.95rem',
-              color: 'var(--onb-desc)',
-              lineHeight: '1.6',
-              maxWidth: '520px',
-              margin: '0 auto'
-            }}>
-              Build a verified family connection to unlock multi-generational wealth planning, inheritance strategy and family legacy tools.
-            </p>
-
-            {/* Stage-based lock reason */}
-            <div style={{
-              background: 'rgba(184, 144, 42, 0.08)',
-              border: `1px solid ${T.gold}30`,
-              borderRadius: '12px',
-              padding: '10px 20px',
-              fontSize: '0.85rem',
-              fontWeight: 600,
+              background: 'var(--gold-pale)',
               color: T.gold,
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '8px',
-              marginTop: '8px'
-            }}>
-              <span>🔒</span> <span>{lockReason}</span>
-            </div>
-
-            {/* CTA Buttons */}
-            <div style={{
               display: 'flex',
-              gap: '12px',
-              width: '100%',
-              maxWidth: '360px',
+              alignItems: 'center',
               justifyContent: 'center',
-              marginTop: '12px',
-              flexWrap: 'wrap'
+              margin: '0 auto 16px',
+              border: `1px solid ${T.gold}30`
             }}>
-              <button 
-                onClick={() => setPage('partner')}
-                className="onb-btn-continue"
-                style={{ 
-                  flex: 1, 
-                  minWidth: '160px',
-                  borderRadius: '12px',
-                  fontSize: '0.9rem',
-                  padding: '12px 24px'
-                }}
-              >
-                Connect Partner
-              </button>
-              <button 
-                onClick={() => setPage('dashboard')}
-                className="onb-btn-back"
-                style={{ 
-                  flex: 1, 
-                  minWidth: '160px',
-                  borderRadius: '12px',
-                  fontSize: '0.9rem',
-                  padding: '12px 24px'
-                }}
-              >
-                Back to Dashboard
-              </button>
+              <Crown size={24} style={{ color: T.gold }} />
             </div>
-          </div>
-        </div>
-
-        {/* UNLOCK PREVIEW: BLURRED FEATURES */}
-        <div style={{ marginTop: '32px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px', justifyContent: 'center' }}>
-            <div style={{ height: '1px', background: 'var(--onb-border)', flex: 1 }} />
-            <span style={{
-              fontSize: '0.72rem',
-              fontWeight: 800,
-              textTransform: 'uppercase',
-              letterSpacing: '0.08em',
-              color: T.goldMid
-            }}>
-              Features Included in Family Dynasty
-            </span>
-            <div style={{ height: '1px', background: 'var(--onb-border)', flex: 1 }} />
+            <h2 style={{ fontFamily: T.fontDisplay, fontSize: '1.6rem', fontWeight: 700, margin: '0 0 6px', color: 'var(--text)' }}>
+              Create a Family Dynasty Workspace
+            </h2>
+            <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)', margin: 0 }}>
+              Coordinate multi-generational planning across trusted family members.
+            </p>
           </div>
 
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
-            gap: '16px',
-            pointerEvents: 'none',
-            userSelect: 'none',
-            opacity: 0.6
-          }}>
+          {/* Benefits Section */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '28px', position: 'relative', zIndex: 1 }}>
             {[
-              {
-                title: 'Family Wealth Tree',
-                desc: 'Visual map of multi-generational trust allocations and joint asset pools.'
-              },
-              {
-                title: 'Inheritance Planner',
-                desc: 'Automated estate distribution run-rates and vesting schedule controls.'
-              },
-              {
-                title: 'Estate Vault',
-                desc: 'Dual-signature secure repository for Wills, Trusts, and POA agreements.'
-              },
-              {
-                title: 'Successor Tracking',
-                desc: 'Milestone release conditions and educational trust payout monitoring.'
-              },
-              {
-                title: 'Legacy Dashboard',
-                desc: 'Generational compounding projections and family capital net worth tracker.'
-              },
-              {
-                title: 'Family Permissions',
-                desc: 'Granular access control, dual-handshake rules, and signature requirements.'
-              }
-            ].map((feature, idx) => (
-              <div 
-                key={idx} 
-                className="liquid-glass"
-                style={{
-                  padding: '18px',
-                  borderRadius: '16px',
-                  border: '1px solid rgba(255, 255, 255, 0.06)',
-                  background: 'rgba(255, 255, 255, 0.02)',
-                  filter: 'blur(3.5px)',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '6px',
-                  textAlign: 'left'
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <span style={{ fontSize: '0.9rem', color: T.gold }}>✦</span>
-                  <h4 style={{ margin: 0, fontSize: '0.9rem', fontWeight: 700, color: 'var(--onb-title)' }}>
-                    {feature.title}
-                  </h4>
-                </div>
-                <p style={{ margin: 0, fontSize: '0.74rem', color: 'var(--onb-desc)', lineHeight: '1.4' }}>
-                  {feature.desc}
-                </p>
+              "Shared family wealth planning",
+              "Legacy tracking",
+              "Family milestone management",
+              "Role-based visibility"
+            ].map((benefit, i) => (
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.85rem', color: 'var(--text)' }}>
+                <span style={{ color: T.gold, fontWeight: 'bold' }}>✓</span>
+                <span>{benefit}</span>
               </div>
             ))}
           </div>
-        </div>
+
+          {/* Consent Checkbox */}
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', marginBottom: '28px', position: 'relative', zIndex: 1 }}>
+            <input
+              type="checkbox"
+              id="dynasty-consent-check"
+              checked={dynastyConsentChecked}
+              onChange={(e) => setDynastyConsentChecked(e.target.checked)}
+              style={{ marginTop: '3px', accentColor: T.gold }}
+            />
+            <label htmlFor="dynasty-consent-check" style={{ fontSize: '0.8rem', color: 'var(--text-muted)', lineHeight: 1.4, cursor: 'pointer' }}>
+              I understand the Family Dynasty workspace structure.
+            </label>
+          </div>
+
+          {/* Actions */}
+          <div style={{ display: 'flex', gap: '10px', position: 'relative', zIndex: 1 }}>
+            <button
+              onClick={() => setPage('partner')}
+              disabled={!dynastyConsentChecked}
+              className="onb-btn-continue"
+              style={{
+                flex: 2,
+                padding: '12px',
+                borderRadius: '100px',
+                fontSize: '0.85rem',
+                opacity: dynastyConsentChecked ? 1 : 0.6
+              }}
+            >
+              Continue
+            </button>
+            <button
+              onClick={() => setPage('dashboard')}
+              className="onb-btn-back"
+              style={{ flex: 1, padding: '12px', borderRadius: '100px', fontSize: '0.85rem' }}
+            >
+              Back
+            </button>
+          </div>
+        </Card>
       </div>
     );
   }

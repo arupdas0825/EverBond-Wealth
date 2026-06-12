@@ -151,8 +151,8 @@ function PageRenderer({ page, setPage, setActivePolicyDoc, setShowResetModal }) 
 
   // 1. Single Mode Access Restrictions
   if (status === 'Single') {
-    const isCommittedPage = ['partner', 'partner-committed', 'couple-planning'].includes(page);
-    const isFamilyPage = ['partner-family', 'family-planning'].includes(page);
+    const isCommittedPage = ['couple-planning'].includes(page);
+    const isFamilyPage = ['partner-family'].includes(page);
     
     if (isCommittedPage) {
       return (
@@ -176,7 +176,7 @@ function PageRenderer({ page, setPage, setActivePolicyDoc, setShowResetModal }) 
 
   // 2. Committed Mode Access Restrictions
   if (status === 'Committed') {
-    const isFamilyPage = ['partner-family', 'family-planning'].includes(page);
+    const isFamilyPage = ['partner-family'].includes(page);
     if (isFamilyPage) {
       if (!partnerLinked) {
         return (
@@ -196,7 +196,7 @@ function PageRenderer({ page, setPage, setActivePolicyDoc, setShowResetModal }) 
   // 3. Family Dynasty Mode Access Restrictions
   if (status === 'Married') {
     const isSinglePage = page === 'single';
-    const isCommittedPage = ['partner', 'partner-committed', 'couple-planning'].includes(page);
+    const isCommittedPage = ['couple-planning'].includes(page);
     
     if (isSinglePage) {
       return (
@@ -219,6 +219,10 @@ function PageRenderer({ page, setPage, setActivePolicyDoc, setShowResetModal }) 
   }
 
   const renderPage = () => {
+    if (typeof page === 'string' && page.startsWith('connect/')) {
+      const code = page.split('/')[1];
+      return <PartnerPage setPage={setPage} connectCode={code} />;
+    }
     switch (page) {
       case 'dashboard':       return <Dashboard setPage={setPage} />;
       case 'insights':        return <WealthInsightsPage />;
@@ -320,18 +324,35 @@ export default function App() {
             console.log("ONBOARDING STATUS:", data.onboardingCompleted);
             
             // Map Firestore mode to store stage formats
-            const mappedStage = data.mode === 'Family Dynasty' ? 'Married' : data.mode || 'Single';
+            const mappedStage = data.mode === 'Family Dynasty' ? 'Married' : (data.mode === 'committed' ? 'Committed' : (data.mode || 'Single'));
             let p1Salary = 100000;
             let p2Salary = 0;
             let partnerName = '';
-            if (data.mode === 'Committed') {
+            let partnerEBId = '';
+            let partnerLinked = false;
+
+            if (data.mode === 'committed' || data.mode === 'Committed') {
               p1Salary = 100000;
               p2Salary = 80000;
               partnerName = 'Partner';
-            } else if (data.mode === 'Family Dynasty') {
+            } else if (data.mode === 'Family Dynasty' || data.mode === 'Married') {
               p1Salary = 150000;
               p2Salary = 120000;
               partnerName = 'Spouse';
+            }
+
+            if (data.partnerId) {
+              partnerLinked = true;
+              try {
+                const partnerDocSnap = await getDoc(doc(db, 'users', data.partnerId));
+                if (partnerDocSnap.exists()) {
+                  const partnerData = partnerDocSnap.data();
+                  partnerName = partnerData.fullName || partnerName;
+                  partnerEBId = partnerData.ebId || '';
+                }
+              } catch (err) {
+                console.error("Error fetching partner document on startup:", err);
+              }
             }
 
             useFinanceStore.setState({
@@ -344,6 +365,9 @@ export default function App() {
               },
               userId: data.ebId,
               everBondId: data.ebId,
+              partnerId: data.partnerId || '',
+              partnerEverBondId: partnerEBId,
+              partnerLinked,
               partner1: data.fullName || firebaseUser.displayName || 'User',
               userName: data.fullName || firebaseUser.displayName || 'User',
               partner2: partnerName,
@@ -358,7 +382,7 @@ export default function App() {
               started: data.onboardingCompleted || false,
               p1Salary,
               p2Salary,
-              connectionStatus: data.mode === 'Family Dynasty' ? 'connected' : 'none'
+              connectionStatus: data.partnerId ? 'connected' : 'none'
             });
 
             // Redirect if on onboarding or auth page
