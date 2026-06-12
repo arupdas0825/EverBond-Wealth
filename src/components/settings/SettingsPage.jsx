@@ -4,7 +4,6 @@ import { useFinanceStore } from '../../store/useFinanceStore';
 import { T } from '../../theme/tokens';
 import { Card } from '../common/Card';
 import { useToast } from '../common/Toast';
-import { InstallAppButton } from '../common/InstallAppButton';
 import { 
   Sun, Moon, Laptop, Bell, Shield, Lock, Smartphone, LaptopIcon, 
   Trash2, FileText, ChevronRight, Eye, RefreshCw, Key, Globe, EyeOff
@@ -332,19 +331,6 @@ export function SettingsPage({ setActivePolicyDoc, setPage }) {
             >
               <FileText size={16} /> Open Platform Documentation <ChevronRight size={16} />
             </button>
-          </Card>
-        </motion.div>
-
-        {/* EVERBOND APP ACCESS */}
-        <motion.div variants={itemVariants} className="span-6">
-          <Card style={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-            <div>
-              <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.gold, display: 'block', marginBottom: '16px' }}>Application Access</span>
-              <h3 style={{ fontFamily: T.fontDisplay, fontSize: '1.25rem', fontWeight: 700, color: 'var(--text)', margin: '0 0 8px' }}>Native PWA Client</h3>
-              <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginBottom: '20px' }}>Install EverBond Wealth directly onto your desktop or mobile device. Unlocks standalone workspace window and swift offline launching capability.</p>
-            </div>
-
-            <InstallAppButton />
           </Card>
         </motion.div>
 

@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { User, Settings, FileText, LogOut, ChevronDown, Sun, Moon, AlertTriangle } from 'lucide-react';
+import { User, Settings, FileText, LogOut, ChevronDown, Sun, Moon, AlertTriangle, Download } from 'lucide-react';
 import { useFinanceStore } from '../../store/useFinanceStore';
 import { useToast } from '../common/Toast';
 import { T } from '../../theme/tokens';
@@ -14,6 +14,68 @@ export function ProfileChip({ setPage, onReset }) {
   const toast = useToast();
 
   const { partner1, theme, setTheme, everBondId, logout } = useFinanceStore();
+
+  const [deferredPrompt, setDeferredPrompt] = useState(window.deferredPrompt || null);
+  const [isStandalone, setIsStandalone] = useState(false);
+  const [isInstalled, setIsInstalled] = useState(
+    localStorage.getItem('pwa_installed') === 'true'
+  );
+
+  useEffect(() => {
+    const checkStandalone = () => {
+      const standalone = window.matchMedia('(display-mode: standalone)').matches || 
+                         window.navigator.standalone === true;
+      setIsStandalone(standalone);
+      if (standalone) {
+        localStorage.setItem('pwa_installed', 'true');
+        setIsInstalled(true);
+      }
+    };
+
+    checkStandalone();
+
+    const handleInstallable = () => {
+      setDeferredPrompt(window.deferredPrompt);
+    };
+
+    const handleAppInstalled = () => {
+      localStorage.setItem('pwa_installed', 'true');
+      setIsInstalled(true);
+      setDeferredPrompt(null);
+      window.deferredPrompt = null;
+      toast.success('EverBond Wealth successfully installed! Open from your home screen.');
+    };
+
+    window.addEventListener('pwa-installable', handleInstallable);
+    window.addEventListener('appinstalled', handleAppInstalled);
+
+    return () => {
+      window.removeEventListener('pwa-installable', handleInstallable);
+      window.removeEventListener('appinstalled', handleAppInstalled);
+    };
+  }, [toast]);
+
+  const handleInstallClick = async () => {
+    setIsOpen(false);
+    if (deferredPrompt) {
+      try {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') {
+          localStorage.setItem('pwa_installed', 'true');
+          setIsInstalled(true);
+          setDeferredPrompt(null);
+          window.deferredPrompt = null;
+        }
+      } catch (err) {
+        console.error('Installation prompt failed:', err);
+      }
+    } else {
+      toast.info('To install, open browser settings and choose "Add to Home Screen" or "Install App".');
+    }
+  };
+
+  const showInstalledState = isStandalone || (isInstalled && !deferredPrompt);
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -216,6 +278,33 @@ export function ProfileChip({ setPage, onReset }) {
                 </span>
                 Theme
               </button>
+
+              <div style={{ height: '1px', background: 'var(--border-mid)', margin: '6px 0' }} />
+
+              {showInstalledState ? (
+                <button
+                  disabled
+                  className="eb-profile-menu-item"
+                  style={{
+                    cursor: 'default',
+                    opacity: 0.65,
+                    color: T.sage,
+                    transform: 'none',
+                    pointerEvents: 'none'
+                  }}
+                >
+                  <span className="eb-dropdown-item-icon" style={{ color: T.sage }}><Download size={14} /></span>
+                  App Installed
+                </button>
+              ) : (
+                <button
+                  onClick={handleInstallClick}
+                  className="eb-profile-menu-item"
+                >
+                  <span className="eb-dropdown-item-icon"><Download size={14} /></span>
+                  Install App
+                </button>
+              )}
 
               <div style={{ height: '1px', background: 'var(--border-mid)', margin: '6px 0' }} />
 
