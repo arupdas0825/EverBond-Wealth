@@ -4,9 +4,11 @@ import { useFinanceStore } from '../../store/useFinanceStore';
 import { T } from '../../theme/tokens';
 import { Card } from '../common/Card';
 import { useToast } from '../common/Toast';
+import { auth } from '../../utils/firebase';
 import { 
   Sun, Moon, Laptop, Bell, Shield, Lock, Smartphone, LaptopIcon, 
-  Trash2, FileText, ChevronRight, Eye, RefreshCw, Key, Globe, EyeOff
+  Trash2, FileText, ChevronRight, Eye, RefreshCw, Key, Globe, EyeOff,
+  ShieldCheck, Database
 } from 'lucide-react';
 
 export function SettingsPage({ setActivePolicyDoc, setPage }) {
@@ -38,6 +40,51 @@ export function SettingsPage({ setActivePolicyDoc, setPage }) {
   const handleThemeChange = (mode) => {
     setTheme(mode);
     toast.success(`Theme set to ${mode.toUpperCase()} mode.`);
+  };
+
+  const handleExportData = () => {
+    try {
+      const rawData = localStorage.getItem('eb_v6');
+      if (!rawData) {
+        toast.error("No local data found to export.");
+        return;
+      }
+      const dataObj = JSON.parse(rawData);
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dataObj, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", "everbond_financial_export.json");
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+      toast.success("Financial ledger exported successfully.");
+    } catch (err) {
+      toast.error("Failed to export data: " + err.message);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    const confirmWipe = window.confirm("Are you absolutely sure you want to delete your EverBond Account? This will permanently delete your Firestore database document, delete your login profile, and wipe all local storage. This action is irreversible.");
+    if (!confirmWipe) return;
+
+    try {
+      const currentUser = auth.currentUser;
+      if (currentUser) {
+        const { deleteUserAccountAndData } = await import('../../utils/firebase');
+        await deleteUserAccountAndData(currentUser);
+      }
+      
+      reset();
+      localStorage.removeItem('eb_v6');
+      
+      toast.success("Account and data deleted successfully.");
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500);
+    } catch (err) {
+      console.error("Account deletion failed:", err);
+      toast.error(`Account deletion failed: ${err.message}. Please re-authenticate and try again.`);
+    }
   };
 
   // Browser telemetry mock
@@ -331,6 +378,117 @@ export function SettingsPage({ setActivePolicyDoc, setPage }) {
             >
               <FileText size={16} /> Open Platform Documentation <ChevronRight size={16} />
             </button>
+          </Card>
+        </motion.div>
+
+        {/* DATA SOVEREIGNTY & TRUST */}
+        <motion.div variants={itemVariants} className="span-12">
+          <Card style={{ 
+            background: 'var(--bg-card)', 
+            border: '1px solid var(--border-mid)',
+            borderRadius: '18px',
+            padding: '28px'
+          }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+              <div>
+                <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.gold, display: 'block', marginBottom: '8px' }}>
+                  Your Data Belongs To You
+                </span>
+                <h3 style={{ fontFamily: T.fontDisplay, fontSize: '1.45rem', fontWeight: 700, color: 'var(--text)', margin: '0 0 8px' }}>
+                  Data Sovereignty & Privacy Controls
+                </h3>
+                <p style={{ fontSize: '0.84rem', color: 'var(--text-muted)', margin: 0, lineHeight: 1.5 }}>
+                  At EverBond Wealth, we believe your financial numbers are sacred. We protect your data using enterprise-grade encryption and give you full control over your privacy keys, including exporting or permanently purging your records at any time.
+                </p>
+              </div>
+
+              {/* Security Badges Grid */}
+              <div style={{ 
+                display: 'grid', 
+                gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', 
+                gap: '12px' 
+              }}>
+                <div style={{ display: 'flex', gap: '12px', alignItems: 'center', padding: '14px', background: 'var(--bg-warm)', borderRadius: '12px', border: '1px solid var(--border)' }}>
+                  <div style={{ color: T.gold }}><Lock size={20} /></div>
+                  <div>
+                    <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text)' }}>AES-256 Encryption</div>
+                    <div style={{ fontSize: '0.66rem', color: 'var(--text-faint)' }}>Secure client-side caching</div>
+                  </div>
+                </div>
+                <div style={{ display: 'flex', gap: '12px', alignItems: 'center', padding: '14px', background: 'var(--bg-warm)', borderRadius: '12px', border: '1px solid var(--border)' }}>
+                  <div style={{ color: T.sage }}><Shield size={20} /></div>
+                  <div>
+                    <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text)' }}>Firebase Auth</div>
+                    <div style={{ fontSize: '0.66rem', color: 'var(--text-faint)' }}>Federated identity tokens</div>
+                  </div>
+                </div>
+                <div style={{ display: 'flex', gap: '12px', alignItems: 'center', padding: '14px', background: 'var(--bg-warm)', borderRadius: '12px', border: '1px solid var(--border)' }}>
+                  <div style={{ color: T.sky }}><Database size={20} /></div>
+                  <div>
+                    <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text)' }}>Secure Cloud</div>
+                    <div style={{ fontSize: '0.66rem', color: 'var(--text-faint)' }}>Encrypted infrastructure</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Trust Buttons Panel */}
+              <div style={{ 
+                display: 'flex', 
+                flexWrap: 'wrap', 
+                justifyContent: 'space-between', 
+                alignItems: 'center',
+                gap: '16px',
+                borderTop: '1px solid var(--border)',
+                paddingTop: '20px'
+              }}>
+                <div>
+                  <button 
+                    onClick={() => setActivePolicyDoc('data-handling')}
+                    style={{ background: 'none', border: 'none', padding: 0, color: T.gold, fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer', textDecoration: 'underline' }}
+                  >
+                    View google profiles accessed details &gt;
+                  </button>
+                </div>
+                <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                  <button 
+                    onClick={handleExportData}
+                    style={{
+                      padding: '10px 20px',
+                      background: 'var(--bg-card)',
+                      border: '1.5px solid var(--border-mid)',
+                      borderRadius: '10px',
+                      color: 'var(--text)',
+                      fontSize: '0.82rem',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      transition: 'all 0.2s'
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.borderColor = T.gold}
+                    onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border-mid)'}
+                  >
+                    Export My Data
+                  </button>
+                  <button 
+                    onClick={handleDeleteAccount}
+                    style={{
+                      padding: '10px 20px',
+                      background: 'rgba(217, 102, 122, 0.1)',
+                      border: '1px solid rgba(217, 102, 122, 0.25)',
+                      borderRadius: '10px',
+                      color: T.rose,
+                      fontSize: '0.82rem',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      transition: 'all 0.2s'
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.background = T.rose}
+                    onMouseLeave={e => e.currentTarget.style.background = 'rgba(217, 102, 122, 0.1)'}
+                  >
+                    Delete Account &amp; Data
+                  </button>
+                </div>
+              </div>
+            </div>
           </Card>
         </motion.div>
 

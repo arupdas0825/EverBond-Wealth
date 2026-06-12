@@ -87,7 +87,7 @@ const line2Variants = {
   }
 };
 
-export function LandingPage({ onStartJourney, onLoginClick }) {
+export function LandingPage({ onStartJourney, onLoginClick, onOpenPolicy }) {
   const theme = useFinanceStore(s => s.theme);
   const [activeStage, setActiveStage] = useState('Single');
   const [imgFailed, setImgFailed] = useState(false);
@@ -1601,6 +1601,24 @@ export function LandingPage({ onStartJourney, onLoginClick }) {
           }}>
             Plan Together. Grow Together. Prosper Together.
           </p>
+
+          {/* Policy Links Row */}
+          <div style={{
+            display: 'flex',
+            gap: '16px',
+            justifyContent: 'center',
+            flexWrap: 'wrap',
+            fontSize: '0.78rem',
+            marginBottom: '8px'
+          }}>
+            <button onClick={() => onOpenPolicy('terms')} style={{ background: 'none', border: 'none', padding: 0, color: 'var(--text-muted)', cursor: 'pointer', textDecoration: 'underline', font: 'inherit' }}>Terms of Service</button>
+            <span style={{ color: 'var(--border-mid)' }}>•</span>
+            <button onClick={() => onOpenPolicy('privacy')} style={{ background: 'none', border: 'none', padding: 0, color: 'var(--text-muted)', cursor: 'pointer', textDecoration: 'underline', font: 'inherit' }}>Privacy Policy</button>
+            <span style={{ color: 'var(--border-mid)' }}>•</span>
+            <button onClick={() => onOpenPolicy('cookie')} style={{ background: 'none', border: 'none', padding: 0, color: 'var(--text-muted)', cursor: 'pointer', textDecoration: 'underline', font: 'inherit' }}>Cookie Policy</button>
+            <span style={{ color: 'var(--border-mid)' }}>•</span>
+            <button onClick={() => onOpenPolicy('data-handling')} style={{ background: 'none', border: 'none', padding: 0, color: 'var(--text-muted)', cursor: 'pointer', textDecoration: 'underline', font: 'inherit' }}>Data Handling</button>
+          </div>
 
           <div style={{
             display: 'flex',

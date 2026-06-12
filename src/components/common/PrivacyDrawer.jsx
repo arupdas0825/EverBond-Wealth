@@ -30,12 +30,14 @@ export function PrivacyDrawer({ activeDoc, onClose }) {
     if (activeDoc === 'terms') return 'Terms of Service';
     if (activeDoc === 'privacy') return 'Privacy Policy';
     if (activeDoc === 'cookie') return 'Cookie Policy';
+    if (activeDoc === 'data-handling') return 'Data Handling & Privacy';
     return 'Policy Document';
   };
 
   const getDocIcon = () => {
     if (activeDoc === 'terms') return <FileText size={20} style={{ color: T.gold }} />;
     if (activeDoc === 'privacy') return <Shield size={20} style={{ color: T.sage }} />;
+    if (activeDoc === 'data-handling') return <CheckCircle size={20} style={{ color: T.goldMid }} />;
     return <Lock size={20} style={{ color: T.sky }} />;
   };
 
@@ -138,32 +140,46 @@ export function PrivacyDrawer({ activeDoc, onClose }) {
                 Last Updated: June 2026
               </span>
               
-              <h4 style={{ color: 'var(--text)', fontSize: '0.98rem', fontWeight: 700, margin: '0 0 4px' }}>
-                1. General Sovereign Terms
+              <h4 style={{ color: 'var(--text)', fontSize: '0.98rem', fontWeight: 700, margin: '0' }}>
+                1. Agreement to Terms
               </h4>
               <p style={{ margin: 0 }}>
-                Welcome to EverBond Wealth (the "Platform"). By initiating your onboarding setup and deploying your localized financial ledger, you agree to these Terms of Service. EverBond Wealth operates strictly as a client-side database model that compounds, forecasts, and visualizes financial allocations.
+                Welcome to EverBond Wealth (the "Platform"). By creating an account, authenticating via Google OAuth, or using our wealth planning features, you agree to enter a legally binding contract governed by these Terms of Service. If you do not agree, you must immediately cease all access to the Platform.
               </p>
 
-              <h4 style={{ color: 'var(--text)', fontSize: '0.98rem', fontWeight: 700, margin: '0 0 4px' }}>
-                2. No Investment Advice
+              <h4 style={{ color: 'var(--text)', fontSize: '0.98rem', fontWeight: 700, margin: '0' }}>
+                2. Platform Description & Intended Use
               </h4>
               <p style={{ margin: 0 }}>
-                All growth simulations, interest compounding calculations, and percentage allocations are mathematical estimates generated for illustrative planning. They do not constitute financial advice, tax declarations, or official investment mandates. Always consult a certified fiduciary before executing major market transfers.
+                EverBond Wealth provides client-side cash flow ledgers, asset allocation templates, and collaborative wealth modeling systems. It acts as an interactive visualization database. You are fully responsible for all financial targets, milestones, and data exports created through your account.
               </p>
 
-              <h4 style={{ color: 'var(--text)', fontSize: '0.98rem', fontWeight: 700, margin: '0 0 4px' }}>
-                3. Collaborative Peer Linkage
+              <h4 style={{ color: 'var(--text)', fontSize: '0.98rem', fontWeight: 700, margin: '0' }}>
+                3. Data Sovereignty & Account Ownership
               </h4>
               <p style={{ margin: 0 }}>
-                The EverBond ID linking system allows user profiles to merge into committed budgets. By transmitting your unique identity key (`EB-XXXXXX`) to another user, you authorize mutual permission to view, update, and balance joint milestones, salaries, and projections. You can sever this connection node at any time via Settings, which will instantly split the shared caches.
+                You hold absolute and sovereign title to your financial profile data. While login profiles are authorized securely through Firebase Authentication and public profile metadata is stored in our database, the core financial ledger caches live locally on your browser console. We assume no backup custody or restoration duties for local caches.
               </p>
 
-              <h4 style={{ color: 'var(--text)', fontSize: '0.98rem', fontWeight: 700, margin: '0 0 4px' }}>
-                4. Database Sovereignty & Limits
+              <h4 style={{ color: 'var(--text)', fontSize: '0.98rem', fontWeight: 700, margin: '0' }}>
+                4. Fiduciary Disclaimer & Financial Advice
               </h4>
               <p style={{ margin: 0 }}>
-                You maintain absolute title to your local state caches. Since we do not host your profiles on centralized corporate storage, you are solely responsible for exporting sovereign ledger backup JSON files from Settings. We are not liable for data loss arising from cleared browser cookies or hardware failures.
+                <strong>EverBond Wealth is not a registered investment advisor, broker-dealer, or tax planner.</strong> All wealth calculations, compounding timelines, growth simulations, and interest projections are mathematical estimates and do not represent guaranteed outcomes. Consult a qualified fiduciary before committing funds to any asset classes.
+              </p>
+
+              <h4 style={{ color: 'var(--text)', fontSize: '0.98rem', fontWeight: 700, margin: '0' }}>
+                5. Link Nodes & Joint Accounts
+              </h4>
+              <p style={{ margin: 0 }}>
+                Sharing your unique EverBond ID invites other users to sync with your Cash Flow boards. You warrant that you have obtained your partner's full consent before linking nodes. You can terminate the shared connection link at any time from Settings.
+              </p>
+
+              <h4 style={{ color: 'var(--text)', fontSize: '0.98rem', fontWeight: 700, margin: '0' }}>
+                6. Limit of Liability
+              </h4>
+              <p style={{ margin: 0 }}>
+                To the maximum extent permitted by law, EverBond Wealth and its operators shall not be liable for any financial losses, investment underperformance, local browser cache deletion, or database sync errors.
               </p>
             </div>
           )}
@@ -185,29 +201,43 @@ export function PrivacyDrawer({ activeDoc, onClose }) {
               }}>
                 <CheckCircle size={18} style={{ color: T.sage, marginTop: '2px', flexShrink: 0 }} />
                 <span style={{ fontSize: '0.78rem', color: 'var(--text)', fontWeight: 600 }}>
-                  Decentralized Sovereign Sandboxing: Zero Server Data Storage.
+                  Enterprise-Grade Security: Direct double-blind token validations.
                 </span>
               </div>
 
-              <h4 style={{ color: 'var(--text)', fontSize: '0.98rem', fontWeight: 700, margin: '0 0 4px' }}>
-                1. Sovereign Privacy First
+              <h4 style={{ color: 'var(--text)', fontSize: '0.98rem', fontWeight: 700, margin: '0' }}>
+                1. Data Privacy Principles
               </h4>
               <p style={{ margin: 0 }}>
-                EverBond Wealth is built on a "Privacy by Architecture" philosophy. We believe that your intimate relationship finances should not live on centralized corporate servers. Consequently, 100% of your entered profiles, salary lists, budget allocations, and relationship dates are stored directly inside your browser's local sandbox (`localStorage`).
+                Your financial privacy is built directly into our app architecture. We operate under a strict zero-telemetry mandate: we do not sell your personal cash flow coordinates, track your browsing behavior, or display promotional marketing ads.
               </p>
 
-              <h4 style={{ color: 'var(--text)', fontSize: '0.98rem', fontWeight: 700, margin: '0 0 4px' }}>
-                2. No Tracking and No Ads
+              <h4 style={{ color: 'var(--text)', fontSize: '0.98rem', fontWeight: 700, margin: '0' }}>
+                2. Information We Access (Google Profile)
               </h4>
               <p style={{ margin: 0 }}>
-                We run no ad-retargeting pixels, no marketing tracker scripts, and no commercial tracking code. Your sovereignty is protected. We have zero interest in selling or capitalizing on your financial behavior metrics.
+                When you sign in using Google OAuth, the Platform requests permission to read only your public identity parameters: Full Name, Email Address, Profile Picture URL, and Account Metadata. We use these fields solely to provision and secure your EverBond node.
               </p>
 
-              <h4 style={{ color: 'var(--text)', fontSize: '0.98rem', fontWeight: 700, margin: '0 0 4px' }}>
-                3. Encryption & Future Syncing
+              <h4 style={{ color: 'var(--text)', fontSize: '0.98rem', fontWeight: 700, margin: '0' }}>
+                3. Password Protection Shield
               </h4>
               <p style={{ margin: 0 }}>
-                In future production iterations incorporating encrypted real-time cloud synchronizations, all database transmissions will be fully encrypted client-side using double-blind payloads. EverBond will never hold the keys to view your financial numbers.
+                <strong>We never access, view, or store your Google Account password.</strong> Authentication verification is completed directly and securely on Google's authorization servers, which pass an encrypted session token to Firebase Authentication.
+              </p>
+
+              <h4 style={{ color: 'var(--text)', fontSize: '0.98rem', fontWeight: 700, margin: '0' }}>
+                4. Data Storage & Encryption
+              </h4>
+              <p style={{ margin: 0 }}>
+                Profile records are stored on secure cloud database systems (Firestore) and validated via SSL/TLS encryption. Client-side financial ledger details (milestones, assets, budgets) are stored in your localized browser cookies (`localStorage`) using AES-256 equivalent containment.
+              </p>
+
+              <h4 style={{ color: 'var(--text)', fontSize: '0.98rem', fontWeight: 700, margin: '0' }}>
+                5. Complete Data Purge
+              </h4>
+              <p style={{ margin: 0 }}>
+                You maintain a complete right to be forgotten. Under Settings, you can download a full backup JSON using "Export My Data" or permanently wipe your account history, Google identity mapping, and Firestore documents using "Delete Account".
               </p>
             </div>
           )}
@@ -218,27 +248,62 @@ export function PrivacyDrawer({ activeDoc, onClose }) {
                 Last Updated: June 2026
               </span>
 
-              <h4 style={{ color: 'var(--text)', fontSize: '0.98rem', fontWeight: 700, margin: '0 0 4px' }}>
-                1. Local Preference Storage Only
+              <h4 style={{ color: 'var(--text)', fontSize: '0.98rem', fontWeight: 700, margin: '0' }}>
+                1. Local Caching Infrastructure
               </h4>
               <p style={{ margin: 0 }}>
-                We use the term "cookies" to encompass local storage sandboxes (`localStorage`) and essential browser session structures. Unlike traditional sites that use cookies to track you across the web, EverBond Wealth uses these tools strictly to operate the platform.
+                EverBond Wealth uses browser cache sandboxes (`localStorage`) and session structures to operate. Unlike other platforms, we do not deploy commercial tracking cookies, retargeting scripts, or advertising widgets.
               </p>
 
-              <h4 style={{ color: 'var(--text)', fontSize: '0.98rem', fontWeight: 700, margin: '0 0 4px' }}>
-                2. What We Save Locally
+              <h4 style={{ color: 'var(--text)', fontSize: '0.98rem', fontWeight: 700, margin: '0' }}>
+                2. Functional Cookies & Storage Parameters
               </h4>
               <ul style={{ margin: 0, paddingLeft: '20px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <li><strong>`eb_v6`</strong>: Persists your financial profile, salary targets, stage upgrade parameters, and EverBond ID relationship nodes.</li>
-                <li><strong>`data-theme`</strong>: Remembers your preference between Light and Dark visual theme systems.</li>
-                <li><strong>`eb_cookie_consent`</strong>: Tracks whether you have agreed to cookie selections to avoid showing banners on repeat visits.</li>
+                <li><strong>`eb_v6`</strong>: Holds your localized financial parameters, allocations, income ledger index, and partner link codes.</li>
+                <li><strong>`data-theme`</strong>: Remembers your Light/Dark interface setting.</li>
+                <li><strong>`eb_cookie_consent`</strong>: Remembers if you have acknowledged cookie terms to suppress banners on repeat sessions.</li>
               </ul>
 
-              <h4 style={{ color: 'var(--text)', fontSize: '0.98rem', fontWeight: 700, margin: '0 0 4px' }}>
-                3. Managing Preferences
+              <h4 style={{ color: 'var(--text)', fontSize: '0.98rem', fontWeight: 700, margin: '0' }}>
+                3. Clearing Local Caches
               </h4>
               <p style={{ margin: 0 }}>
-                Essential storage is required for the application to function. You can clear your localized memory storage at any time using your browser's developer console or the "Danger Zone" section inside the Settings page. Note that doing so will completely reset all financial ledgers.
+                Essential storage is required for platform operations. Clearing your browser's history or cookie caches will wipe your local financial records. Ensure you keep an exported backup copy from Settings to prevent data loss.
+              </p>
+            </div>
+          )}
+
+          {activeDoc === 'data-handling' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              <span style={{ fontSize: '0.62rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.goldMid }}>
+                Last Updated: June 2026
+              </span>
+              
+              <h4 style={{ color: 'var(--text)', fontSize: '0.98rem', fontWeight: 700, margin: '0' }}>
+                Google OAuth Data Access
+              </h4>
+              <p style={{ margin: 0 }}>
+                EverBond Wealth uses Google Authentication (OAuth 2.0) to authorize your login sessions securely. We request permission only to access your basic, public-facing Google profile information.
+              </p>
+
+              <h4 style={{ color: 'var(--text)', fontSize: '0.98rem', fontWeight: 700, margin: '0' }}>
+                Authorized Scope & Accessed Fields
+              </h4>
+              <p style={{ margin: 0 }}>
+                We only read and store the following profile fields from your Google Identity card:
+              </p>
+              <ul style={{ margin: 0, paddingLeft: '20px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <li><strong>Full Name:</strong> Used to personalize your dashboard greeting and milestones.</li>
+                <li><strong>Email Address:</strong> Serves as your unique user account identifier.</li>
+                <li><strong>Profile Image URL:</strong> Displayed on your top-right profile chip.</li>
+                <li><strong>Account Metadata:</strong> Google account creation time and authentication token parameters used to manage active sessions.</li>
+              </ul>
+
+              <h4 style={{ color: 'var(--text)', fontSize: '0.98rem', fontWeight: 700, margin: '0' }}>
+                Absolute Protections
+              </h4>
+              <p style={{ margin: 0 }}>
+                <strong>We never access or store your Google password.</strong> Your password verification is handled directly and securely by Google's own authentication servers, which issue a secure token back to the Firebase Authentication service.
               </p>
             </div>
           )}

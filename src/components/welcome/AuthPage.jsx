@@ -11,7 +11,7 @@ import {
 import { auth, googleProvider, appleProvider, createUserDocument } from '../../utils/firebase';
 import { Logo } from '../common/Logo';
 import { T } from '../../theme/tokens';
-import { ArrowRight, X, Mail, Key, User } from 'lucide-react';
+import { ArrowRight, X, Mail, Key, User, ShieldCheck, Lock, Database } from 'lucide-react';
 import { useToast } from '../common/Toast';
 import authBanner from '../../assets/auth_banner.png';
 
@@ -53,7 +53,7 @@ const AppleIcon = ({ size = 20, style }) => (
   </svg>
 );
 
-export function AuthPage({ onAuthSuccess, onBackToLanding }) {
+export function AuthPage({ onAuthSuccess, onBackToLanding, onOpenPolicy }) {
   const [activeTab, setActiveTab] = useState('login'); // 'login' | 'signup'
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
@@ -493,6 +493,68 @@ export function AuthPage({ onAuthSuccess, onBackToLanding }) {
               >
                 <AppleIcon size={20} style={{ color: 'var(--text)' }} />
               </motion.button>
+            </div>
+
+            {/* Branded Security & Privacy Trust statement */}
+            <div style={{ 
+              marginTop: '12px', 
+              padding: '14px 16px', 
+              borderRadius: '14px', 
+              background: 'rgba(28, 26, 22, 0.03)', 
+              border: '1px solid var(--border)',
+              fontSize: '0.78rem',
+              color: 'var(--text-muted)',
+              lineHeight: 1.45,
+              textAlign: 'left'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', color: 'var(--text)', fontWeight: 700 }}>
+                <ShieldCheck size={16} style={{ color: T.gold }} />
+                <span>Enterprise Trust & Privacy</span>
+              </div>
+              <p style={{ margin: 0, marginBottom: '8px' }}>
+                EverBond only accesses your basic Google profile details (Name, Email, Profile picture, and account metadata) to secure your account. <strong>We never access or store your Google password.</strong>
+              </p>
+              <div style={{ fontSize: '0.74rem', color: 'var(--text-faint)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <Lock size={12} />
+                  <span>Encrypted by Firebase</span>
+                </div>
+                {onOpenPolicy && (
+                  <button 
+                    type="button" 
+                    onClick={() => onOpenPolicy('data-handling')} 
+                    style={{ background: 'none', border: 'none', padding: 0, color: T.gold, fontSize: '0.74rem', fontWeight: 600, cursor: 'pointer', textDecoration: 'underline', font: 'inherit' }}
+                  >
+                    Details
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Trust Badges */}
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(3, 1fr)',
+              gap: '8px',
+              fontSize: '0.65rem',
+              fontWeight: 700,
+              textTransform: 'uppercase',
+              letterSpacing: '0.04em',
+              color: 'var(--text-muted)',
+              textAlign: 'center'
+            }}>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', padding: '8px', background: 'rgba(28,26,22,0.02)', borderRadius: '8px', border: '1px solid var(--border)' }}>
+                <Lock size={14} style={{ color: T.gold }} />
+                <span>AES-256</span>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', padding: '8px', background: 'rgba(28,26,22,0.02)', borderRadius: '8px', border: '1px solid var(--border)' }}>
+                <ShieldCheck size={14} style={{ color: T.sage }} />
+                <span>Firebase Auth</span>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', padding: '8px', background: 'rgba(28,26,22,0.02)', borderRadius: '8px', border: '1px solid var(--border)' }}>
+                <Database size={14} style={{ color: T.sky }} />
+                <span>Secure Cloud</span>
+              </div>
             </div>
           </div>
         </div>

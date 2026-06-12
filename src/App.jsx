@@ -72,7 +72,7 @@ function PageSkeleton() {
 /**
  * Onboarding Guard & Protected Route System
  */
-function OnboardingGuard({ children, page, setPage }) {
+function OnboardingGuard({ children, page, setPage, onOpenPolicy }) {
   const isAuthenticated = useFinanceStore(s => s.isAuthenticated);
   const onboardingComplete = useFinanceStore(s => s.onboardingComplete);
   
@@ -90,6 +90,7 @@ function OnboardingGuard({ children, page, setPage }) {
             <AuthPage 
               onAuthSuccess={() => setPage('onboarding')} 
               onBackToLanding={() => setPage('landing')} 
+              onOpenPolicy={onOpenPolicy}
             />
           </motion.div>
         ) : (
@@ -103,6 +104,7 @@ function OnboardingGuard({ children, page, setPage }) {
             <LandingPage 
               onStartJourney={() => setPage('auth')} 
               onLoginClick={() => setPage('auth')} 
+              onOpenPolicy={onOpenPolicy}
             />
           </motion.div>
         )
@@ -579,7 +581,7 @@ export default function App() {
         )}
       </AnimatePresence>
       <CursorSpotlight />
-      <OnboardingGuard page={page} setPage={setPage}>
+      <OnboardingGuard page={page} setPage={setPage} onOpenPolicy={setActivePolicyDoc}>
         <div className="eb-app">
           {!isMobile && (
             <div className="eb-desktop-brand" style={{

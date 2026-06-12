@@ -1,6 +1,6 @@
 import { initializeApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider, OAuthProvider } from "firebase/auth";
-import { getFirestore, doc, getDoc, setDoc } from "firebase/firestore";
+import { getAuth, GoogleAuthProvider, OAuthProvider, deleteUser } from "firebase/auth";
+import { getFirestore, doc, getDoc, setDoc, deleteDoc } from "firebase/firestore";
 import { generatePersonalId } from "./everbondId";
 
 let app = null;
@@ -132,6 +132,28 @@ export async function createUserDocument(user, fullName = '', providerId = 'pass
     return data;
   } catch (err) {
     console.error("Firestore write failed (exact error code):", err.code, err.message);
+    throw err;
+  }
+}
+
+/**
+ * Enterprise-grade account and data scrub.
+ * Deletes user's document in Firestore and deletes Auth record in Firebase Auth.
+ */
+export async function deleteUserAccountAndData(user) {
+  if (!user) return;
+  const userDocRef = doc(db, 'users', user.uid);
+  try {
+    await deleteDoc(userDocRef);
+    console.log("FIRESTORE USER DOCUMENT DELETED SUCCESSFULLY");
+  } catch (err) {
+    console.error("Firestore user document deletion failed:", err);
+  }
+  try {
+    await deleteUser(user);
+    console.log("FIREBASE AUTH USER DELETED SUCCESSFULLY");
+  } catch (err) {
+    console.error("Firebase Auth user account deletion failed:", err);
     throw err;
   }
 }
