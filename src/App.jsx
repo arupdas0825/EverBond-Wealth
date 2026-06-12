@@ -1,9 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback, Suspense, lazy } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useFinanceStore } from './store/useFinanceStore';
-import { LandingPage } from './components/welcome/LandingPage';
-import { AuthPage } from './components/welcome/AuthPage';
-import { OnboardingSystem } from './components/welcome/OnboardingSystem';
 import { FloatingNav } from './components/layout/FloatingNav';
 import { ProfileChip } from './components/layout/ProfileChip';
 import { MobileNav } from './components/layout/MobileNav';
@@ -20,7 +17,10 @@ import { SplashScreen } from './components/common/SplashScreen';
 import './index.css';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth, db, createUserDocument, initError } from './utils/firebase';
+import { doc, getDoc } from 'firebase/firestore';
 import { FirebaseConfigGuard } from './components/common/FirebaseConfigGuard';
+import { OnboardingGuard } from './components/common/OnboardingGuard';
+
 
 /* ═══════════════════════════════════════════════════════════
    LAZY-LOADED PAGE COMPONENTS
@@ -69,69 +69,7 @@ function PageSkeleton() {
   );
 }
 
-/**
- * Onboarding Guard & Protected Route System
- */
-function OnboardingGuard({ children, page, setPage, onOpenPolicy }) {
-  const isAuthenticated = useFinanceStore(s => s.isAuthenticated);
-  const onboardingComplete = useFinanceStore(s => s.onboardingComplete);
-  
-  return (
-    <AnimatePresence mode="wait">
-      {!isAuthenticated ? (
-        page === 'auth' ? (
-          <motion.div
-            key="auth"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            style={{ width: '100%', height: '100%' }}
-          >
-            <AuthPage 
-              onAuthSuccess={() => setPage('onboarding')} 
-              onBackToLanding={() => setPage('landing')} 
-              onOpenPolicy={onOpenPolicy}
-            />
-          </motion.div>
-        ) : (
-          <motion.div
-            key="landing"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            style={{ width: '100%', height: '100%' }}
-          >
-            <LandingPage 
-              onStartJourney={() => setPage('auth')} 
-              onLoginClick={() => setPage('auth')} 
-              onOpenPolicy={onOpenPolicy}
-            />
-          </motion.div>
-        )
-      ) : !onboardingComplete ? (
-        <motion.div
-          key="onboarding"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          style={{ width: '100%', height: '100%' }}
-        >
-          <OnboardingSystem onComplete={() => setPage('dashboard')} onOpenPolicy={onOpenPolicy} />
-        </motion.div>
-      ) : (
-        <motion.div
-          key="app"
-          initial={{ opacity: 0, filter: 'blur(8px)' }}
-          animate={{ opacity: 1, filter: 'blur(0px)', transitionEnd: { filter: 'none' } }}
-          transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1], delay: 0.02 }}
-          style={{ width: '100%', height: '100%' }}
-        >
-          {children}
-        </motion.div>
-      )}
-    </AnimatePresence>
-  );
-}
+
 
 /**
  * CursorSpotlight — GPU-accelerated, zero React re-renders.
@@ -372,14 +310,13 @@ export default function App() {
   // Listen to Firebase Auth state changes and sync with global store
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      console.log("AUTH USER:", firebaseUser);
       if (firebaseUser) {
-        console.log("AUTH SUCCESS");
-        console.log("USER UID:", firebaseUser.uid);
         try {
           const userDocSnap = await getDoc(doc(db, 'users', firebaseUser.uid));
           if (userDocSnap.exists()) {
             const data = userDocSnap.data();
-            console.log("USER DOCUMENT FOUND:", data);
+            console.log("USER DOC:", data);
             console.log("ONBOARDING STATUS:", data.onboardingCompleted);
             
             // Map Firestore mode to store stage formats
@@ -423,9 +360,22 @@ export default function App() {
               p2Salary,
               connectionStatus: data.mode === 'Family Dynasty' ? 'connected' : 'none'
             });
-            console.log("REDIRECT TARGET:", data.onboardingCompleted ? "dashboard" : "onboarding");
+
+            // Redirect if on onboarding or auth page
+            setPage(prev => {
+              if (data.onboardingCompleted) {
+                if (prev === 'landing' || prev === 'auth' || prev === 'onboarding' || (typeof prev === 'string' && prev.startsWith('onboarding/'))) {
+                  return 'dashboard';
+                }
+              } else {
+                return 'onboarding';
+              }
+              return prev;
+            });
           } else {
-            console.log("USER DOCUMENT NOT FOUND, CREATING...");
+            console.log("USER DOC: null");
+            console.log("ONBOARDING STATUS: false");
+
             const data = await createUserDocument(firebaseUser, firebaseUser.displayName || '', 'google.com');
             useFinanceStore.setState({
               isAuthenticated: true,
@@ -440,11 +390,13 @@ export default function App() {
               onboardingComplete: false,
               started: false
             });
-            console.log("ONBOARDING STATUS: false");
-            console.log("REDIRECT TARGET: onboarding");
+            setPage('onboarding');
           }
         } catch (err) {
           console.error("Firestore sync error:", err);
+          console.log("USER DOC: null");
+          console.log("ONBOARDING STATUS: false");
+
           // Fallback even if read fails (e.g. permission issues), to prevent redirect loop to landing
           useFinanceStore.setState({
             isAuthenticated: true,
@@ -457,11 +409,12 @@ export default function App() {
             onboardingComplete: false,
             started: false
           });
-          console.log("ONBOARDING STATUS (FALLBACK): false");
-          console.log("REDIRECT TARGET (FALLBACK): onboarding");
+          setPage('onboarding');
         }
       } else {
-        console.log("NO AUTHENTICATED USER");
+        console.log("USER DOC: null");
+        console.log("ONBOARDING STATUS: false");
+
         // User logged out
         useFinanceStore.setState({
           isAuthenticated: false,
@@ -469,6 +422,7 @@ export default function App() {
           onboardingComplete: false,
           started: false
         });
+        setPage(prev => (prev !== 'landing' && prev !== 'auth' ? 'landing' : prev));
       }
       setAuthLoading(false);
     });
@@ -510,7 +464,7 @@ export default function App() {
         setPage('onboarding');
       }
     } else {
-      if (page === 'landing' || page === 'auth' || page === 'onboarding') {
+      if (page === 'landing' || page === 'auth' || page === 'onboarding' || (typeof page === 'string' && page.startsWith('onboarding/'))) {
         setPage('dashboard');
       }
     }
@@ -581,7 +535,7 @@ export default function App() {
         )}
       </AnimatePresence>
       <CursorSpotlight />
-      <OnboardingGuard page={page} setPage={setPage} onOpenPolicy={setActivePolicyDoc}>
+      <OnboardingGuard page={page} setPage={setPage} onOpenPolicy={setActivePolicyDoc} authLoading={authLoading}>
         <div className="eb-app">
           {!isMobile && (
             <div className="eb-desktop-brand" style={{
