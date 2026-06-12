@@ -4,21 +4,30 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useFinanceStore } from '../../store/useFinanceStore';
 import { T } from '../../theme/tokens';
 import { useToast } from '../common/Toast';
-import { X, Upload, RotateCw, ZoomIn } from 'lucide-react';
+import { X, Upload, RotateCw, ZoomIn, Loader2, Check, Trash2 } from 'lucide-react';
+import { db, storage } from '../../utils/firebase';
+import { doc, setDoc } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 export function ProfileEditModal({ isOpen, onClose }) {
   const store = useFinanceStore();
   const toast = useToast();
   const { 
-    partner1, country, currency, bio, profilePhoto, relationshipStage, everBondId, setProfile, theme 
+    partner1, userName, country, currency, bio, profilePhoto, relationshipStage, everBondId, 
+    email, user, setProfile, theme, language, timezone, verificationStatus, partnerId
   } = store;
 
   // Form states
-  const [nameVal, setNameVal] = useState(partner1 || '');
+  const [nameVal, setNameVal] = useState(partner1 || userName || '');
   const [countryVal, setCountryVal] = useState(country || 'India');
   const [currencyVal, setCurrencyVal] = useState(currency || 'INR');
+  const [languageVal, setLanguageVal] = useState(language || 'English');
+  const [timezoneVal, setTimezoneVal] = useState(timezone || 'GMT+5:30');
   const [bioVal, setBioVal] = useState(bio || '');
   const [photoVal, setPhotoVal] = useState(profilePhoto || '');
+  
+  // Custom button states
+  const [saveState, setSaveState] = useState('idle'); // 'idle' | 'loading' | 'success'
 
   // Drag & drop & crop canvas states
   const [dragActive, setDragActive] = useState(false);
@@ -35,16 +44,19 @@ export function ProfileEditModal({ isOpen, onClose }) {
   // Sync state when modal opens
   useEffect(() => {
     if (isOpen) {
-      setNameVal(partner1 || '');
+      setNameVal(partner1 || userName || '');
       setCountryVal(country || 'India');
       setCurrencyVal(currency || 'INR');
+      setLanguageVal(language || 'English');
+      setTimezoneVal(timezone || 'GMT+5:30');
       setBioVal(bio || '');
       setPhotoVal(profilePhoto || '');
       setRawImageSrc(null);
       setZoom(1);
       setOffset({ x: 0, y: 0 });
+      setSaveState('idle');
     }
-  }, [isOpen, partner1, country, currency, bio, profilePhoto]);
+  }, [isOpen, partner1, userName, country, currency, language, timezone, bio, profilePhoto]);
 
   // Body Scroll Lock implementation
   useEffect(() => {
@@ -68,6 +80,24 @@ export function ProfileEditModal({ isOpen, onClose }) {
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
+
+  // Helper to convert dataURI/base64 to Blob for Storage upload
+  const dataURLtoBlob = (dataurl) => {
+    try {
+      const arr = dataurl.split(',');
+      const mime = arr[0].match(/:(.*?);/)[1];
+      const bstr = atob(arr[1]);
+      let n = bstr.length;
+      const u8arr = new Uint8Array(n);
+      while (n--) {
+        u8arr[n] = bstr.charCodeAt(n);
+      }
+      return new Blob([u8arr], { type: mime });
+    } catch (e) {
+      console.error("Base64 parsing error:", e);
+      return null;
+    }
+  };
 
   // Handle file selection
   const handleFile = (file) => {
@@ -164,38 +194,88 @@ export function ProfileEditModal({ isOpen, onClose }) {
     setIsDraggingCanvas(false);
   };
 
-  const handleSave = () => {
-    let finalBase64 = photoVal;
-
-    if (rawImageSrc && canvasRef.current) {
-      const cropCanvas = document.createElement('canvas');
-      cropCanvas.width = 150;
-      cropCanvas.height = 150;
-      const cropCtx = cropCanvas.getContext('2d');
-
-      cropCtx.beginPath();
-      cropCtx.arc(75, 75, 75, 0, Math.PI * 2);
-      cropCtx.clip();
-
-      cropCtx.drawImage(canvasRef.current, 0, 0, 150, 150);
-      finalBase64 = cropCanvas.toDataURL('image/jpeg', 0.85);
+  const handleSave = async () => {
+    if (!nameVal.trim()) {
+      toast.error('Name cannot be empty.');
+      return;
     }
+    setSaveState('loading');
 
-    setProfile({
-      partner1: nameVal.trim(),
-      country: countryVal,
-      currency: currencyVal,
-      bio: bioVal.trim(),
-      profilePhoto: finalBase64
-    });
+    try {
+      let finalPhotoURL = photoVal;
 
-    toast.success('Profile saved successfully.');
-    onClose();
+      // 1. Process and upload profile image if cropped in canvas
+      if (rawImageSrc && canvasRef.current && user?.uid) {
+        const cropCanvas = document.createElement('canvas');
+        cropCanvas.width = 150;
+        cropCanvas.height = 150;
+        const cropCtx = cropCanvas.getContext('2d');
+
+        cropCtx.beginPath();
+        cropCtx.arc(75, 75, 75, 0, Math.PI * 2);
+        cropCtx.clip();
+
+        cropCtx.drawImage(canvasRef.current, 0, 0, 150, 150);
+        const croppedBase64 = cropCanvas.toDataURL('image/jpeg', 0.85);
+        
+        // Convert to Blob and upload to Firebase Storage
+        const blob = dataURLtoBlob(croppedBase64);
+        if (blob) {
+          const fileRef = ref(storage, `users/${user.uid}/profile_photo.jpg`);
+          const uploadSnap = await uploadBytes(fileRef, blob);
+          finalPhotoURL = await getDownloadURL(uploadSnap.ref);
+        }
+      }
+
+      // 2. Persist to Firestore users/{uid} document
+      if (user?.uid && db) {
+        const userRef = doc(db, 'users', user.uid);
+        const mappedMode = relationshipStage === 'Married' ? 'Family Dynasty' : (relationshipStage === 'Committed' ? 'Partner' : 'Single');
+        const finalVerificationStatus = verificationStatus || (partnerId ? 'Verified' : 'Pending');
+
+        await setDoc(userRef, {
+          fullName: nameVal.trim(),
+          country: countryVal,
+          currency: currencyVal,
+          language: languageVal,
+          timezone: timezoneVal,
+          bio: bioVal.trim(),
+          photoURL: finalPhotoURL,
+          relationshipMode: mappedMode,
+          verificationStatus: finalVerificationStatus
+        }, { merge: true });
+      }
+
+      // 3. Update local Zustand store
+      setProfile({
+        partner1: nameVal.trim(),
+        country: countryVal,
+        currency: currencyVal,
+        bio: bioVal.trim(),
+        profilePhoto: finalPhotoURL,
+        language: languageVal,
+        timezone: timezoneVal,
+        verificationStatus: verificationStatus || (partnerId ? 'Verified' : 'Pending')
+      });
+
+      setSaveState('success');
+      toast.success('Profile saved successfully.');
+      
+      // Delay closing to show success checkmark
+      setTimeout(() => {
+        onClose();
+      }, 1000);
+    } catch (err) {
+      console.error("Error saving profile details:", err);
+      toast.error('Failed to save profile changes. Please try again.');
+      setSaveState('idle');
+    }
   };
 
-  const handleRemovePhoto = () => {
+  const handleRemovePhoto = async () => {
     setPhotoVal('');
     setRawImageSrc(null);
+    toast.success('Photo removed. Click save to apply changes.');
   };
 
   // Apple-style open/close variants: 220ms ease-out, scale 0.96 -> 1, no bounce
@@ -211,10 +291,7 @@ export function ProfileEditModal({ isOpen, onClose }) {
     exit: { opacity: 0, scale: 0.96, transition: { duration: 0.22, ease: 'easeIn' } }
   };
 
-  // Theme-sensitive modal parameters
   const isDark = theme === 'dark';
-  const modalBg = isDark ? 'rgba(30, 28, 24, 0.94)' : 'rgba(255, 255, 255, 0.92)';
-  const modalBorder = isDark ? '1px solid rgba(255, 255, 255, 0.12)' : '1px solid rgba(255, 255, 255, 0.4)';
   const footerBg = isDark ? 'rgba(35, 33, 28, 0.95)' : 'rgba(255, 255, 255, 0.95)';
 
   const modalContent = (
@@ -228,10 +305,10 @@ export function ProfileEditModal({ isOpen, onClose }) {
           style={{
             position: 'fixed',
             inset: 0,
-            zIndex: 9998,
-            background: 'rgba(15, 15, 15, 0.18)',
-            backdropFilter: 'blur(10px)',
-            WebkitBackdropFilter: 'blur(10px)',
+            zIndex: 100000, // Z-INDEX: 100000 ABOVE NAVBAR
+            background: 'rgba(10, 10, 10, 0.55)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -246,16 +323,16 @@ export function ProfileEditModal({ isOpen, onClose }) {
             className="liquid-glass"
             style={{
               width: '100%',
-              maxWidth: '700px', // Width: 700px
+              maxWidth: '700px', // DESKTOP WIDTH: 700PX
               position: 'relative',
-              maxHeight: '90vh', // Max height: 90vh
+              maxHeight: '90vh', // MAX HEIGHT: 90VH
               display: 'flex',
               flexDirection: 'column',
               overflow: 'hidden',
-              zIndex: 9999
+              zIndex: 100001
             }}
           >
-            {/* Header (Fixed) */}
+            {/* Header */}
             <div style={{ 
               display: 'flex', 
               justifyContent: 'space-between', 
@@ -268,6 +345,7 @@ export function ProfileEditModal({ isOpen, onClose }) {
               </h3>
               <button 
                 onClick={onClose}
+                disabled={saveState !== 'idle'}
                 style={{
                   width: '32px', height: '32px', borderRadius: '50%', background: 'var(--bg-warm)',
                   border: '1px solid var(--border-mid)', color: 'var(--text)',
@@ -318,7 +396,7 @@ export function ProfileEditModal({ isOpen, onClose }) {
                     </span>
                   </div>
                 ) : (
-                  // Image Canvas Crop Area or Existing Preview
+                  // Image Canvas Crop Area or Preview
                   <div style={{ display: 'flex', gap: '24px', alignItems: 'center', flexWrap: 'wrap' }}>
                     {rawImageSrc ? (
                       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
@@ -365,11 +443,15 @@ export function ProfileEditModal({ isOpen, onClose }) {
                         <RotateCw size={12} /> Replace Image
                       </button>
                       <button 
-                        className="btn-reset"
-                        style={{ padding: '6px 14px', fontSize: '0.78rem', width: 'auto', color: T.rose }}
                         onClick={handleRemovePhoto}
+                        className="btn-reset"
+                        style={{
+                          padding: '6px 14px', fontSize: '0.78rem', width: 'auto', color: 'var(--rose)',
+                          borderColor: 'var(--rose-border)', border: '1px solid', background: 'transparent',
+                          borderRadius: '8px', cursor: 'pointer', display: 'inline-flex', gap: '6px', alignItems: 'center'
+                        }}
                       >
-                        Remove Photo
+                        <Trash2 size={12} /> Remove Photo
                       </button>
                     </div>
                   </div>
@@ -397,7 +479,7 @@ export function ProfileEditModal({ isOpen, onClose }) {
                       value={nameVal} 
                       onChange={(e) => setNameVal(e.target.value)} 
                       placeholder="Enter your name"
-                      style={{ width: '100%', fontSize: '0.88rem', padding: '10px 14px' }}
+                      style={{ width: '100%', fontSize: '0.88rem', padding: '10px 14px', boxSizing: 'border-box' }}
                     />
                   </div>
 
@@ -409,7 +491,7 @@ export function ProfileEditModal({ isOpen, onClose }) {
                       className="onb-input-glow" 
                       value={countryVal} 
                       onChange={(e) => setCountryVal(e.target.value)}
-                      style={{ width: '100%', fontSize: '0.88rem', padding: '10px 14px', background: 'var(--bg-card)' }}
+                      style={{ width: '100%', fontSize: '0.88rem', padding: '10px 14px', background: 'var(--bg-card)', boxSizing: 'border-box' }}
                     >
                       <option value="India">India</option>
                       <option value="United States">United States</option>
@@ -429,7 +511,7 @@ export function ProfileEditModal({ isOpen, onClose }) {
                       className="onb-input-glow" 
                       value={currencyVal} 
                       onChange={(e) => setCurrencyVal(e.target.value)}
-                      style={{ width: '100%', fontSize: '0.88rem', padding: '10px 14px', background: 'var(--bg-card)' }}
+                      style={{ width: '100%', fontSize: '0.88rem', padding: '10px 14px', background: 'var(--bg-card)', boxSizing: 'border-box' }}
                     >
                       <option value="INR">INR (₹)</option>
                       <option value="USD">USD ($)</option>
@@ -440,27 +522,79 @@ export function ProfileEditModal({ isOpen, onClose }) {
                   </div>
 
                   <div>
+                    <label style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)', display: 'block', marginBottom: '6px' }}>
+                      Language
+                    </label>
+                    <select 
+                      className="onb-input-glow" 
+                      value={languageVal} 
+                      onChange={(e) => setLanguageVal(e.target.value)}
+                      style={{ width: '100%', fontSize: '0.88rem', padding: '10px 14px', background: 'var(--bg-card)', boxSizing: 'border-box' }}
+                    >
+                      <option value="English">English</option>
+                      <option value="Hindi">Hindi</option>
+                      <option value="Spanish">Spanish</option>
+                      <option value="French">French</option>
+                      <option value="German">German</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                  <div>
+                    <label style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)', display: 'block', marginBottom: '6px' }}>
+                      Timezone
+                    </label>
+                    <select 
+                      className="onb-input-glow" 
+                      value={timezoneVal} 
+                      onChange={(e) => setTimezoneVal(e.target.value)}
+                      style={{ width: '100%', fontSize: '0.88rem', padding: '10px 14px', background: 'var(--bg-card)', boxSizing: 'border-box' }}
+                    >
+                      <option value="GMT+5:30">GMT+5:30 (IST)</option>
+                      <option value="GMT-5:00">GMT-5:00 (EST)</option>
+                      <option value="GMT+0:00">GMT+0:00 (UTC/GMT)</option>
+                      <option value="GMT+8:00">GMT+8:00 (SGT)</option>
+                      <option value="GMT+1:00">GMT+1:00 (CET)</option>
+                    </select>
+                  </div>
+
+                  <div>
                     <label style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-faint)', display: 'block', marginBottom: '6px' }}>
                       Relationship Stage (Read-only)
                     </label>
                     <div 
                       className="onb-input-glow" 
-                      style={{ padding: '10px 14px', fontSize: '0.88rem', background: 'var(--bg-warm)', color: 'var(--text-muted)', border: '1px solid var(--border)' }}
+                      style={{ padding: '10px 14px', fontSize: '0.88rem', background: 'var(--bg-warm)', color: 'var(--text-faint)', border: '1px solid var(--border)', boxSizing: 'border-box' }}
                     >
                       {relationshipStage || 'Single'}
                     </div>
                   </div>
                 </div>
 
-                <div>
-                  <label style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-faint)', display: 'block', marginBottom: '6px' }}>
-                    EverBond ID (Read-only)
-                  </label>
-                  <div 
-                    className="onb-input-glow" 
-                    style={{ padding: '10px 14px', fontSize: '0.88rem', background: 'var(--bg-warm)', color: 'var(--text-faint)', border: '1px solid var(--border)', fontFamily: 'monospace' }}
-                  >
-                    {everBondId || 'EB-AWAITING-GEN'}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                  <div>
+                    <label style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-faint)', display: 'block', marginBottom: '6px' }}>
+                      Account Email (Read-only)
+                    </label>
+                    <div 
+                      className="onb-input-glow" 
+                      style={{ padding: '10px 14px', fontSize: '0.88rem', background: 'var(--bg-warm)', color: 'var(--text-faint)', border: '1px solid var(--border)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', boxSizing: 'border-box' }}
+                    >
+                      {email || user?.email || 'N/A'}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-faint)', display: 'block', marginBottom: '6px' }}>
+                      EverBond ID (Read-only)
+                    </label>
+                    <div 
+                      className="onb-input-glow" 
+                      style={{ padding: '10px 14px', fontSize: '0.88rem', background: 'var(--bg-warm)', color: 'var(--text-faint)', border: '1px solid var(--border)', fontFamily: 'monospace', boxSizing: 'border-box' }}
+                    >
+                      {everBondId || 'EB-XXXXXX'}
+                    </div>
                   </div>
                 </div>
 
@@ -470,17 +604,17 @@ export function ProfileEditModal({ isOpen, onClose }) {
                   </label>
                   <textarea 
                     className="onb-input-glow" 
-                    rows={4}
+                    rows={3}
                     value={bioVal} 
                     onChange={(e) => setBioVal(e.target.value)} 
                     placeholder="Share a short bio about yourself..."
-                    style={{ width: '100%', fontSize: '0.88rem', padding: '10px 14px', resize: 'none' }}
+                    style={{ width: '100%', fontSize: '0.88rem', padding: '10px 14px', resize: 'none', boxSizing: 'border-box' }}
                   />
                 </div>
               </div>
             </div>
 
-            {/* Sticky Footer (Fixed/Sticky at Bottom) */}
+            {/* Sticky Footer */}
             <div style={{ 
               display: 'flex', 
               justifyContent: 'flex-end', 
@@ -493,18 +627,38 @@ export function ProfileEditModal({ isOpen, onClose }) {
               zIndex: 10
             }}>
               <button 
-                className="btn-reset" 
-                style={{ width: 'auto', padding: '8px 20px', cursor: 'pointer' }} 
+                className="btn-secondary" 
+                disabled={saveState !== 'idle'}
+                style={{ width: 'auto', padding: '10px 24px', cursor: 'pointer', borderRadius: '100px', display: 'flex', alignItems: 'center', border: '1px solid var(--border-mid)', background: 'transparent', color: 'var(--text)' }} 
                 onClick={onClose}
               >
                 Cancel
               </button>
+              
               <button 
                 className="btn-primary" 
-                style={{ width: 'auto', padding: '8px 22px', background: T.gold, cursor: 'pointer' }} 
+                disabled={saveState !== 'idle'}
+                style={{ 
+                  width: 'auto', 
+                  padding: '10px 26px', 
+                  background: saveState === 'success' ? T.sage : `linear-gradient(135deg, ${T.gold} 0%, #a07d22 100%)`, 
+                  cursor: saveState === 'idle' ? 'pointer' : 'default',
+                  borderRadius: '100px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  color: '#fff',
+                  border: 'none',
+                  boxShadow: saveState === 'success' ? 'none' : 'var(--sh-gold)',
+                  transition: 'all 0.2s ease'
+                }} 
                 onClick={handleSave}
               >
-                Save Profile
+                {saveState === 'loading' && <Loader2 size={16} className="spinner" style={{ animation: 'spin 1.5s linear infinite' }} />}
+                {saveState === 'success' && <Check size={16} />}
+                {saveState === 'idle' && 'Save Changes'}
+                {saveState === 'loading' && 'Saving...'}
+                {saveState === 'success' && 'Saved!'}
               </button>
             </div>
           </motion.div>

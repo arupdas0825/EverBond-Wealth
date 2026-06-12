@@ -1,11 +1,13 @@
 import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider, OAuthProvider, deleteUser } from "firebase/auth";
 import { getFirestore, doc, getDoc, setDoc, deleteDoc } from "firebase/firestore";
+import { getStorage } from "firebase/storage";
 import { generatePersonalId } from "./everbondId";
 
 let app = null;
 let auth = null;
 let db = null;
+let storage = null;
 let initError = null;
 
 const requiredEnvVars = [
@@ -74,6 +76,7 @@ if (missingVars.length > 0) {
     app = initializeApp(firebaseConfig);
     auth = getAuth(app);
     db = getFirestore(app);
+    storage = getStorage(app);
     console.log("FIRESTORE INIT SUCCESS");
   } catch (error) {
     initError = {
@@ -85,7 +88,7 @@ if (missingVars.length > 0) {
   }
 }
 
-export { app, auth, db, initError };
+export { app, auth, db, storage, initError };
 
 // Authentication Providers
 export const googleProvider = new GoogleAuthProvider();

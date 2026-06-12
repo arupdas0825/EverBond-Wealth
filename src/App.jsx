@@ -17,7 +17,7 @@ import { SplashScreen } from './components/common/SplashScreen';
 import './index.css';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth, db, createUserDocument, initError } from './utils/firebase';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { FirebaseConfigGuard } from './components/common/FirebaseConfigGuard';
 import { OnboardingGuard } from './components/common/OnboardingGuard';
 
@@ -332,6 +332,16 @@ export default function App() {
               }
             }
 
+            // Redesign profile mapping
+            const rawProvider = firebaseUser.providerData?.[0]?.providerId || data.authProvider || 'password';
+            const mappedProvider = rawProvider === 'google.com' ? 'Google' : (rawProvider === 'apple.com' ? 'Apple' : 'Email Password');
+            const mappedMode = data.relationshipMode || (mappedStage === 'Married' ? 'Family Dynasty' : (mappedStage === 'Committed' ? 'Partner' : 'Single'));
+            const verificationStatus = data.verificationStatus || (data.partnerId ? 'Verified' : 'Pending');
+            const nowIso = new Date().toISOString();
+
+            // Background non-blocking firestore update for lastLogin
+            updateDoc(doc(db, 'users', firebaseUser.uid), { lastLogin: nowIso }).catch(err => console.warn("Error updating lastLogin:", err));
+
             useFinanceStore.setState({
               isAuthenticated: true,
               user: {
@@ -360,7 +370,16 @@ export default function App() {
               p1Salary,
               p2Salary,
               connectionStatus: data.partnerId ? 'connected' : 'none',
-              familyWorkspaceId: data.familyWorkspaceId || ''
+              familyWorkspaceId: data.familyWorkspaceId || '',
+              // Synchronized profile fields
+              bio: data.bio || '',
+              profilePhoto: data.photoURL || data.profilePhoto || '',
+              language: data.language || 'English',
+              timezone: data.timezone || 'GMT+5:30',
+              provider: mappedProvider,
+              relationshipMode: mappedMode,
+              verificationStatus: verificationStatus,
+              lastLogin: data.lastLogin || nowIso
             });
 
             // Redirect if on onboarding or auth page
