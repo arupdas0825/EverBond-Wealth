@@ -196,8 +196,8 @@ export function AuthPage({ onAuthSuccess, onBackToLanding, onOpenPolicy }) {
         background: 'linear-gradient(135deg, #FAF6EE 0%, #EAE2D0 100%)',
         fontFamily: T.fontBody,
         position: 'relative',
-        padding: '16px',
-        overflow: 'hidden',
+        padding: '40px 16px',
+        overflowY: 'auto',
         boxSizing: 'border-box',
       }}
     >
@@ -250,7 +250,6 @@ export function AuthPage({ onAuthSuccess, onBackToLanding, onOpenPolicy }) {
         style={{
           width: '100%',
           maxWidth: '1040px',
-          overflow: 'hidden',
           position: 'relative',
           zIndex: 10,
         }}
@@ -258,225 +257,222 @@ export function AuthPage({ onAuthSuccess, onBackToLanding, onOpenPolicy }) {
 
         {/* ══ LEFT — Auth panel ══════════════════════════ */}
         <motion.div layout transition={{ duration: 0.4, ease: "easeInOut" }} className="auth-left-col">
-          {/* Scrollable upper section (Logo + Heading + Toggle + Form) */}
-          <motion.div layout transition={{ duration: 0.4, ease: "easeInOut" }} className="auth-scrollable-content">
-            {/* Logo */}
-            <div style={{ marginBottom: '24px' }}>
-              <Logo size={32} showText={true} />
-            </div>
+          {/* Logo */}
+          <div style={{ marginBottom: '24px' }}>
+            <Logo size={32} showText={true} />
+          </div>
 
-            {/* Heading */}
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={activeTab}
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -6 }}
-                transition={{ duration: 0.2, ease: "easeInOut" }}
-                style={{ marginBottom: '20px' }}
+          {/* Heading */}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeTab}
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.2, ease: "easeInOut" }}
+              style={{ marginBottom: '20px' }}
+            >
+              <span style={{ fontSize: '0.72rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.14em', color: T.gold, display: 'block', marginBottom: '6px' }}>
+                {activeTab === 'login' ? 'Secure Access' : 'New Account'}
+              </span>
+              <h1 style={{ fontFamily: T.fontDisplay, fontSize: '1.85rem', fontWeight: 700, margin: 0, color: 'var(--text)', lineHeight: 1.2 }}>
+                {activeTab === 'login' ? 'Welcome Back' : 'Create Account'}
+              </h1>
+              <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', margin: '6px 0 0', lineHeight: 1.45 }}>
+                {activeTab === 'login'
+                  ? 'Sign in to your EverBond financial vault.'
+                  : 'Start building your wealth legacy today.'}
+              </p>
+            </motion.div>
+          </AnimatePresence>
+
+          {/* Tab switcher */}
+          <div style={{
+            display: 'flex',
+            background: 'rgba(255, 255, 255, 0.15)',
+            backdropFilter: 'blur(15px)',
+            borderRadius: '14px',
+            padding: '4px',
+            border: '1px solid rgba(255, 255, 255, 0.25)',
+            marginBottom: '20px',
+            position: 'relative',
+            zIndex: 5,
+          }}>
+            {['login', 'signup'].map(tab => (
+              <button
+                key={tab}
+                type="button"
+                onClick={() => switchTab(tab)}
+                style={{
+                  flex: 1,
+                  padding: '10px 0',
+                  border: 'none',
+                  background: 'transparent',
+                  fontSize: '0.875rem',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  color: activeTab === tab ? '#C9A227' : 'rgba(28, 26, 22, 0.45)',
+                  transition: 'color 0.25s ease',
+                  fontFamily: 'inherit',
+                  position: 'relative',
+                }}
               >
-                <span style={{ fontSize: '0.72rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.14em', color: T.gold, display: 'block', marginBottom: '6px' }}>
-                  {activeTab === 'login' ? 'Secure Access' : 'New Account'}
-                </span>
-                <h1 style={{ fontFamily: T.fontDisplay, fontSize: '1.85rem', fontWeight: 700, margin: 0, color: 'var(--text)', lineHeight: 1.2 }}>
-                  {activeTab === 'login' ? 'Welcome Back' : 'Create Account'}
-                </h1>
-                <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', margin: '6px 0 0', lineHeight: 1.45 }}>
-                  {activeTab === 'login'
-                    ? 'Sign in to your EverBond financial vault.'
-                    : 'Start building your wealth legacy today.'}
-                </p>
-              </motion.div>
+                {activeTab === tab && (
+                  <motion.div
+                    layoutId="activeTabHighlight"
+                    transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                    style={{
+                      position: 'absolute',
+                      inset: 0,
+                      background: 'linear-gradient(135deg, rgba(201, 168, 76, 0.26) 0%, rgba(184, 144, 42, 0.16) 100%)',
+                      border: '1px solid rgba(201, 168, 76, 0.45)',
+                      borderRadius: '10px',
+                      zIndex: -1,
+                    }}
+                  />
+                )}
+                {tab === 'login' ? 'Sign In' : 'Sign Up'}
+              </button>
+            ))}
+          </div>
+
+          {/* Form with layout animations */}
+          <form onSubmit={handleEmailAuth} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+            <AnimatePresence initial={false}>
+              {activeTab === 'signup' && (
+                <motion.div
+                  key="fullname"
+                  initial={{ opacity: 0, height: 0, y: -12 }}
+                  animate={{ opacity: 1, height: 'auto', y: 0 }}
+                  exit={{ opacity: 0, height: 0, y: -12 }}
+                  transition={{ duration: 0.4, ease: "easeInOut" }}
+                  style={{ overflow: 'hidden' }}
+                  layout
+                >
+                  <AuthField
+                    icon={<User size={16} />}
+                    type="text"
+                    placeholder="Full Name"
+                    value={fullName}
+                    onChange={e => { setFullName(e.target.value); if (errors.fullName) setErrors(p => ({ ...p, fullName: '' })); }}
+                    disabled={isLoading}
+                    error={errors.fullName}
+                  />
+                </motion.div>
+              )}
             </AnimatePresence>
 
-            {/* Tab switcher */}
-            <div style={{
-              display: 'flex',
-              background: 'rgba(255, 255, 255, 0.15)',
-              backdropFilter: 'blur(15px)',
-              borderRadius: '14px',
-              padding: '4px',
-              border: '1px solid rgba(255, 255, 255, 0.25)',
-              marginBottom: '20px',
-              position: 'relative',
-              zIndex: 5,
-            }}>
-              {['login', 'signup'].map(tab => (
-                <button
-                  key={tab}
-                  type="button"
-                  onClick={() => switchTab(tab)}
-                  style={{
-                    flex: 1,
-                    padding: '10px 0',
-                    border: 'none',
-                    background: 'transparent',
-                    fontSize: '0.875rem',
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                    color: activeTab === tab ? '#C9A227' : 'rgba(28, 26, 22, 0.45)',
-                    transition: 'color 0.25s ease',
-                    fontFamily: 'inherit',
-                    position: 'relative',
-                  }}
+            <motion.div layout transition={{ duration: 0.4, ease: "easeInOut" }}>
+              <AuthField
+                icon={<Mail size={16} />}
+                type="email"
+                placeholder="Email Address"
+                value={email}
+                onChange={e => { setEmail(e.target.value); if (errors.email) setErrors(p => ({ ...p, email: '' })); }}
+                disabled={isLoading}
+                error={errors.email}
+              />
+            </motion.div>
+
+            <motion.div layout transition={{ duration: 0.4, ease: "easeInOut" }}>
+              <AuthField
+                icon={<Key size={16} />}
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={e => { setPassword(e.target.value); if (errors.password) setErrors(p => ({ ...p, password: '' })); }}
+                disabled={isLoading}
+                error={errors.password}
+              />
+            </motion.div>
+
+            {/* Password strength bar */}
+            <AnimatePresence initial={false}>
+              {activeTab === 'signup' && password && (
+                <motion.div
+                  key="strength"
+                  initial={{ opacity: 0, height: 0, y: -6 }}
+                  animate={{ opacity: 1, height: 'auto', y: 0 }}
+                  exit={{ opacity: 0, height: 0, y: -6 }}
+                  transition={{ duration: 0.4, ease: "easeInOut" }}
+                  style={{ overflow: 'hidden', padding: '0 4px', marginTop: '2px' }}
+                  layout
                 >
-                  {activeTab === tab && (
-                    <motion.div
-                      layoutId="activeTabHighlight"
-                      transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-                      style={{
-                        position: 'absolute',
-                        inset: 0,
-                        background: 'linear-gradient(135deg, rgba(201, 168, 76, 0.26) 0%, rgba(184, 144, 42, 0.16) 100%)',
-                        border: '1px solid rgba(201, 168, 76, 0.45)',
-                        borderRadius: '10px',
-                        zIndex: -1,
-                      }}
-                    />
-                  )}
-                  {tab === 'login' ? 'Sign In' : 'Sign Up'}
-                </button>
-              ))}
-            </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', marginBottom: '5px', color: 'var(--text-muted)' }}>
+                    <span>Strength</span>
+                    <span style={{ color: strengthInfo.color, fontWeight: 700 }}>{strengthInfo.text}</span>
+                  </div>
+                  <div style={{ height: '4px', background: 'rgba(28, 26, 22, 0.08)', borderRadius: '2px', overflow: 'hidden' }}>
+                    <div style={{ width: strengthInfo.width, height: '100%', background: strengthInfo.color, transition: 'all 0.3s ease', borderRadius: '2px' }} />
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
-            {/* Form with layout animations */}
-            <form onSubmit={handleEmailAuth} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-              <AnimatePresence initial={false}>
-                {activeTab === 'signup' && (
-                  <motion.div
-                    key="fullname"
-                    initial={{ opacity: 0, height: 0, y: -12 }}
-                    animate={{ opacity: 1, height: 'auto', y: 0 }}
-                    exit={{ opacity: 0, height: 0, y: -12 }}
-                    transition={{ duration: 0.4, ease: "easeInOut" }}
-                    style={{ overflow: 'hidden' }}
-                    layout
-                  >
-                    <AuthField
-                      icon={<User size={16} />}
-                      type="text"
-                      placeholder="Full Name"
-                      value={fullName}
-                      onChange={e => { setFullName(e.target.value); if (errors.fullName) setErrors(p => ({ ...p, fullName: '' })); }}
-                      disabled={isLoading}
-                      error={errors.fullName}
-                    />
-                  </motion.div>
-                )}
-              </AnimatePresence>
-
-              <motion.div layout transition={{ duration: 0.4, ease: "easeInOut" }}>
-                <AuthField
-                  icon={<Mail size={16} />}
-                  type="email"
-                  placeholder="Email Address"
-                  value={email}
-                  onChange={e => { setEmail(e.target.value); if (errors.email) setErrors(p => ({ ...p, email: '' })); }}
-                  disabled={isLoading}
-                  error={errors.email}
-                />
-              </motion.div>
-
-              <motion.div layout transition={{ duration: 0.4, ease: "easeInOut" }}>
-                <AuthField
-                  icon={<Key size={16} />}
-                  type="password"
-                  placeholder="Password"
-                  value={password}
-                  onChange={e => { setPassword(e.target.value); if (errors.password) setErrors(p => ({ ...p, password: '' })); }}
-                  disabled={isLoading}
-                  error={errors.password}
-                />
-              </motion.div>
-
-              {/* Password strength bar */}
-              <AnimatePresence initial={false}>
-                {activeTab === 'signup' && password && (
-                  <motion.div
-                    key="strength"
-                    initial={{ opacity: 0, height: 0, y: -6 }}
-                    animate={{ opacity: 1, height: 'auto', y: 0 }}
-                    exit={{ opacity: 0, height: 0, y: -6 }}
-                    transition={{ duration: 0.4, ease: "easeInOut" }}
-                    style={{ overflow: 'hidden', padding: '0 4px', marginTop: '2px' }}
-                    layout
-                  >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', marginBottom: '5px', color: 'var(--text-muted)' }}>
-                      <span>Strength</span>
-                      <span style={{ color: strengthInfo.color, fontWeight: 700 }}>{strengthInfo.text}</span>
-                    </div>
-                    <div style={{ height: '4px', background: 'rgba(28, 26, 22, 0.08)', borderRadius: '2px', overflow: 'hidden' }}>
-                      <div style={{ width: strengthInfo.width, height: '100%', background: strengthInfo.color, transition: 'all 0.3s ease', borderRadius: '2px' }} />
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-
-              <AnimatePresence initial={false}>
-                {activeTab === 'signup' && (
-                  <motion.div
-                    key="confirmpw"
-                    initial={{ opacity: 0, height: 0, y: -12 }}
-                    animate={{ opacity: 1, height: 'auto', y: 0 }}
-                    exit={{ opacity: 0, height: 0, y: -12 }}
-                    transition={{ duration: 0.4, ease: "easeInOut" }}
-                    style={{ overflow: 'hidden' }}
-                    layout
-                  >
-                    <AuthField
-                      icon={<Key size={16} />}
-                      type="password"
-                      placeholder="Confirm Password"
-                      value={confirmPw}
-                      onChange={e => { setConfirmPw(e.target.value); if (errors.confirmPw) setErrors(p => ({ ...p, confirmPw: '' })); }}
-                      disabled={isLoading}
-                      error={errors.confirmPw}
-                    />
-                  </motion.div>
-                )}
-              </AnimatePresence>
-
-              {/* Submit button */}
-              <motion.div layout transition={{ duration: 0.4, ease: "easeInOut" }}>
-                <motion.button
-                  type="submit"
-                  disabled={isLoading}
-                  whileHover={!isLoading ? { 
-                    y: -2, 
-                    boxShadow: '0 8px 24px rgba(201, 168, 76, 0.4), 0 0 15px rgba(201, 168, 76, 0.2)',
-                    background: 'linear-gradient(135deg, #d4ae3b 0%, #ca9718 100%)'
-                  } : {}}
-                  whileTap={!isLoading ? { scale: 0.97 } : {}}
-                  transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-                  style={{
-                    background: 'linear-gradient(135deg, #C9A227 0%, #B8860B 100%)',
-                    border: '1px solid rgba(255, 255, 255, 0.25)',
-                    color: '#ffffff',
-                    height: '56px',
-                    borderRadius: '18px',
-                    fontSize: '0.95rem',
-                    fontWeight: 700,
-                    cursor: isLoading ? 'not-allowed' : 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '8px',
-                    boxShadow: '0 4px 16px rgba(201, 168, 76, 0.25)',
-                    opacity: isLoading ? 0.72 : 1,
-                    width: '100%',
-                    marginTop: '8px',
-                    fontFamily: 'inherit',
-                  }}
+            <AnimatePresence initial={false}>
+              {activeTab === 'signup' && (
+                <motion.div
+                  key="confirmpw"
+                  initial={{ opacity: 0, height: 0, y: -12 }}
+                  animate={{ opacity: 1, height: 'auto', y: 0 }}
+                  exit={{ opacity: 0, height: 0, y: -12 }}
+                  transition={{ duration: 0.4, ease: "easeInOut" }}
+                  style={{ overflow: 'hidden' }}
+                  layout
                 >
-                  <span>{isLoading ? 'Please wait…' : activeTab === 'login' ? 'Sign In' : 'Create Account'}</span>
-                  {!isLoading && <ArrowRight size={16} />}
-                </motion.button>
-              </motion.div>
-            </form>
-          </motion.div>
+                  <AuthField
+                    icon={<Key size={16} />}
+                    type="password"
+                    placeholder="Confirm Password"
+                    value={confirmPw}
+                    onChange={e => { setConfirmPw(e.target.value); if (errors.confirmPw) setErrors(p => ({ ...p, confirmPw: '' })); }}
+                    disabled={isLoading}
+                    error={errors.confirmPw}
+                  />
+                </motion.div>
+              )}
+            </AnimatePresence>
 
-          {/* Fixed bottom footer */}
-          <motion.div layout transition={{ duration: 0.4, ease: "easeInOut" }} className="auth-fixed-footer">
+            {/* Submit button */}
+            <motion.div layout transition={{ duration: 0.4, ease: "easeInOut" }}>
+              <motion.button
+                type="submit"
+                disabled={isLoading}
+                whileHover={!isLoading ? { 
+                  y: -2, 
+                  boxShadow: '0 8px 24px rgba(201, 168, 76, 0.4), 0 0 15px rgba(201, 168, 76, 0.2)',
+                  background: 'linear-gradient(135deg, #d4ae3b 0%, #ca9718 100%)'
+                } : {}}
+                whileTap={!isLoading ? { scale: 0.97 } : {}}
+                transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                style={{
+                  background: 'linear-gradient(135deg, #C9A227 0%, #B8860B 100%)',
+                  border: '1px solid rgba(255, 255, 255, 0.25)',
+                  color: '#ffffff',
+                  height: '56px',
+                  borderRadius: '18px',
+                  fontSize: '0.95rem',
+                  fontWeight: 700,
+                  cursor: isLoading ? 'not-allowed' : 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  boxShadow: '0 4px 16px rgba(201, 168, 76, 0.25)',
+                  opacity: isLoading ? 0.72 : 1,
+                  width: '100%',
+                  marginTop: '8px',
+                  fontFamily: 'inherit',
+                }}
+              >
+                <span>{isLoading ? 'Please wait…' : activeTab === 'login' ? 'Sign In' : 'Create Account'}</span>
+                {!isLoading && <ArrowRight size={16} />}
+              </motion.button>
+            </motion.div>
+          </form>
+
+          {/* Quick Access Area */}
+          <motion.div layout transition={{ duration: 0.4, ease: "easeInOut" }} style={{ marginTop: '24px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
               <div style={{ flex: 1, height: '1px', background: 'var(--border-mid)' }} />
               <span style={{ fontSize: '0.65rem', color: 'var(--text-faint)', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 600 }}>Quick Access</span>
@@ -484,11 +480,11 @@ export function AuthPage({ onAuthSuccess, onBackToLanding, onOpenPolicy }) {
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'center', gap: '20px' }}>
-              <motion.button type="button" onClick={() => handleSocial(googleProvider)} disabled={isLoading} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }} style={{ width: '60px', height: '60px', borderRadius: '50%', border: '1px solid rgba(255, 255, 255, 0.25)', background: 'rgba(255, 255, 255, 0.18)', backdropFilter: 'blur(12px)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: isLoading ? 'not-allowed' : 'pointer' }}>
-                <GoogleIcon size={22} />
+              <motion.button type="button" onClick={() => handleSocial(googleProvider)} disabled={isLoading} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }} style={{ width: '48px', height: '48px', borderRadius: '50%', border: '1px solid rgba(255, 255, 255, 0.25)', background: 'rgba(255, 255, 255, 0.18)', backdropFilter: 'blur(12px)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: isLoading ? 'not-allowed' : 'pointer' }}>
+                <GoogleIcon size={18} />
               </motion.button>
-              <motion.button type="button" onClick={() => handleSocial(appleProvider)} disabled={isLoading} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }} style={{ width: '60px', height: '60px', borderRadius: '50%', border: '1px solid rgba(255, 255, 255, 0.25)', background: 'rgba(255, 255, 255, 0.18)', backdropFilter: 'blur(12px)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: isLoading ? 'not-allowed' : 'pointer' }}>
-                <AppleIcon size={22} />
+              <motion.button type="button" onClick={() => handleSocial(appleProvider)} disabled={isLoading} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }} style={{ width: '48px', height: '48px', borderRadius: '50%', border: '1px solid rgba(255, 255, 255, 0.25)', background: 'rgba(255, 255, 255, 0.18)', backdropFilter: 'blur(12px)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: isLoading ? 'not-allowed' : 'pointer' }}>
+                <AppleIcon size={18} />
               </motion.button>
             </div>
           </motion.div>
