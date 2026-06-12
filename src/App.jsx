@@ -19,7 +19,8 @@ import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { SplashScreen } from './components/common/SplashScreen';
 import './index.css';
 import { onAuthStateChanged } from 'firebase/auth';
-import { auth, db, createUserDocument } from './utils/firebase';
+import { auth, db, createUserDocument, initError } from './utils/firebase';
+import { FirebaseConfigGuard } from './components/common/FirebaseConfigGuard';
 
 /* ═══════════════════════════════════════════════════════════
    LAZY-LOADED PAGE COMPONENTS
@@ -335,6 +336,10 @@ function PageRenderer({ page, setPage, setActivePolicyDoc, setShowResetModal }) 
 }
 
 export default function App() {
+  if (initError) {
+    return <FirebaseConfigGuard error={initError} />;
+  }
+
   const theme = useFinanceStore(s => s.theme);
   const initEverBondId = useFinanceStore(s => s.initEverBondId);
   const isAuthenticated = useFinanceStore(s => s.isAuthenticated);

@@ -3,23 +3,89 @@ import { getAuth, GoogleAuthProvider, OAuthProvider } from "firebase/auth";
 import { getFirestore, doc, getDoc, setDoc } from "firebase/firestore";
 import { generatePersonalId } from "./everbondId";
 
-const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID,
-  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
+let app = null;
+let auth = null;
+let db = null;
+let initError = null;
+
+const requiredEnvVars = [
+  'VITE_FIREBASE_API_KEY',
+  'VITE_FIREBASE_AUTH_DOMAIN',
+  'VITE_FIREBASE_PROJECT_ID',
+  'VITE_FIREBASE_STORAGE_BUCKET',
+  'VITE_FIREBASE_MESSAGING_SENDER_ID',
+  'VITE_FIREBASE_APP_ID'
+];
+
+const missingVars = [];
+const configErrors = [];
+
+requiredEnvVars.forEach(key => {
+  const value = import.meta.env[key];
+  if (!value) {
+    missingVars.push(key);
+  } else {
+    if (value.trim() !== value) {
+      configErrors.push(`Environment variable ${key} has leading or trailing whitespace.`);
+    }
+    if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+      configErrors.push(`Environment variable ${key} has accidental surrounding quotes.`);
+    }
+    if (value === 'undefined') {
+      configErrors.push(`Environment variable ${key} has string value 'undefined'.`);
+    }
+  }
+});
+
+const sanitize = (val) => {
+  if (!val) return '';
+  return val.trim().replace(/^['"]|['"]$/g, '');
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
+const firebaseConfig = {
+  apiKey: sanitize(import.meta.env.VITE_FIREBASE_API_KEY),
+  authDomain: sanitize(import.meta.env.VITE_FIREBASE_AUTH_DOMAIN),
+  projectId: sanitize(import.meta.env.VITE_FIREBASE_PROJECT_ID),
+  storageBucket: sanitize(import.meta.env.VITE_FIREBASE_STORAGE_BUCKET),
+  messagingSenderId: sanitize(import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID),
+  appId: sanitize(import.meta.env.VITE_FIREBASE_APP_ID),
+  measurementId: sanitize(import.meta.env.VITE_FIREBASE_MEASUREMENT_ID)
+};
 
-// Initialize Services
-export const auth = getAuth(app);
-export const db = getFirestore(app);
-console.log("FIRESTORE INIT SUCCESS");
+if (missingVars.length > 0) {
+  initError = {
+    type: 'MISSING_ENV_VARS',
+    message: `Missing required environment variables: ${missingVars.join(', ')}`,
+    details: missingVars
+  };
+  console.error("Firebase Initialization Guard Failed: ", initError.message);
+} else if (configErrors.length > 0) {
+  initError = {
+    type: 'MALFORMED_ENV_VARS',
+    message: `Malformed environment variables detected:\n${configErrors.join('\n')}`,
+    details: configErrors
+  };
+  console.error("Firebase Initialization Guard Failed: ", initError.message);
+} else {
+  try {
+    if (!firebaseConfig.apiKey) {
+      throw new Error("Firebase API Key is empty or invalid.");
+    }
+    app = initializeApp(firebaseConfig);
+    auth = getAuth(app);
+    db = getFirestore(app);
+    console.log("FIRESTORE INIT SUCCESS");
+  } catch (error) {
+    initError = {
+      type: 'INITIALIZATION_FAILED',
+      message: `Firebase failed to initialize: ${error.message}`,
+      details: [error.stack || error.message]
+    };
+    console.error("Firebase Initialization Failed: ", error);
+  }
+}
+
+export { app, auth, db, initError };
 
 // Authentication Providers
 export const googleProvider = new GoogleAuthProvider();
