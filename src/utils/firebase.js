@@ -4,13 +4,13 @@ import { getFirestore, doc, getDoc, setDoc } from "firebase/firestore";
 import { generatePersonalId } from "./everbondId";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDOxUlBBtg6uUKPquGczqphLRIcgs14uFM",
-  authDomain: "everbond-wealth.firebaseapp.com",
-  projectId: "everbond-wealth",
-  storageBucket: "everbond-wealth.firebasestorage.app",
-  messagingSenderId: "357631027776",
-  appId: "1:357631027776:web:f6a6b41a783e332fa64da5",
-  measurementId: "G-R1Z1X5P97E"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
 // Initialize Firebase
