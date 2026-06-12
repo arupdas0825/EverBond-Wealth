@@ -293,7 +293,7 @@ export function LandingPage({ onStartJourney }) {
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          padding: '80px 24px 100px',
+          padding: '80px 24px',
           textAlign: 'center',
           position: 'relative',
           zIndex: 1,
@@ -516,7 +516,14 @@ export function LandingPage({ onStartJourney }) {
             opacity: [0.35, 0.8, 0.35]
           }}
           transition={{ duration: 3.5, repeat: Infinity, ease: 'easeInOut' }}
-          style={{ marginTop: '100px' }}
+          style={{
+            position: 'absolute',
+            bottom: '24px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            marginTop: 0,
+            zIndex: 10
+          }}
         >
           <a href="#journey" style={{ color: 'var(--text-faint)', textDecoration: 'none' }}>
             <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.15em', display: 'block', marginBottom: '8px', fontWeight: 700 }}>

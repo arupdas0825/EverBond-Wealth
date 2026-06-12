@@ -84,7 +84,9 @@ function OnboardingGuard({ children }) {
           }}
           style={{ width: '100%', height: '100%' }}
         >
-          <ThemeToggle />
+          <div style={{ position: 'fixed', top: '24px', left: '24px', zIndex: 9999 }}>
+            <ThemeToggle />
+          </div>
           <WelcomeScreen />
         </motion.div>
       ) : (
