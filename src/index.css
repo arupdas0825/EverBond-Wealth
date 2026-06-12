@@ -3157,44 +3157,64 @@ input,select{font-family:var(--fb)}
 /* ── AUTHENTICATION SPLIT & GLASS DESIGN ──────────────── */
 .auth-split-container {
   display: grid;
-  grid-template-columns: 45fr 55fr;
-  min-height: 620px;
-  border-radius: 32px;
+  grid-template-columns: 40fr 60fr;
+  min-height: 0;
+  max-height: calc(100vh - 48px);
+  border-radius: 28px;
   border: 1px solid rgba(255, 255, 255, 0.12);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
 }
 
 .auth-left-col {
-  padding: 44px 40px;
+  padding: 32px 36px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.auth-left-col::-webkit-scrollbar {
+  width: 0;
 }
 
 .auth-right-col {
-  padding: 40px;
+  padding: 0;
+  min-height: 480px;
 }
 
 .auth-input.eb-input {
   padding-left: 38px !important;
 }
 
+@media (max-width: 900px) {
+  .auth-split-container {
+    grid-template-columns: 46fr 54fr;
+  }
+  .auth-left-col {
+    padding: 28px 28px;
+  }
+}
+
 @media (max-width: 768px) {
   .auth-split-container {
     grid-template-columns: 1fr;
-    max-width: 480px;
+    max-width: 440px;
     margin: 0 auto;
     min-height: auto;
-    border-radius: 24px;
+    max-height: none;
+    border-radius: 22px;
   }
   
   .auth-left-col {
     order: 2;
-    padding: 32px 24px;
+    padding: 28px 22px;
+    overflow-y: visible;
   }
   
   .auth-right-col {
     order: 1;
-    height: 220px;
-    padding: 24px;
+    height: 200px;
+    min-height: 200px;
+    padding: 0;
   }
 }
 
@@ -3211,5 +3231,31 @@ input,select{font-family:var(--fb)}
   .hero-ctas-container .btn-secondary {
     width: 100% !important;
     box-sizing: border-box !important;
+  }
+}
+
+/* ── ONBOARDING PREMIUM BUTTON RESPONSIVE STACKING ── */
+.onb-btn-group {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-top: 24px;
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .onb-btn-group {
+    flex-direction: column !important;
+    gap: 12px !important;
+  }
+  .onb-btn-group button {
+    width: 100% !important;
+    justify-content: center !important;
+    min-height: 48px !important;
+  }
+  /* Puts Continue/Finish on top and Back/SignOut on bottom */
+  .onb-btn-group.stack-reverse {
+    flex-direction: column-reverse !important;
   }
 }

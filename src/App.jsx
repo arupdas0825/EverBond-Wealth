@@ -116,7 +116,7 @@ function OnboardingGuard({ children, page, setPage, onOpenPolicy }) {
           exit={{ opacity: 0 }}
           style={{ width: '100%', height: '100%' }}
         >
-          <OnboardingSystem onComplete={() => setPage('dashboard')} />
+          <OnboardingSystem onComplete={() => setPage('dashboard')} onOpenPolicy={onOpenPolicy} />
         </motion.div>
       ) : (
         <motion.div

@@ -27,7 +27,7 @@ const stepVariants = {
   })
 };
 
-export function OnboardingSystem({ onComplete }) {
+export function OnboardingSystem({ onComplete, onOpenPolicy }) {
   const store = useFinanceStore();
   const toast = useToast();
   const user = store.user;
@@ -285,75 +285,94 @@ export function OnboardingSystem({ onComplete }) {
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                   {/* Name field */}
-                  <div>
-                    <label style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-muted)', display: 'block', marginBottom: '6px' }}>Full Name</label>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <label htmlFor="fullname-input" style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-muted)', display: 'block' }}>Full Name</label>
                     <div style={{ position: 'relative' }}>
                       <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-faint)' }}>
                         <User size={14} />
                       </span>
                       <input
+                        id="fullname-input"
                         type="text"
                         placeholder="e.g. Arup Das"
                         value={fullName}
-                        onChange={e => setFullName(e.target.value)}
+                        onChange={e => {
+                          setFullName(e.target.value);
+                          if (validationErrors.fullName) {
+                            setValidationErrors(prev => ({ ...prev, fullName: '' }));
+                          }
+                        }}
                         style={{
                           width: '100%',
+                          minHeight: '48px',
                           padding: '12px 14px 12px 36px',
-                          borderRadius: '10px',
-                          border: `1px solid ${validationErrors.fullName ? T.rose : 'var(--border-mid)'}`,
+                          borderRadius: '12px',
+                          border: `1.5px solid ${validationErrors.fullName ? T.rose : 'var(--border-mid)'}`,
                           background: 'transparent',
                           color: 'var(--text)',
                           fontSize: '0.88rem',
-                          outline: 'none'
+                          outline: 'none',
+                          boxSizing: 'border-box'
                         }}
                       />
                     </div>
-                    {validationErrors.fullName && <span style={{ fontSize: '0.68rem', color: T.rose, marginTop: '4px', display: 'block' }}>{validationErrors.fullName}</span>}
+                    {validationErrors.fullName && <span style={{ fontSize: '0.7rem', color: T.rose, marginTop: '2px', display: 'block' }}>{validationErrors.fullName}</span>}
                   </div>
 
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: '14px' }}>
                     {/* Age field */}
-                    <div>
-                      <label style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-muted)', display: 'block', marginBottom: '6px' }}>Age</label>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      <label htmlFor="age-input" style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-muted)', display: 'block' }}>Age</label>
                       <input
+                        id="age-input"
                         type="number"
                         placeholder="e.g. 28"
                         value={age}
-                        onChange={e => setAge(e.target.value)}
+                        onChange={e => {
+                          setAge(e.target.value);
+                          if (validationErrors.age) {
+                            setValidationErrors(prev => ({ ...prev, age: '' }));
+                          }
+                        }}
                         style={{
                           width: '100%',
+                          minHeight: '48px',
                           padding: '12px 14px',
-                          borderRadius: '10px',
-                          border: `1px solid ${validationErrors.age ? T.rose : 'var(--border-mid)'}`,
+                          borderRadius: '12px',
+                          border: `1.5px solid ${validationErrors.age ? T.rose : 'var(--border-mid)'}`,
                           background: 'transparent',
                           color: 'var(--text)',
                           fontSize: '0.88rem',
-                          outline: 'none'
+                          outline: 'none',
+                          boxSizing: 'border-box'
                         }}
                       />
-                      {validationErrors.age && <span style={{ fontSize: '0.68rem', color: T.rose, marginTop: '4px', display: 'block' }}>{validationErrors.age}</span>}
+                      {validationErrors.age && <span style={{ fontSize: '0.7rem', color: T.rose, marginTop: '2px', display: 'block' }}>{validationErrors.age}</span>}
                     </div>
 
                     {/* Country field */}
-                    <div>
-                      <label style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-muted)', display: 'block', marginBottom: '6px' }}>Country</label>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      <label htmlFor="country-select" style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-muted)', display: 'block' }}>Country</label>
                       <div style={{ position: 'relative' }}>
                         <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-faint)' }}>
                           <Globe size={14} />
                         </span>
                         <select
+                          id="country-select"
                           value={country}
                           onChange={e => handleCountryChange(e.target.value)}
                           style={{
                             width: '100%',
+                            minHeight: '48px',
                             padding: '12px 14px 12px 36px',
-                            borderRadius: '10px',
+                            borderRadius: '12px',
                             border: '1px solid var(--border-mid)',
                             background: 'var(--bg-card)',
                             color: 'var(--text)',
                             fontSize: '0.88rem',
                             outline: 'none',
-                            cursor: 'pointer'
+                            cursor: 'pointer',
+                            boxSizing: 'border-box'
                           }}
                         >
                           {REGIONS.map(r => <option key={r} value={r}>{r}</option>)}
@@ -363,25 +382,28 @@ export function OnboardingSystem({ onComplete }) {
                   </div>
 
                   {/* Currency field */}
-                  <div>
-                    <label style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-muted)', display: 'block', marginBottom: '6px' }}>Preferred Currency</label>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <label htmlFor="currency-select" style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-muted)', display: 'block' }}>Preferred Currency</label>
                     <div style={{ position: 'relative' }}>
                       <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-faint)' }}>
                         <DollarSign size={14} />
                       </span>
                       <select
+                        id="currency-select"
                         value={currency}
                         onChange={e => setCurrency(e.target.value)}
                         style={{
                           width: '100%',
+                          minHeight: '48px',
                           padding: '12px 14px 12px 36px',
-                          borderRadius: '10px',
+                          borderRadius: '12px',
                           border: '1px solid var(--border-mid)',
                           background: 'var(--bg-card)',
                           color: 'var(--text)',
                           fontSize: '0.88rem',
                           outline: 'none',
-                          cursor: 'pointer'
+                          cursor: 'pointer',
+                          boxSizing: 'border-box'
                         }}
                       >
                         <option value="USD">USD ($)</option>
@@ -397,22 +419,25 @@ export function OnboardingSystem({ onComplete }) {
                   </div>
                 </div>
 
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '12px' }}>
+                <div className="onb-btn-group stack-reverse" style={{ marginTop: '16px' }}>
                   <button
                     onClick={handleSignOut}
                     style={{
                       background: 'transparent',
                       border: '1.5px solid var(--border-mid)',
                       color: T.rose,
-                      padding: '11px 20px',
+                      padding: '12px 24px',
                       borderRadius: '10px',
                       fontSize: '0.88rem',
                       fontWeight: 700,
                       cursor: 'pointer',
                       display: 'flex',
                       alignItems: 'center',
+                      justifyContent: 'center',
                       gap: '6px',
-                      transition: 'all 0.2s'
+                      transition: 'all 0.2s',
+                      minHeight: '48px',
+                      boxSizing: 'border-box'
                     }}
                   >
                     <LogOut size={16} /> Sign Out
@@ -431,8 +456,11 @@ export function OnboardingSystem({ onComplete }) {
                       cursor: 'pointer',
                       display: 'flex',
                       alignItems: 'center',
+                      justifyContent: 'center',
                       gap: '6px',
-                      boxShadow: 'var(--sh-gold)'
+                      boxShadow: 'var(--sh-gold)',
+                      minHeight: '48px',
+                      boxSizing: 'border-box'
                     }}
                   >
                     Continue <ArrowRight size={16} />
@@ -479,38 +507,67 @@ export function OnboardingSystem({ onComplete }) {
                   ].map((modeItem) => {
                     const isSelected = mode === modeItem.id;
                     return (
-                      <div
+                      <motion.div
                         key={modeItem.id}
                         onClick={() => setMode(modeItem.id)}
+                        whileHover={{ 
+                          scale: 1.01, 
+                          borderColor: isSelected ? T.gold : T.goldMid, 
+                          backgroundColor: isSelected ? 'rgba(201, 168, 76, 0.08)' : 'rgba(255, 255, 255, 0.02)' 
+                        }}
+                        whileTap={{ scale: 0.99 }}
                         style={{
-                          border: `1.5px solid ${isSelected ? T.goldMid : 'var(--border-mid)'}`,
-                          padding: '14px 18px',
-                          borderRadius: '12px',
+                          border: `2px solid ${isSelected ? T.gold : 'var(--border-mid)'}`,
+                          padding: '16px 20px',
+                          borderRadius: '14px',
                           cursor: 'pointer',
                           display: 'flex',
                           alignItems: 'center',
+                          justifyContent: 'space-between',
                           gap: '14px',
-                          background: isSelected ? 'var(--gold-pale)' : 'transparent',
-                          transition: 'all 0.2s ease',
-                          boxShadow: isSelected ? '0 4px 14px rgba(201, 168, 76, 0.08)' : 'none'
+                          background: isSelected ? 'rgba(201, 168, 76, 0.05)' : 'transparent',
+                          transition: 'all 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
+                          boxShadow: isSelected ? '0 8px 20px rgba(201, 168, 76, 0.1)' : 'none',
+                          position: 'relative',
+                          overflow: 'hidden'
                         }}
                       >
-                        <span style={{ fontSize: '1.5rem', flexShrink: 0 }}>{modeItem.icon}</span>
-                        <div>
-                          <h3 style={{ fontSize: '0.88rem', fontWeight: 700, margin: '0 0 2px', color: 'var(--text)' }}>
-                            {modeItem.label}
-                          </h3>
-                          <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', margin: 0, lineHeight: 1.35 }}>
-                            {modeItem.desc}
-                          </p>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flex: 1 }}>
+                          <span style={{ fontSize: '1.8rem', flexShrink: 0 }}>{modeItem.icon}</span>
+                          <div>
+                            <h3 style={{ fontSize: '0.92rem', fontWeight: 800, margin: '0 0 4px', color: isSelected ? T.gold : 'var(--text)' }}>
+                              {modeItem.label}
+                            </h3>
+                            <p style={{ fontSize: '0.74rem', color: 'var(--text-muted)', margin: 0, lineHeight: 1.4 }}>
+                              {modeItem.desc}
+                            </p>
+                          </div>
                         </div>
-                      </div>
+                        {isSelected && (
+                          <motion.div
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            style={{
+                              width: '20px',
+                              height: '20px',
+                              borderRadius: '50%',
+                              background: T.gold,
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              flexShrink: 0
+                            }}
+                          >
+                            <Check size={12} color="#ffffff" strokeWidth={3} />
+                          </motion.div>
+                        )}
+                      </motion.div>
                     );
                   })}
                 </div>
 
                 {/* Buttons Navigation */}
-                <div style={{ display: 'flex', justify: 'space-between', alignItems: 'center', marginTop: '12px' }}>
+                <div className="onb-btn-group stack-reverse" style={{ marginTop: '16px' }}>
                   <button
                     onClick={handleBackStep}
                     disabled={isLoading}
@@ -518,15 +575,18 @@ export function OnboardingSystem({ onComplete }) {
                       background: 'transparent',
                       border: '1.5px solid var(--border-mid)',
                       color: 'var(--text-muted)',
-                      padding: '11px 20px',
+                      padding: '12px 24px',
                       borderRadius: '10px',
                       fontSize: '0.88rem',
                       fontWeight: 700,
                       cursor: 'pointer',
                       display: 'flex',
                       alignItems: 'center',
+                      justifyContent: 'center',
                       gap: '6px',
-                      transition: 'all 0.2s'
+                      transition: 'all 0.2s',
+                      minHeight: '48px',
+                      boxSizing: 'border-box'
                     }}
                   >
                     <ArrowLeft size={16} /> Back
@@ -545,8 +605,11 @@ export function OnboardingSystem({ onComplete }) {
                       cursor: 'pointer',
                       display: 'flex',
                       alignItems: 'center',
+                      justifyContent: 'center',
                       gap: '6px',
-                      boxShadow: 'var(--sh-gold)'
+                      boxShadow: 'var(--sh-gold)',
+                      minHeight: '48px',
+                      boxSizing: 'border-box'
                     }}
                   >
                     Continue <ArrowRight size={16} />
@@ -570,20 +633,20 @@ export function OnboardingSystem({ onComplete }) {
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                   {/* Terms checkbox */}
-                  <label
+                  <div
                     style={{
                       display: 'flex',
                       alignItems: 'center',
                       gap: '12px',
                       padding: '14px 16px',
                       borderRadius: '12px',
-                      border: '1.5px solid var(--border-mid)',
-                      background: termsAccepted ? 'var(--gold-pale)' : 'rgba(255, 255, 255, 0.01)',
-                      cursor: 'pointer',
+                      border: `1.5px solid ${termsAccepted ? T.goldMid : 'var(--border-mid)'}`,
+                      background: termsAccepted ? 'rgba(201, 168, 76, 0.04)' : 'rgba(255, 255, 255, 0.01)',
                       transition: 'all 0.2s',
                     }}
                   >
                     <input
+                      id="terms-checkbox"
                       type="checkbox"
                       checked={termsAccepted}
                       onChange={e => setTermsAccepted(e.target.checked)}
@@ -595,26 +658,49 @@ export function OnboardingSystem({ onComplete }) {
                         flexShrink: 0
                       }}
                     />
-                    <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', lineHeight: 1.3 }}>
-                      I agree to the <span style={{ color: T.goldMid, fontWeight: 700 }}>Terms & Conditions</span>
-                    </span>
-                  </label>
+                    <label
+                      htmlFor="terms-checkbox"
+                      style={{ fontSize: '0.78rem', color: 'var(--text-muted)', lineHeight: 1.3, cursor: 'pointer', flex: 1 }}
+                    >
+                      I agree to the{' '}
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          if (onOpenPolicy) onOpenPolicy('terms');
+                        }}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          padding: 0,
+                          color: T.goldMid,
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          textDecoration: 'underline',
+                          font: 'inherit'
+                        }}
+                      >
+                        Terms & Conditions
+                      </button>
+                    </label>
+                  </div>
 
                   {/* Privacy checkbox */}
-                  <label
+                  <div
                     style={{
                       display: 'flex',
                       alignItems: 'center',
                       gap: '12px',
                       padding: '14px 16px',
                       borderRadius: '12px',
-                      border: '1.5px solid var(--border-mid)',
-                      background: privacyAccepted ? 'var(--gold-pale)' : 'rgba(255, 255, 255, 0.01)',
-                      cursor: 'pointer',
+                      border: `1.5px solid ${privacyAccepted ? T.goldMid : 'var(--border-mid)'}`,
+                      background: privacyAccepted ? 'rgba(201, 168, 76, 0.04)' : 'rgba(255, 255, 255, 0.01)',
                       transition: 'all 0.2s',
                     }}
                   >
                     <input
+                      id="privacy-checkbox"
                       type="checkbox"
                       checked={privacyAccepted}
                       onChange={e => setPrivacyAccepted(e.target.checked)}
@@ -626,26 +712,49 @@ export function OnboardingSystem({ onComplete }) {
                         flexShrink: 0
                       }}
                     />
-                    <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', lineHeight: 1.3 }}>
-                      I agree to the <span style={{ color: T.goldMid, fontWeight: 700 }}>Privacy Policy</span>
-                    </span>
-                  </label>
+                    <label
+                      htmlFor="privacy-checkbox"
+                      style={{ fontSize: '0.78rem', color: 'var(--text-muted)', lineHeight: 1.3, cursor: 'pointer', flex: 1 }}
+                    >
+                      I agree to the{' '}
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          if (onOpenPolicy) onOpenPolicy('privacy');
+                        }}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          padding: 0,
+                          color: T.goldMid,
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          textDecoration: 'underline',
+                          font: 'inherit'
+                        }}
+                      >
+                        Privacy Policy
+                      </button>
+                    </label>
+                  </div>
 
                   {/* Storage checkbox */}
-                  <label
+                  <div
                     style={{
                       display: 'flex',
                       alignItems: 'center',
                       gap: '12px',
                       padding: '14px 16px',
                       borderRadius: '12px',
-                      border: '1.5px solid var(--border-mid)',
-                      background: dataConsent ? 'var(--gold-pale)' : 'rgba(255, 255, 255, 0.01)',
-                      cursor: 'pointer',
+                      border: `1.5px solid ${dataConsent ? T.goldMid : 'var(--border-mid)'}`,
+                      background: dataConsent ? 'rgba(201, 168, 76, 0.04)' : 'rgba(255, 255, 255, 0.01)',
                       transition: 'all 0.2s',
                     }}
                   >
                     <input
+                      id="data-consent-checkbox"
                       type="checkbox"
                       checked={dataConsent}
                       onChange={e => setDataConsent(e.target.checked)}
@@ -657,14 +766,38 @@ export function OnboardingSystem({ onComplete }) {
                         flexShrink: 0
                       }}
                     />
-                    <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', lineHeight: 1.3 }}>
-                      I consent to secure storage of my profile and financial workspace data
-                    </span>
-                  </label>
+                    <label
+                      htmlFor="data-consent-checkbox"
+                      style={{ fontSize: '0.78rem', color: 'var(--text-muted)', lineHeight: 1.3, cursor: 'pointer', flex: 1 }}
+                    >
+                      I consent to secure storage of my profile and financial workspace data (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          if (onOpenPolicy) onOpenPolicy('data-handling');
+                        }}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          padding: 0,
+                          color: T.goldMid,
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          textDecoration: 'underline',
+                          font: 'inherit'
+                        }}
+                      >
+                        Data Storage Policy
+                      </button>
+                      )
+                    </label>
+                  </div>
                 </div>
 
                 {/* Buttons Navigation */}
-                <div style={{ display: 'flex', justify: 'space-between', alignItems: 'center', marginTop: '12px' }}>
+                <div className="onb-btn-group stack-reverse" style={{ marginTop: '16px' }}>
                   <button
                     onClick={handleBackStep}
                     disabled={isLoading}
@@ -672,15 +805,18 @@ export function OnboardingSystem({ onComplete }) {
                       background: 'transparent',
                       border: '1.5px solid var(--border-mid)',
                       color: 'var(--text-muted)',
-                      padding: '11px 20px',
+                      padding: '12px 24px',
                       borderRadius: '10px',
                       fontSize: '0.88rem',
                       fontWeight: 700,
                       cursor: 'pointer',
                       display: 'flex',
                       alignItems: 'center',
+                      justifyContent: 'center',
                       gap: '6px',
-                      transition: 'all 0.2s'
+                      transition: 'all 0.2s',
+                      minHeight: '48px',
+                      boxSizing: 'border-box'
                     }}
                   >
                     <ArrowLeft size={16} /> Back
@@ -701,10 +837,13 @@ export function OnboardingSystem({ onComplete }) {
                       cursor: isLoading || !(termsAccepted && privacyAccepted && dataConsent) ? 'not-allowed' : 'pointer',
                       display: 'flex',
                       alignItems: 'center',
+                      justifyContent: 'center',
                       gap: '6px',
                       boxShadow: termsAccepted && privacyAccepted && dataConsent ? 'var(--sh-gold)' : 'none',
                       opacity: isLoading ? 0.8 : 1,
-                      transition: 'all 0.2s'
+                      transition: 'all 0.2s',
+                      minHeight: '48px',
+                      boxSizing: 'border-box'
                     }}
                   >
                     {isLoading ? 'Calibrating...' : 'Finish Setup'}
