@@ -152,7 +152,6 @@ function PageRenderer({ page, setPage, setActivePolicyDoc, setShowResetModal }) 
   // 1. Single Mode Access Restrictions
   if (status === 'Single') {
     const isCommittedPage = ['couple-planning'].includes(page);
-    const isFamilyPage = ['partner-family'].includes(page);
     
     if (isCommittedPage) {
       return (
@@ -163,36 +162,10 @@ function PageRenderer({ page, setPage, setActivePolicyDoc, setShowResetModal }) 
         />
       );
     }
-    if (isFamilyPage) {
-      return (
-        <RouteGuardScreen 
-          title="Family Dynasty Locked"
-          description="This workspace is locked for Single mode accounts. Multi-generational wealth planning requires a Family Dynasty account."
-          onBack={() => setPage('dashboard')}
-        />
-      );
-    }
   }
 
-  // 2. Committed Mode Access Restrictions
-  if (status === 'Committed') {
-    const isFamilyPage = ['partner-family'].includes(page);
-    if (isFamilyPage) {
-      if (!partnerLinked) {
-        return (
-          <RouteGuardScreen 
-            title="Family Dynasty Locked"
-            description="Verified partner connection required. Connect your partner node to unlock Family Dynasty multi-generational planning tools."
-            lockReason="Connect your partner to unlock Family Dynasty."
-            onAction={() => setPage('partner-committed')}
-            actionText="Connect Partner"
-            onBack={() => setPage('dashboard')}
-          />
-        );
-      }
-    }
-  }
-
+  // 2. Committed Mode Access Restrictions (Locks removed for Family Dynasty to allow onboarding/invite)
+  
   // 3. Family Dynasty Mode Access Restrictions
   if (status === 'Married') {
     const isSinglePage = page === 'single';
@@ -222,6 +195,10 @@ function PageRenderer({ page, setPage, setActivePolicyDoc, setShowResetModal }) 
     if (typeof page === 'string' && page.startsWith('connect/')) {
       const code = page.split('/')[1];
       return <PartnerPage setPage={setPage} connectCode={code} />;
+    }
+    if (typeof page === 'string' && page.startsWith('join-dynasty/')) {
+      const code = page.split('/')[1];
+      return <FamilyPlanningPage setPage={setPage} joinCode={code} />;
     }
     switch (page) {
       case 'dashboard':       return <Dashboard setPage={setPage} />;
@@ -324,7 +301,7 @@ export default function App() {
             console.log("ONBOARDING STATUS:", data.onboardingCompleted);
             
             // Map Firestore mode to store stage formats
-            const mappedStage = data.mode === 'Family Dynasty' ? 'Married' : (data.mode === 'committed' ? 'Committed' : (data.mode || 'Single'));
+            const mappedStage = (data.mode === 'Family Dynasty' || data.familyWorkspaceId) ? 'Married' : (data.mode === 'committed' ? 'Committed' : (data.mode || 'Single'));
             let p1Salary = 100000;
             let p2Salary = 0;
             let partnerName = '';
@@ -335,7 +312,7 @@ export default function App() {
               p1Salary = 100000;
               p2Salary = 80000;
               partnerName = 'Partner';
-            } else if (data.mode === 'Family Dynasty' || data.mode === 'Married') {
+            } else if (data.mode === 'Family Dynasty' || data.mode === 'Married' || data.familyWorkspaceId) {
               p1Salary = 150000;
               p2Salary = 120000;
               partnerName = 'Spouse';
@@ -382,7 +359,8 @@ export default function App() {
               started: data.onboardingCompleted || false,
               p1Salary,
               p2Salary,
-              connectionStatus: data.partnerId ? 'connected' : 'none'
+              connectionStatus: data.partnerId ? 'connected' : 'none',
+              familyWorkspaceId: data.familyWorkspaceId || ''
             });
 
             // Redirect if on onboarding or auth page

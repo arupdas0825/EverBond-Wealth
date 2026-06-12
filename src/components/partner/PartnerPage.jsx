@@ -6,7 +6,7 @@ import { useToast } from '../common/Toast';
 import { Card } from '../common/Card';
 import {
   Users, Copy, Check, Heart, Key, Calendar, Link2, UserCheck,
-  Sparkles, Lock, Shield, X, ArrowRight,
+  Sparkles, Lock, Shield, X, ArrowRight, Share2,
   QrCode as QrCodeIcon, ScanLine, Camera, Download, AlertCircle, Info, LogOut, RefreshCw
 } from 'lucide-react';
 import * as QRCodeModule from 'react-qr-code';
@@ -135,7 +135,7 @@ export function PartnerPage({ setPage, connectCode }) {
 
     try {
       const codeSuffix = Math.random().toString(36).substring(2, 8).toUpperCase();
-      const inviteCode = `EB-P${codeSuffix}`;
+      const inviteCode = `EB-${codeSuffix}`;
       
       const inviteId = doc(collection(db, 'partnerInvites')).id;
       const inviteRef = doc(db, 'partnerInvites', inviteId);
@@ -144,6 +144,7 @@ export function PartnerPage({ setPage, connectCode }) {
       const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(); // 7 days expiration
 
       await setDoc(inviteRef, {
+        inviteId,
         inviteCode,
         createdBy: user.uid,
         creatorName: user.name || 'User',
@@ -177,18 +178,12 @@ export function PartnerPage({ setPage, connectCode }) {
         return;
       }
 
-      // Check if it's an invite code (starts with EB-P) or a direct EverBond ID
-      if (code.startsWith('EB-P')) {
-        const q = query(collection(db, 'partnerInvites'), where('inviteCode', '==', code));
-        const querySnap = await getDocs(q);
-        
-        if (querySnap.empty) {
-          toast.error("Invitation code not found or invalid.");
-          setIsValidatingCode(false);
-          return;
-        }
-
-        const inviteDoc = querySnap.docs[0];
+      // Check if it's an invite code (query partnerInvites first)
+      const qInvite = query(collection(db, 'partnerInvites'), where('inviteCode', '==', code));
+      const querySnapInvite = await getDocs(qInvite);
+      
+      if (!querySnapInvite.empty) {
+        const inviteDoc = querySnapInvite.docs[0];
         const inviteData = inviteDoc.data();
 
         if (inviteData.status !== 'pending') {
@@ -216,16 +211,16 @@ export function PartnerPage({ setPage, connectCode }) {
         });
       } else {
         // It's a partner EverBond ID! Search for user in Firestore
-        const q = query(collection(db, 'users'), where('ebId', '==', code));
-        const querySnap = await getDocs(q);
+        const qUser = query(collection(db, 'users'), where('ebId', '==', code));
+        const querySnapUser = await getDocs(qUser);
         
-        if (querySnap.empty) {
-          toast.error("Partner EverBond ID not found.");
+        if (querySnapUser.empty) {
+          toast.error("Invitation code or Partner EverBond ID not found.");
           setIsValidatingCode(false);
           return;
         }
 
-        const partnerUserDoc = querySnap.docs[0];
+        const partnerUserDoc = querySnapUser.docs[0];
         const partnerUserData = partnerUserDoc.data();
 
         if (partnerUserData.uid === user?.uid) {
@@ -446,8 +441,8 @@ export function PartnerPage({ setPage, connectCode }) {
     handleStopCamera();
     setIsScannerOpen(false);
 
-    // Extract code suffix from link if scanned as a URL, e.g. /connect/EB-PXXXXXX
-    const match = scannedString.match(/connect\/(EB-P[0-9A-Z]{6})/i) || scannedString.match(/^(EB-P[0-9A-Z]{6})$/i) || scannedString.match(/^(EB-[0-9A-Z]{4,12}-[0-9A-Z]{4,12})$/i);
+    // Extract code suffix from link if scanned as a URL, e.g. /connect/EB-XXXXXX
+    const match = scannedString.match(/connect\/(EB-[0-9A-Z]{6})/i) || scannedString.match(/^(EB-[0-9A-Z]{6})$/i) || scannedString.match(/^(EB-[0-9A-Z]{4,12}-[0-9A-Z]{4,12})$/i);
     const parsedCode = match ? match[1].toUpperCase() : null;
 
     if (!parsedCode) {
@@ -867,7 +862,7 @@ export function PartnerPage({ setPage, connectCode }) {
 
             {/* Option 3: Partner ID */}
             <div
-              onClick={() => setSelectedMethod('id')}
+              onClick={() => handleCreateInvite('id')}
               style={{
                 background: 'var(--bg-warm)', border: '1px solid var(--border)', borderRadius: '16px',
                 padding: '18px', display: 'flex', alignItems: 'center', justifyItems: 'space-between',
@@ -965,7 +960,30 @@ export function PartnerPage({ setPage, connectCode }) {
                   className="btn-secondary"
                   style={{ padding: '6px 12px', borderRadius: '8px', fontSize: '0.72rem', display: 'flex', alignItems: 'center', gap: '4px' }}
                 >
-                  <Copy size={12} /> Copy
+                  <Copy size={12} /> Copy Link
+                </button>
+                <button
+                  onClick={async () => {
+                    if (navigator.share) {
+                      try {
+                        await navigator.share({
+                          title: 'EverBond Wealth Connection',
+                          text: 'Join my shared committed partner workspace on EverBond Wealth.',
+                          url: getInviteUrl(),
+                        });
+                        toast.success("Shared successfully!");
+                      } catch (err) {
+                        console.log("Share failed or cancelled:", err);
+                      }
+                    } else {
+                      navigator.clipboard.writeText(getInviteUrl());
+                      toast.success("Link copied! Share API not supported on this device.");
+                    }
+                  }}
+                  className="btn-secondary"
+                  style={{ padding: '6px 12px', borderRadius: '8px', fontSize: '0.72rem', display: 'flex', alignItems: 'center', gap: '4px' }}
+                >
+                  <Share2 size={12} /> Share
                 </button>
               </div>
             </div>
@@ -983,24 +1001,31 @@ export function PartnerPage({ setPage, connectCode }) {
                   <Key size={24} />
                 </div>
                 <h3 style={{ fontFamily: T.fontDisplay, fontSize: '1.3rem', fontWeight: 700, margin: '0 0 4px', color: 'var(--text)' }}>
-                  Enter Partner ID or Invite Code
+                  Partner ID & Invite Code
                 </h3>
                 <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: 0, lineHeight: 1.45 }}>
-                  Establish connection by typing your partner's EverBond ID or a shared invitation code.
+                  Display your generated invite code or manually type your partner's code/ID below.
                 </p>
+              </div>
+
+              {/* Display Generated Invite Code */}
+              <div style={{ background: 'var(--bg-warm)', border: '1px solid var(--border)', borderRadius: '12px', padding: '14px', marginBottom: '20px', textAlign: 'center' }}>
+                <span style={{ fontSize: '0.68rem', color: 'var(--text-faint)', display: 'block', marginBottom: '4px', fontWeight: 600 }}>Your Invite Code</span>
+                <strong style={{ fontSize: '1.4rem', color: T.gold, fontFamily: 'monospace', letterSpacing: '0.05em' }}>{createdInviteCode || 'EB-XXXXXX'}</strong>
+                <span style={{ fontSize: '0.65rem', color: 'var(--text-faint)', display: 'block', marginTop: '4px' }}>Provide this code to your partner to enter on their screen</span>
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '24px' }}>
                 <div>
                   <label htmlFor="code-input" style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)', display: 'block', marginBottom: '6px' }}>
-                    EverBond ID or Invite Code
+                    Enter Partner's Code or EverBond ID
                   </label>
                   <div style={{ display: 'flex', gap: '8px' }}>
                     <input
                       id="code-input"
                       type="text"
                       className="onb-input-glow"
-                      placeholder="e.g. EB-C1A2-B3D4 or EB-PA1B2C"
+                      placeholder="e.g. EB-AB12CD"
                       value={manualCodeInput}
                       onChange={(e) => setManualCodeInput(e.target.value)}
                       style={{ flexGrow: 1, padding: '10px 14px', fontSize: '0.88rem', boxSizing: 'border-box' }}
@@ -1015,7 +1040,7 @@ export function PartnerPage({ setPage, connectCode }) {
                     </button>
                   </div>
                   <span style={{ fontSize: '0.62rem', color: 'var(--text-faint)', display: 'block', marginTop: '4px' }}>
-                    Format: EB-XXXXXX (6+ chars) or EB-PXXXXXX (Invite)
+                    Format: EB-XXXXXX
                   </span>
                 </div>
               </div>

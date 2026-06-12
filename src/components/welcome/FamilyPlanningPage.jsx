@@ -1,16 +1,35 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useFinanceStore } from '../../store/useFinanceStore';
 import { T } from '../../theme/tokens';
 import { Card } from '../common/Card';
+import { useToast } from '../common/Toast';
 import { 
   Crown, Sparkles, GraduationCap, Coins, Plus, Trash2, 
-  ArrowUpRight, Lock, Key, ShieldCheck, FileText, 
-  UserPlus, QrCode, ToggleLeft, ToggleRight, Info, Check, CheckCircle2, ChevronRight
+  ArrowUpRight, Lock, Key, ShieldCheck, FileText, Share2, Copy,
+  UserPlus, QrCode as QrCodeIcon, ToggleLeft, ToggleRight, Info, Check, CheckCircle2, ChevronRight,
+  Users, Shield, Heart, UserCheck, RefreshCw, X, ArrowRight
 } from 'lucide-react';
 import { formatCurrency, formatCompact } from '../../utils/finance';
+import * as QRCodeModule from 'react-qr-code';
+import { db } from '../../utils/firebase';
+import {
+  doc,
+  getDoc,
+  setDoc,
+  updateDoc,
+  collection,
+  query,
+  where,
+  getDocs,
+  writeBatch
+} from 'firebase/firestore';
 
-export function FamilyPlanningPage({ setPage }) {
-  const [dynastyConsentChecked, setDynastyConsentChecked] = useState(false);
+const QRCode = QRCodeModule.QRCode || QRCodeModule.default || QRCodeModule;
+
+export function FamilyPlanningPage({ setPage, joinCode }) {
+  const toast = useToast();
+  const user = useFinanceStore(s => s.user);
+  
   const { 
     partner1, 
     partner2, 
@@ -19,102 +38,379 @@ export function FamilyPlanningPage({ setPage }) {
     partnerAccepted,
     relationshipStage,
     stage,
-    partnerLinked
+    partnerLinked,
+    familyWorkspaceId
   } = useFinanceStore();
   
   const total = getTotalSalary();
   const isLinked = partnerLinked || partnerAccepted;
   const currentStage = (relationshipStage || stage || 'Single').toLowerCase();
-  
-  if (!isLinked) {
-    return (
-      <div className="fade-in" style={{ paddingBottom: '40px', maxWidth: '560px', margin: '40px auto' }}>
-        <Card style={{ padding: '36px 28px', position: 'relative', overflow: 'hidden' }}>
-          {/* Animated background glows */}
-          <div style={{
-            position: 'absolute',
-            top: '-20%',
-            left: '-20%',
-            width: '140%',
-            height: '140%',
-            background: 'radial-gradient(circle at center, rgba(184, 144, 42, 0.04) 0%, transparent 60%)',
-            pointerEvents: 'none'
-          }} />
 
-          <div style={{ textAlign: 'center', marginBottom: '28px', position: 'relative', zIndex: 1 }}>
+  // Onboarding step (1 to 6)
+  const [onbStep, setOnbStep] = useState(1);
+  const [dynastyName, setDynastyName] = useState('');
+  const [dynastyDesc, setDynastyDesc] = useState('');
+  const [familyCode, setFamilyCode] = useState('');
+  const [selectedRole, setSelectedRole] = useState('Founder'); // 'Founder' | 'Parent' | 'Spouse' | 'Child' | 'Advisor'
+  const [isActivating, setIsActivating] = useState(false);
+  const [hasCreatedWorkspace, setHasCreatedWorkspace] = useState(false);
+  const [activationChecked, setActivationChecked] = useState(false);
+
+  // Join flow states
+  const [joinStep, setJoinStep] = useState(1); // 1: Select Role/Consent, 2: Success
+  const [fetchedWorkspace, setFetchedWorkspace] = useState(null);
+  const [isFetchingWorkspace, setIsFetchingWorkspace] = useState(false);
+  const [fetchError, setFetchError] = useState('');
+  const [isJoining, setIsJoining] = useState(false);
+  const [joinConsentChecked, setJoinConsentChecked] = useState(false);
+
+  // Fetch active workspace name
+  const [dynastyWorkspaceName, setDynastyWorkspaceName] = useState('');
+  useEffect(() => {
+    if (familyWorkspaceId && db) {
+      getDoc(doc(db, 'familyWorkspaces', familyWorkspaceId))
+        .then(docSnap => {
+          if (docSnap.exists()) {
+            setDynastyWorkspaceName(docSnap.data().name);
+          }
+        })
+        .catch(err => console.error("Error fetching family workspace name:", err));
+    }
+  }, [familyWorkspaceId]);
+
+  // Generate Family Code suffix
+  const generateFamilyCode = () => {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let suffix = '';
+    for (let i = 0; i < 6; i++) {
+      suffix += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    const code = `EB-DYNASTY-${suffix}`;
+    setFamilyCode(code);
+    return code;
+  };
+
+  // Fetch workspace for joinCode
+  useEffect(() => {
+    if (joinCode && db) {
+      setIsFetchingWorkspace(true);
+      setFetchError('');
+      
+      const q = query(collection(db, 'familyWorkspaces'), where('familyCode', '==', joinCode));
+      getDocs(q)
+        .then(querySnap => {
+          if (querySnap.empty) {
+            setFetchError("Dynasty invitation code not found or invalid.");
+          } else {
+            const wDoc = querySnap.docs[0];
+            setFetchedWorkspace(wDoc.data());
+          }
+        })
+        .catch(err => {
+          console.error("Error fetching dynasty workspace:", err);
+          setFetchError("Failed to load dynasty workspace. Please try again.");
+        })
+        .finally(() => {
+          setIsFetchingWorkspace(false);
+        });
+    }
+  }, [joinCode]);
+
+  // Establish Family Dynasty Workspace (Step 6)
+  const handleActivateDynasty = async () => {
+    if (!user?.uid) {
+      toast.error("User session not found. Please log in again.");
+      return;
+    }
+    if (!dynastyName.trim()) {
+      toast.error("Please provide a name for your Dynasty.");
+      return;
+    }
+    setIsActivating(true);
+    try {
+      const workspaceId = doc(collection(db, 'familyWorkspaces')).id;
+      const workspaceRef = doc(db, 'familyWorkspaces', workspaceId);
+      
+      const batch = writeBatch(db);
+
+      // Create workspace doc
+      batch.set(workspaceRef, {
+        workspaceId,
+        name: dynastyName.trim(),
+        description: dynastyDesc.trim(),
+        ownerUid: user.uid,
+        ownerName: user.name || 'User',
+        ownerEmail: user.email || '',
+        familyCode: familyCode,
+        members: [
+          {
+            uid: user.uid,
+            role: selectedRole,
+            name: user.name || 'User',
+            email: user.email || '',
+            joinedAt: new Date().toISOString()
+          }
+        ],
+        createdAt: new Date().toISOString()
+      });
+
+      // Update user doc
+      const userRef = doc(db, 'users', user.uid);
+      batch.update(userRef, {
+        familyWorkspaceId: workspaceId,
+        mode: 'Family Dynasty'
+      });
+
+      await batch.commit();
+
+      // Update Zustand
+      useFinanceStore.setState({
+        familyWorkspaceId: workspaceId,
+        stage: 'Married',
+        relationshipStage: 'Married',
+        relationshipStatus: 'Married'
+      });
+
+      setHasCreatedWorkspace(true);
+      toast.success("Family Dynasty Workspace activated!");
+    } catch (err) {
+      console.error("Dynasty activation error:", err);
+      toast.error("Failed to activate Dynasty Workspace.");
+    } finally {
+      setIsActivating(false);
+    }
+  };
+
+  // Join Dynasty Workspace
+  const handleJoinDynasty = async () => {
+    if (!user?.uid || !fetchedWorkspace) return;
+    setIsJoining(true);
+    try {
+      const workspaceId = fetchedWorkspace.workspaceId;
+      const workspaceRef = doc(db, 'familyWorkspaces', workspaceId);
+
+      const newMember = {
+        uid: user.uid,
+        role: selectedRole,
+        name: user.name || 'User',
+        email: user.email || '',
+        joinedAt: new Date().toISOString()
+      };
+
+      const batch = writeBatch(db);
+      
+      const updatedMembers = [...(fetchedWorkspace.members || []), newMember];
+      batch.update(workspaceRef, {
+        members: updatedMembers
+      });
+
+      const userRef = doc(db, 'users', user.uid);
+      batch.update(userRef, {
+        familyWorkspaceId: workspaceId,
+        mode: 'Family Dynasty'
+      });
+
+      await batch.commit();
+
+      useFinanceStore.setState({
+        familyWorkspaceId: workspaceId,
+        stage: 'Married',
+        relationshipStage: 'Married',
+        relationshipStatus: 'Married'
+      });
+
+      setJoinStep(2);
+      toast.success("Successfully joined Family Dynasty!");
+    } catch (err) {
+      console.error("Error joining Family Dynasty:", err);
+      toast.error("Failed to join Dynasty workspace.");
+    } finally {
+      setIsJoining(false);
+    }
+  };
+
+  const getJoinUrl = (codeVal) => {
+    return `https://everbond.app/join-dynasty/${codeVal || familyCode}`;
+  };
+
+  const maskEmail = (emailStr) => {
+    if (!emailStr) return '***@gmail.com';
+    const [name, domain] = emailStr.split('@');
+    if (name.length <= 2) return `${name}***@${domain}`;
+    return `${name.substring(0, 2)}***@${domain}`;
+  };
+
+  const rolesConfig = [
+    { id: 'Founder', title: 'Founder', desc: 'Creator & primary trustee. Complete control over governance & heir allocations.' },
+    { id: 'Parent', title: 'Parent', desc: 'Joint manager of the asset pool. Coordinate milestone planning and projections.' },
+    { id: 'Spouse', title: 'Spouse', desc: 'Joint co-trustee. Unified portfolio tracking & dual signatures.' },
+    { id: 'Child', title: 'Child', desc: 'Heir & beneficiary. View-only access to trust fund release conditions.' },
+    { id: 'Advisor', title: 'Advisor', desc: 'Wealth consultant or legal manager. View-only planning access.' }
+  ];
+
+  // ────────────────────────────────────────────────────────────────
+  // JOIN DYNASTY RENDER FLOW
+  // ────────────────────────────────────────────────────────────────
+  if (joinCode) {
+    if (isFetchingWorkspace) {
+      return (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '80vh', padding: '16px' }}>
+          <Card style={{ textAlign: 'center', padding: '48px 24px', maxWidth: '440px', width: '100%' }}>
+            <RefreshCw size={36} className="skeleton-pulse" style={{ color: T.gold, margin: '0 auto 16px', animation: 'spin 2s linear infinite' }} />
+            <h3 style={{ margin: 0, fontSize: '1.2rem', color: 'var(--text)' }}>Loading Dynasty Invitation...</h3>
+          </Card>
+        </div>
+      );
+    }
+
+    if (fetchError) {
+      return (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '80vh', padding: '16px' }}>
+          <Card style={{ textAlign: 'center', padding: '40px 24px', maxWidth: '440px', width: '100%', border: '1px solid var(--rose-border)' }}>
+            <Lock size={36} style={{ color: 'var(--rose)', margin: '0 auto 16px' }} />
+            <h3 style={{ margin: '0 0 10px', fontSize: '1.25rem', color: 'var(--text)' }}>Invalid Invitation</h3>
+            <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginBottom: '24px' }}>{fetchError}</p>
+            <button onClick={() => setPage('dashboard')} className="onb-btn-back" style={{ width: '100%', padding: '12px' }}>
+              Back to Dashboard
+            </button>
+          </Card>
+        </div>
+      );
+    }
+
+    if (joinStep === 2) {
+      return (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '80vh', padding: '16px' }}>
+          <Card gold={true} style={{ maxWidth: '440px', width: '100%', textAlign: 'center', padding: '40px 24px' }}>
             <div style={{
-              width: '56px',
-              height: '56px',
-              borderRadius: '50%',
-              background: 'var(--gold-pale)',
-              color: T.gold,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              margin: '0 auto 16px',
+              width: '80px', height: '80px', borderRadius: '50%',
+              background: 'radial-gradient(circle, rgba(184, 144, 42, 0.16) 0%, transparent 70%)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px',
+              border: `2px solid ${T.gold}`
+            }}>
+              <UserCheck size={36} style={{ color: T.gold }} />
+            </div>
+            
+            <h2 style={{ fontFamily: T.fontDisplay, fontSize: '1.8rem', fontWeight: 700, margin: '0 0 10px', color: 'var(--text)' }}>
+              Joined Dynasty
+            </h2>
+            <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: '32px' }}>
+              You have successfully linked your profile with the <strong>{fetchedWorkspace?.name}</strong> Dynasty.
+            </p>
+
+            <button
+              onClick={() => {
+                setPage('family-planning');
+                window.location.hash = '#/family-dynasty';
+              }}
+              className="onb-btn-continue"
+              style={{ width: '100%', padding: '12px 20px', borderRadius: '12px' }}
+            >
+              Open Dynasty Command
+            </button>
+          </Card>
+        </div>
+      );
+    }
+
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '80vh', padding: '16px' }}>
+        <Card gold={true} style={{ maxWidth: '500px', width: '100%', padding: '32px 24px' }}>
+          <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+            <div style={{
+              width: '56px', height: '56px', borderRadius: '50%',
+              background: 'var(--gold-pale)', color: T.gold,
+              display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px',
               border: `1px solid ${T.gold}30`
             }}>
-              <Crown size={24} style={{ color: T.gold }} />
+              <Crown size={24} />
             </div>
-            <h2 style={{ fontFamily: T.fontDisplay, fontSize: '1.6rem', fontWeight: 700, margin: '0 0 6px', color: 'var(--text)' }}>
-              Create a Family Dynasty Workspace
+            <h2 style={{ fontFamily: T.fontDisplay, fontSize: '1.5rem', fontWeight: 700, margin: '0 0 6px', color: 'var(--text)' }}>
+              Join Family Dynasty
             </h2>
-            <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)', margin: 0 }}>
-              Coordinate multi-generational planning across trusted family members.
+            <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', margin: 0 }}>
+              You are invited to join a secure multi-generational workspace.
             </p>
           </div>
 
-          {/* Benefits Section */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '28px', position: 'relative', zIndex: 1 }}>
-            {[
-              "Shared family wealth planning",
-              "Legacy tracking",
-              "Family milestone management",
-              "Role-based visibility"
-            ].map((benefit, i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.85rem', color: 'var(--text)' }}>
-                <span style={{ color: T.gold, fontWeight: 'bold' }}>✓</span>
-                <span>{benefit}</span>
+          <div style={{ background: 'var(--bg-warm)', border: '1px solid var(--border)', borderRadius: '12px', padding: '16px', marginBottom: '24px' }}>
+            <span style={{ fontSize: '0.62rem', fontWeight: 800, textTransform: 'uppercase', color: T.gold, letterSpacing: '0.05em', display: 'block', marginBottom: '10px' }}>
+              Dynasty Parameters
+            </span>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.82rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ color: 'var(--text-muted)' }}>Dynasty Name:</span>
+                <strong style={{ color: 'var(--text)' }}>{fetchedWorkspace?.name}</strong>
               </div>
-            ))}
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ color: 'var(--text-muted)' }}>Founder Name:</span>
+                <strong style={{ color: 'var(--text)' }}>{fetchedWorkspace?.ownerName}</strong>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ color: 'var(--text-muted)' }}>Founder Email:</span>
+                <strong style={{ color: 'var(--text)' }}>{maskEmail(fetchedWorkspace?.ownerEmail)}</strong>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ color: 'var(--text-muted)' }}>Current Members:</span>
+                <strong style={{ color: 'var(--text)' }}>{fetchedWorkspace?.members?.length || 0}</strong>
+              </div>
+            </div>
           </div>
 
-          {/* Consent Checkbox */}
-          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', marginBottom: '28px', position: 'relative', zIndex: 1 }}>
+          {/* Role selection inside join flow */}
+          <div style={{ marginBottom: '24px' }}>
+            <label style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)', display: 'block', marginBottom: '8px', textTransform: 'uppercase' }}>
+              Select Your Role in the Dynasty
+            </label>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {rolesConfig.filter(r => r.id !== 'Founder').map(role => (
+                <div
+                  key={role.id}
+                  onClick={() => setSelectedRole(role.id)}
+                  style={{
+                    background: selectedRole === role.id ? 'rgba(184, 144, 42, 0.05)' : 'var(--bg-warm)',
+                    border: `1.5px solid ${selectedRole === role.id ? T.gold : 'var(--border)'}`,
+                    borderRadius: '10px', padding: '10px 14px', cursor: 'pointer',
+                    transition: 'border-color 0.18s'
+                  }}
+                >
+                  <strong style={{ fontSize: '0.8rem', color: selectedRole === role.id ? T.gold : 'var(--text)', display: 'block' }}>
+                    {role.title}
+                  </strong>
+                  <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{role.desc}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', marginBottom: '24px' }}>
             <input
               type="checkbox"
-              id="dynasty-consent-check"
-              checked={dynastyConsentChecked}
-              onChange={(e) => setDynastyConsentChecked(e.target.checked)}
+              id="join-consent"
+              checked={joinConsentChecked}
+              onChange={(e) => setJoinConsentChecked(e.target.checked)}
               style={{ marginTop: '3px', accentColor: T.gold }}
             />
-            <label htmlFor="dynasty-consent-check" style={{ fontSize: '0.8rem', color: 'var(--text-muted)', lineHeight: 1.4, cursor: 'pointer' }}>
-              I understand the Family Dynasty workspace structure.
+            <label htmlFor="join-consent" style={{ fontSize: '0.74rem', color: 'var(--text-muted)', lineHeight: 1.45, cursor: 'pointer' }}>
+              I agree to synchronize my allocations and asset ledger with this Dynasty workspace.
             </label>
           </div>
 
-          {/* Actions */}
-          <div style={{ display: 'flex', gap: '10px', position: 'relative', zIndex: 1 }}>
+          <div style={{ display: 'flex', gap: '10px' }}>
             <button
-              onClick={() => setPage('partner')}
-              disabled={!dynastyConsentChecked}
+              onClick={handleJoinDynasty}
+              disabled={!joinConsentChecked || isJoining}
               className="onb-btn-continue"
-              style={{
-                flex: 2,
-                padding: '12px',
-                borderRadius: '100px',
-                fontSize: '0.85rem',
-                opacity: dynastyConsentChecked ? 1 : 0.6
-              }}
+              style={{ flex: 2, padding: '12px', borderRadius: '100px', fontSize: '0.85rem', opacity: (joinConsentChecked && !isJoining) ? 1 : 0.6 }}
             >
-              Continue
+              {isJoining ? 'Joining...' : 'Join Workspace'}
             </button>
             <button
               onClick={() => setPage('dashboard')}
               className="onb-btn-back"
               style={{ flex: 1, padding: '12px', borderRadius: '100px', fontSize: '0.85rem' }}
             >
-              Back
+              Cancel
             </button>
           </div>
         </Card>
@@ -122,7 +418,482 @@ export function FamilyPlanningPage({ setPage }) {
     );
   }
 
-  // States
+  // ────────────────────────────────────────────────────────────────
+  // DEDICATED WIZARD ONBOARDING FLOW (STEPS 1 TO 6)
+  // ────────────────────────────────────────────────────────────────
+  if (!familyWorkspaceId) {
+    if (hasCreatedWorkspace) {
+      return (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '80vh', padding: '16px' }}>
+          <Card gold={true} style={{ maxWidth: '440px', width: '100%', textAlign: 'center', padding: '40px 24px' }}>
+            <div style={{
+              width: '80px', height: '80px', borderRadius: '50%',
+              background: 'radial-gradient(circle, rgba(184, 144, 42, 0.16) 0%, transparent 70%)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px',
+              border: `2px solid ${T.gold}`
+            }}>
+              <CheckCircle2 size={36} style={{ color: T.gold }} />
+            </div>
+            
+            <h2 style={{ fontFamily: T.fontDisplay, fontSize: '1.8rem', fontWeight: 700, margin: '0 0 10px', color: 'var(--text)' }}>
+              Dynasty Established
+            </h2>
+            <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: '32px' }}>
+              Your secure Family Dynasty workspace is now live. Invite trusted members and start tracking multi-generational wealth.
+            </p>
+
+            <button
+              onClick={() => {
+                setOnbStep(1);
+                // Trigger refresh by navigating or state update
+              }}
+              className="onb-btn-continue"
+              style={{ width: '100%', padding: '12px 20px', borderRadius: '12px' }}
+            >
+              Open Workspace
+            </button>
+          </Card>
+        </div>
+      );
+    }
+
+    return (
+      <div style={{ maxWidth: '580px', margin: '40px auto 60px', padding: '0 16px' }}>
+        
+        {/* Progress Tracker */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+          <span style={{ fontSize: '0.72rem', color: T.gold, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            Dynasty Setup (Step {onbStep} of 6)
+          </span>
+          <div style={{ display: 'flex', gap: '4px' }}>
+            {[1, 2, 3, 4, 5, 6].map(stepNum => (
+              <div
+                key={stepNum}
+                style={{
+                  width: '24px', height: '4px', borderRadius: '2px',
+                  background: onbStep >= stepNum ? T.gold : 'var(--border)'
+                }}
+              />
+            ))}
+          </div>
+        </div>
+
+        <Card style={{ padding: '32px 24px', position: 'relative', overflow: 'hidden' }}>
+          <div style={{
+            position: 'absolute', top: '-20%', left: '-20%', width: '140%', height: '140%',
+            background: 'radial-gradient(circle at center, rgba(184,144,42,0.02) 0%, transparent 60%)',
+            pointerEvents: 'none'
+          }} />
+
+          {/* STEP 1: Dynasty Introduction */}
+          {onbStep === 1 && (
+            <div className="fade-in">
+              <div style={{ textAlign: 'center', marginBottom: '28px' }}>
+                <div style={{
+                  width: '56px', height: '56px', borderRadius: '50%',
+                  background: 'var(--gold-pale)', color: T.gold,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px',
+                  border: `1px solid ${T.gold}30`
+                }}>
+                  <Crown size={24} />
+                </div>
+                <h2 style={{ fontFamily: T.fontDisplay, fontSize: '1.6rem', fontWeight: 700, margin: '0 0 6px', color: 'var(--text)' }}>
+                  Family Dynasty
+                </h2>
+                <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: 0, lineHeight: 1.45 }}>
+                  Coordinate multi-generational planning, distribute inheritance allocations, and lock secure trusts.
+                </p>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '32px' }}>
+                {[
+                  { title: "Shared Family Pool", desc: "Consolidate calculations and projection models across members." },
+                  { title: "Inheritance Allocations", desc: "Designate trust releases triggered by milestones or ages." },
+                  { title: "Sovereign Trust Vault", desc: "Dual-signature safety parameter rules for sensitive documentation." },
+                  { title: "Trusted Role Boundaries", desc: "Founder, Spouse, Parent, Child, and Advisor permissions." }
+                ].map((item, i) => (
+                  <div key={i} style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                    <div style={{ width: '16px', height: '16px', borderRadius: '50%', background: 'rgba(184,144,42,0.1)', color: T.gold, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: '2px', fontSize: '0.65rem', fontWeight: 'bold' }}>✓</div>
+                    <div>
+                      <strong style={{ fontSize: '0.82rem', color: 'var(--text)', display: 'block' }}>{item.title}</strong>
+                      <span style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>{item.desc}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button
+                  onClick={() => setOnbStep(2)}
+                  className="onb-btn-continue"
+                  style={{ flex: 2, padding: '12px', borderRadius: '100px', fontSize: '0.85rem' }}
+                >
+                  Create Dynasty
+                </button>
+                <button
+                  onClick={() => setPage('dashboard')}
+                  className="onb-btn-back"
+                  style={{ flex: 1, padding: '12px', borderRadius: '100px', fontSize: '0.85rem' }}
+                >
+                  Back
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* STEP 2: Create Dynasty Form */}
+          {onbStep === 2 && (
+            <div className="fade-in">
+              <div style={{ textAlign: 'center', marginBottom: '28px' }}>
+                <h3 style={{ fontFamily: T.fontDisplay, fontSize: '1.4rem', fontWeight: 700, margin: '0 0 6px', color: 'var(--text)' }}>
+                  Name Your Dynasty
+                </h3>
+                <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', margin: 0 }}>
+                  Establish the identity of your family planning pool.
+                </p>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '32px' }}>
+                <div>
+                  <label htmlFor="dynasty-name-input" style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)', display: 'block', marginBottom: '6px' }}>
+                    Dynasty Name
+                  </label>
+                  <input
+                    id="dynasty-name-input"
+                    type="text"
+                    className="onb-input-glow"
+                    placeholder="e.g. Skywalker, Rothschild"
+                    value={dynastyName}
+                    onChange={(e) => setDynastyName(e.target.value)}
+                    style={{ width: '100%', padding: '10px 14px', fontSize: '0.88rem', boxSizing: 'border-box' }}
+                  />
+                </div>
+                <div>
+                  <label htmlFor="dynasty-desc-input" style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)', display: 'block', marginBottom: '6px' }}>
+                    Dynasty Description (Optional)
+                  </label>
+                  <textarea
+                    id="dynasty-desc-input"
+                    className="onb-input-glow"
+                    placeholder="e.g. Securing assets across generations and establishing family governance."
+                    value={dynastyDesc}
+                    onChange={(e) => setDynastyDesc(e.target.value)}
+                    style={{ width: '100%', height: '80px', padding: '10px 14px', fontSize: '0.88rem', boxSizing: 'border-box', resize: 'none' }}
+                  />
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button
+                  onClick={() => {
+                    if (!dynastyName.trim()) {
+                      toast.error("Dynasty Name is required.");
+                      return;
+                    }
+                    generateFamilyCode();
+                    setOnbStep(3);
+                  }}
+                  disabled={!dynastyName.trim()}
+                  className="onb-btn-continue"
+                  style={{ flex: 2, padding: '12px', borderRadius: '100px', fontSize: '0.85rem', opacity: dynastyName.trim() ? 1 : 0.6 }}
+                >
+                  Continue
+                </button>
+                <button
+                  onClick={() => setOnbStep(1)}
+                  className="onb-btn-back"
+                  style={{ flex: 1, padding: '12px', borderRadius: '100px', fontSize: '0.85rem' }}
+                >
+                  Back
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* STEP 3: Generate Family Code */}
+          {onbStep === 3 && (
+            <div className="fade-in">
+              <div style={{ textAlign: 'center', marginBottom: '28px' }}>
+                <div style={{
+                  width: '56px', height: '56px', borderRadius: '50%',
+                  background: 'var(--gold-pale)', color: T.gold,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px',
+                  border: `1px solid ${T.gold}30`
+                }}>
+                  <Key size={24} />
+                </div>
+                <h3 style={{ fontFamily: T.fontDisplay, fontSize: '1.4rem', fontWeight: 700, margin: '0 0 6px', color: 'var(--text)' }}>
+                  Your Family Code
+                </h3>
+                <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', margin: 0 }}>
+                  This unique key allows family members to search and connect.
+                </p>
+              </div>
+
+              <div style={{ background: 'var(--bg-warm)', border: '1px solid var(--border)', borderRadius: '12px', padding: '20px', textAlign: 'center', marginBottom: '32px' }}>
+                <strong style={{ fontSize: '1.5rem', color: T.gold, fontFamily: 'monospace', letterSpacing: '0.05em' }}>
+                  {familyCode}
+                </strong>
+                <div style={{ marginTop: '12px' }}>
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(familyCode);
+                      toast.success("Code copied to clipboard!");
+                    }}
+                    className="btn-secondary"
+                    style={{ fontSize: '0.72rem', display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '6px 14px', borderRadius: '8px' }}
+                  >
+                    <Copy size={12} /> Copy Family Code
+                  </button>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button
+                  onClick={() => setOnbStep(4)}
+                  className="onb-btn-continue"
+                  style={{ flex: 2, padding: '12px', borderRadius: '100px', fontSize: '0.85rem' }}
+                >
+                  Continue to Invites
+                </button>
+                <button
+                  onClick={() => setOnbStep(2)}
+                  className="onb-btn-back"
+                  style={{ flex: 1, padding: '12px', borderRadius: '100px', fontSize: '0.85rem' }}
+                >
+                  Back
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* STEP 4: Invite Members */}
+          {onbStep === 4 && (
+            <div className="fade-in">
+              <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+                <h3 style={{ fontFamily: T.fontDisplay, fontSize: '1.35rem', fontWeight: 700, margin: '0 0 6px', color: 'var(--text)' }}>
+                  Invite Members
+                </h3>
+                <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: 0 }}>
+                  Select an invitation route below to add trusted members to your dynasty.
+                </p>
+              </div>
+
+              {/* QR display */}
+              <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+                <div style={{
+                  background: '#fff', padding: '12px', borderRadius: '16px',
+                  border: `1.5px solid ${T.gold}30`, display: 'inline-flex',
+                  boxShadow: '0 6px 20px rgba(184,144,42,0.08)', marginBottom: '16px'
+                }}>
+                  <QRCode value={getJoinUrl()} size={140} fgColor="#12110E" bgColor="#FFFFFF" level="H" />
+                </div>
+                <span style={{ fontSize: '0.7rem', color: 'var(--text-faint)', display: 'block' }}>Scan to connect node</span>
+              </div>
+
+              {/* Copy URL */}
+              <div style={{ background: 'var(--bg-warm)', border: '1px solid var(--border)', borderRadius: '12px', padding: '10px 14px', marginBottom: '28px' }}>
+                <span style={{ fontSize: '0.65rem', color: 'var(--text-faint)', display: 'block', marginBottom: '4px' }}>Shareable Invite Link</span>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                  <span style={{ fontSize: '0.76rem', color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flexGrow: 1, textAlign: 'left' }}>
+                    {getJoinUrl()}
+                  </span>
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(getJoinUrl());
+                      toast.success("Link copied!");
+                    }}
+                    className="btn-secondary"
+                    style={{ padding: '6px 12px', borderRadius: '8px', fontSize: '0.7rem', display: 'flex', alignItems: 'center', gap: '4px' }}
+                  >
+                    <Copy size={11} /> Copy
+                  </button>
+                  <button
+                    onClick={async () => {
+                      if (navigator.share) {
+                        try {
+                          await navigator.share({
+                            title: 'EverBond Family Dynasty Invitation',
+                            text: `Join the ${dynastyName || 'Family'} Dynasty workspace on EverBond.`,
+                            url: getJoinUrl(),
+                          });
+                          toast.success("Shared successfully!");
+                        } catch (err) {
+                          console.log("Share API error:", err);
+                        }
+                      } else {
+                        navigator.clipboard.writeText(getJoinUrl());
+                        toast.success("Link copied!");
+                      }
+                    }}
+                    className="btn-secondary"
+                    style={{ padding: '6px 12px', borderRadius: '8px', fontSize: '0.7rem', display: 'flex', alignItems: 'center', gap: '4px' }}
+                  >
+                    <Share2 size={11} /> Share
+                  </button>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button
+                  onClick={() => setOnbStep(5)}
+                  className="onb-btn-continue"
+                  style={{ flex: 2, padding: '12px', borderRadius: '100px', fontSize: '0.85rem' }}
+                >
+                  Continue to Roles
+                </button>
+                <button
+                  onClick={() => setOnbStep(3)}
+                  className="onb-btn-back"
+                  style={{ flex: 1, padding: '12px', borderRadius: '100px', fontSize: '0.85rem' }}
+                >
+                  Back
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* STEP 5: Role Selection */}
+          {onbStep === 5 && (
+            <div className="fade-in">
+              <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+                <h3 style={{ fontFamily: T.fontDisplay, fontSize: '1.35rem', fontWeight: 700, margin: '0 0 6px', color: 'var(--text)' }}>
+                  Your Dynasty Role
+                </h3>
+                <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: 0 }}>
+                  Assign your role parameters in the family workspace.
+                </p>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '32px' }}>
+                {rolesConfig.map(role => (
+                  <div
+                    key={role.id}
+                    onClick={() => setSelectedRole(role.id)}
+                    style={{
+                      background: selectedRole === role.id ? 'rgba(184, 144, 42, 0.04)' : 'var(--bg-warm)',
+                      border: `1.5px solid ${selectedRole === role.id ? T.gold : 'var(--border)'}`,
+                      borderRadius: '12px', padding: '12px 16px', cursor: 'pointer',
+                      transition: 'border-color 0.18s'
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                      <strong style={{ fontSize: '0.85rem', color: selectedRole === role.id ? T.gold : 'var(--text)' }}>
+                        {role.title}
+                      </strong>
+                      {selectedRole === role.id && <Check size={14} style={{ color: T.gold }} />}
+                    </div>
+                    <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', lineHeight: 1.35 }}>
+                      {role.desc}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button
+                  onClick={() => setOnbStep(6)}
+                  className="onb-btn-continue"
+                  style={{ flex: 2, padding: '12px', borderRadius: '100px', fontSize: '0.85rem' }}
+                >
+                  Continue to Activation
+                </button>
+                <button
+                  onClick={() => setOnbStep(4)}
+                  className="onb-btn-back"
+                  style={{ flex: 1, padding: '12px', borderRadius: '100px', fontSize: '0.85rem' }}
+                >
+                  Back
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* STEP 6: DB Workspace Activation */}
+          {onbStep === 6 && (
+            <div className="fade-in">
+              <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+                <div style={{
+                  width: '56px', height: '56px', borderRadius: '50%',
+                  background: 'var(--gold-pale)', color: T.gold,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px',
+                  border: `1px solid ${T.gold}30`
+                }}>
+                  <ShieldCheck size={24} />
+                </div>
+                <h3 style={{ fontFamily: T.fontDisplay, fontSize: '1.35rem', fontWeight: 700, margin: '0 0 6px', color: 'var(--text)' }}>
+                  Activate Dynasty Workspace
+                </h3>
+                <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: 0 }}>
+                  Confirm Parameters to instantiate the multi-generation ledger on Firestore.
+                </p>
+              </div>
+
+              {/* Summary Card */}
+              <div style={{ background: 'var(--bg-warm)', border: '1px solid var(--border)', borderRadius: '12px', padding: '16px', marginBottom: '24px' }}>
+                <span style={{ fontSize: '0.62rem', fontWeight: 800, textTransform: 'uppercase', color: T.gold, letterSpacing: '0.05em', display: 'block', marginBottom: '10px' }}>
+                  Confirmation Ledger
+                </span>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.82rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span style={{ color: 'var(--text-muted)' }}>Dynasty Name:</span>
+                    <strong style={{ color: 'var(--text)' }}>{dynastyName}</strong>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span style={{ color: 'var(--text-muted)' }}>Your Assigned Role:</span>
+                    <strong style={{ color: T.gold }}>{selectedRole}</strong>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span style={{ color: 'var(--text-muted)' }}>Family Code:</span>
+                    <strong style={{ fontFamily: 'monospace', color: 'var(--text)' }}>{familyCode}</strong>
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', marginBottom: '28px' }}>
+                <input
+                  type="checkbox"
+                  id="activate-consent"
+                  checked={activationChecked}
+                  onChange={(e) => setActivationChecked(e.target.checked)}
+                  style={{ marginTop: '3px', accentColor: T.gold }}
+                />
+                <label htmlFor="activate-consent" style={{ fontSize: '0.76rem', color: 'var(--text-muted)', lineHeight: 1.45, cursor: 'pointer' }}>
+                  I agree to instantiate this Family Dynasty and link my financial planning node to this workspace.
+                </label>
+              </div>
+
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button
+                  onClick={handleActivateDynasty}
+                  disabled={!activationChecked || isActivating}
+                  className="onb-btn-continue"
+                  style={{ flex: 2, padding: '12px', borderRadius: '100px', fontSize: '0.85rem', opacity: (activationChecked && !isActivating) ? 1 : 0.6 }}
+                >
+                  {isActivating ? 'Activating Ledger...' : 'Activate Dynasty'}
+                </button>
+                <button
+                  onClick={() => setOnbStep(5)}
+                  className="onb-btn-back"
+                  style={{ flex: 1, padding: '12px', borderRadius: '100px', fontSize: '0.85rem' }}
+                >
+                  Back
+                </button>
+              </div>
+            </div>
+          )}
+
+        </Card>
+      </div>
+    );
+  }
+
+  // ────────────────────────────────────────────────────────────────
+  // END ONBOARDING & ACTIVE DYNASTY DASHBOARD RENDER
+  // ────────────────────────────────────────────────────────────────
+  
+  // Dashboard Fallback States
+  const [isSimulatedLinked, setIsSimulatedLinked] = useState(true);
   const [compoundingYears, setCompoundingYears] = useState(30);
   const [monthlyContribution, setMonthlyContribution] = useState(2500);
   const [expectedYield, setExpectedYield] = useState(8.5);
@@ -288,7 +1059,9 @@ export function FamilyPlanningPage({ setPage }) {
             <span className="stage-badge married" style={{ background: `linear-gradient(135deg, ${T.gold} 0%, #d4a017 100%)`, color: '#fff' }}>Family Dynasty</span>
             <span style={{ color: 'var(--text-muted)' }}>· Multi-Generational Asset Command</span>
           </div>
-          <h1 className="page-title" style={{ marginTop: '8px' }}>Dynasty <em>Command</em></h1>
+          <h1 className="page-title" style={{ marginTop: '8px' }}>
+            {dynastyWorkspaceName ? `${dynastyWorkspaceName} Dynasty` : 'Dynasty'} <em>Command</em>
+          </h1>
           <p className="page-desc" style={{ color: 'var(--text-muted)' }}>
             Oversee trust fund allocations, successors inheritance metrics, secure vaults, and dynamic rule governance.
           </p>
