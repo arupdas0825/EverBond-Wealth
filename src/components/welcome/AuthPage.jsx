@@ -13,7 +13,6 @@ import { Logo } from '../common/Logo';
 import { T } from '../../theme/tokens';
 import { ArrowRight, X, Mail, Key, User } from 'lucide-react';
 import { useToast } from '../common/Toast';
-import authBanner from '../../assets/auth_banner.png';
 
 const GoogleIcon = ({ size = 20 }) => (
   <svg viewBox="0 0 24 24" width={size} height={size}>
@@ -512,7 +511,7 @@ export function AuthPage({ onAuthSuccess, onBackToLanding, onOpenPolicy }) {
           }}
         >
           <img
-            src={authBanner}
+            src="/Auth page image.jpeg"
             alt="EverBond Wealth"
             style={{
               position: 'absolute', inset: 0,
