@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Offline — EverBond Wealth</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #FAF6EE;
+      --text: #1C1A16;
+      --text-muted: #6B6455;
+      --gold: #B8902A;
+      --border: rgba(28, 26, 22, 0.08);
+      --card-bg: #FFFFFF;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #12110E;
+        --text: #F4EFE3;
+        --text-muted: #B0A898;
+        --gold: #C9A84C;
+        --border: rgba(244, 239, 227, 0.08);
+        --card-bg: #1C1A16;
+      }
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', system-ui, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 24px;
+      overflow: hidden;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    /* Ambient background glow */
+    .spotlight {
+      position: absolute;
+      width: 400px;
+      height: 400px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(184, 144, 42, 0.06) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 1;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    .container {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      max-width: 440px;
+      text-align: center;
+      padding: 40px 32px;
+      border-radius: 24px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.04);
+      animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+
+    .logo-container {
+      margin-bottom: 32px;
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-mark {
+      width: 64px;
+      height: 64px;
+      object-fit: contain;
+      animation: pulse 2.5s infinite ease-in-out;
+    }
+
+    .brand-title {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 2.25rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      line-height: 1.1;
+    }
+
+    .brand-subtitle {
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: var(--gold);
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      margin-top: 4px;
+    }
+
+    .divider {
+      width: 40px;
+      height: 2px;
+      background: var(--gold);
+      margin: 24px auto;
+      opacity: 0.6;
+    }
+
+    .offline-title {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 1.6rem;
+      font-style: italic;
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+
+    .offline-desc {
+      font-size: 0.9rem;
+      line-height: 1.6;
+      color: var(--text-muted);
+      margin-bottom: 32px;
+    }
+
+    .btn-retry {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      padding: 14px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: #FFFFFF;
+      background: linear-gradient(135deg, #B8902A 0%, #9C7720 100%);
+      border: none;
+      border-radius: 14px;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(184, 144, 42, 0.25);
+      transition: transform 0.2s ease, filter 0.2s ease;
+    }
+
+    .btn-retry:hover {
+      filter: brightness(1.05);
+    }
+
+    .btn-retry:active {
+      transform: scale(0.98);
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--gold);
+      background: rgba(184, 144, 42, 0.08);
+      padding: 6px 12px;
+      border-radius: 100px;
+      margin-bottom: 16px;
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background-color: var(--gold);
+      animation: blink 1.5s infinite ease-in-out;
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        transform: scale(1);
+        filter: drop-shadow(0 2px 4px rgba(184, 144, 42, 0.1));
+      }
+      50% {
+        transform: scale(1.04);
+        filter: drop-shadow(0 8px 16px rgba(184, 144, 42, 0.25));
+      }
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 0.3; }
+      50% { opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <div class="spotlight"></div>
+  <div class="container">
+    <div class="logo-container">
+      <img src="/logo.png" alt="EverBond Wealth Icon" class="logo-mark">
+      <div>
+        <h1 class="brand-title">EverBond</h1>
+        <h2 class="brand-subtitle">Wealth</h2>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="status-badge">
+      <span class="status-dot"></span>
+      Offline Mode Activated
+    </div>
+
+    <h3 class="offline-title">You're currently offline.</h3>
+    <p class="offline-desc">
+      Your previously saved financial workspace remains available.<br>
+      Reconnect to sync new updates.
+    </p>
+
+    <button class="btn-retry" onclick="window.location.reload()">
+      Retry Connection
+    </button>
+  </div>
+</body>
+</html>

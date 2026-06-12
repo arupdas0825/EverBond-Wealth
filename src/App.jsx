@@ -14,6 +14,7 @@ import { PrivacyDrawer } from './components/common/PrivacyDrawer';
 import { ResetModal } from './components/common/ResetModal';
 import { RouteGuardScreen } from './components/common/RouteGuardScreen';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
+import { SplashScreen } from './components/common/SplashScreen';
 import './index.css';
 
 /* ═══════════════════════════════════════════════════════════
@@ -331,6 +332,7 @@ export default function App() {
   const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1024);
   const [activePolicyDoc, setActivePolicyDoc] = useState(null);
   const [showResetModal, setShowResetModal] = useState(false);
+  const [showSplash, setShowSplash] = useState(true);
 
   const handleConfirmReset = useCallback(() => {
     const storeReset = useFinanceStore.getState().reset;
@@ -406,6 +408,11 @@ export default function App() {
 
   return (
     <ToastProvider>
+      <AnimatePresence>
+        {showSplash && (
+          <SplashScreen onComplete={() => setShowSplash(false)} />
+        )}
+      </AnimatePresence>
       <CursorSpotlight />
       <OnboardingGuard>
         <div className="eb-app">
