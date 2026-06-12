@@ -13,7 +13,7 @@ export function ProfileChip({ setPage, onReset }) {
   const menuRef = useRef(null);
   const toast = useToast();
 
-  const { partner1, theme, setTheme, everBondId, logout } = useFinanceStore();
+  const { partner1, theme, setTheme, everBondId, logout, language, currency, timezone } = useFinanceStore();
 
   const [deferredPrompt, setDeferredPrompt] = useState(window.deferredPrompt || null);
   const [isStandalone, setIsStandalone] = useState(false);
@@ -278,6 +278,25 @@ export function ProfileChip({ setPage, onReset }) {
                 </span>
                 Theme
               </button>
+
+              <div style={{ height: '1px', background: 'var(--border-mid)', margin: '6px 0' }} />
+
+              {/* Preferences Section */}
+              <div style={{ padding: '8px 16px 4px', fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', color: T.gold, letterSpacing: '0.05em' }}>Preferences</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', padding: '0 8px 6px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 8px', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                  <span>Language</span>
+                  <span style={{ fontWeight: 700, color: 'var(--text)' }}>{language || 'English'}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 8px', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                  <span>Currency</span>
+                  <span style={{ fontWeight: 700, color: 'var(--text)' }}>{currency || 'INR'}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 8px', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                  <span>Timezone</span>
+                  <span style={{ fontWeight: 700, color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '90px' }} title={timezone}>{timezone || 'GMT+5:30'}</span>
+                </div>
+              </div>
 
               <div style={{ height: '1px', background: 'var(--border-mid)', margin: '6px 0' }} />
 

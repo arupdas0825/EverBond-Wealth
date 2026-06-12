@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { T } from '../../theme/tokens';
 import { useFinanceStore } from '../../store/useFinanceStore';
+import { useTranslation } from '../../utils/i18n';
 
 const MAIN_TABS = [
   { id: 'dashboard',  label: 'Dashboard',  icon: <LayoutDashboard size={16} /> },
@@ -42,6 +43,20 @@ export function FloatingNav({ page, setPage }) {
   const partnerCloseTimeout = useRef(null);
   
   const theme = useFinanceStore(s => s.theme);
+  const { t } = useTranslation();
+
+  const mainTabs = MAIN_TABS.map(tab => ({
+    ...tab,
+    label: t(tab.id, tab.label)
+  }));
+  const partnerTabs = PARTNER_TABS.map(tab => ({
+    ...tab,
+    label: tab.id === 'partner-committed' ? t('partner', 'Partner') : t('family', 'Family')
+  }));
+  const moreTabs = MORE_TABS.map(tab => ({
+    ...tab,
+    label: t(tab.id, tab.label)
+  }));
 
   // Screen width detection to toggle hover behavior for width >= 1024px
   const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1024);
@@ -224,7 +239,7 @@ export function FloatingNav({ page, setPage }) {
     setIsPartnerOpen(false);
   };
 
-  const activeInMore = MORE_TABS.some(t => t.id === page);
+  const activeInMore = moreTabs.some(t => t.id === page);
   const activeInPartner = page === 'partner-committed' || page === 'partner-family';
 
   const dropdownVariants = {
@@ -275,7 +290,7 @@ export function FloatingNav({ page, setPage }) {
         boxShadow: theme === 'dark' ? '0 10px 40px rgba(0, 0, 0, 0.35)' : '0 10px 40px rgba(0, 0, 0, 0.08)'
       }}
     >
-        {MAIN_TABS.map(tab => {
+        {mainTabs.map(tab => {
           const isActive = page === tab.id;
           return (
             <motion.button
@@ -378,7 +393,7 @@ export function FloatingNav({ page, setPage }) {
                 exit="hidden"
                 className="eb-partner-glass-dropdown"
               >
-                {PARTNER_TABS.map(tab => {
+                {partnerTabs.map(tab => {
                   const isItemActive = page === tab.id;
                   return (
                     <button
@@ -463,7 +478,7 @@ export function FloatingNav({ page, setPage }) {
                 exit="hidden"
                 className="eb-glass-dropdown"
               >
-                {MORE_TABS.map(tab => {
+                {moreTabs.map(tab => {
                   const isItemActive = page === tab.id;
                   return (
                     <button

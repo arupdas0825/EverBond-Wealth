@@ -44,6 +44,8 @@ export const CURRENCIES = {
   CAD: { symbol: 'C$',   locale: 'en-CA', code: 'CAD', name: 'Canadian Dollar',  flag: '🇨🇦' },
   SGD: { symbol: 'S$',   locale: 'en-SG', code: 'SGD', name: 'Singapore Dollar', flag: '🇸🇬' },
   AED: { symbol: 'د.إ', locale: 'ar-AE', code: 'AED', name: 'UAE Dirham',       flag: '🇦🇪' },
+  JPY: { symbol: '¥',    locale: 'ja-JP', code: 'JPY', name: 'Japanese Yen',     flag: '🇯🇵' },
+  AUD: { symbol: 'A$',   locale: 'en-AU', code: 'AUD', name: 'Australian Dollar',flag: '🇦🇺' },
 };
 
 export const REGIONS = ['India','Germany','Switzerland','USA','UK','Canada','Singapore','UAE'];

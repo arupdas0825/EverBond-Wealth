@@ -6,9 +6,11 @@ import {
 } from 'lucide-react';
 import { useFinanceStore } from '../../store/useFinanceStore';
 import { T } from '../../theme/tokens';
+import { useTranslation } from '../../utils/i18n';
 
 export function MobileNav({ page, setPage, onReset }) {
   const theme = useFinanceStore(s => s.theme);
+  const { t } = useTranslation();
   const [isMoreOpen, setIsMoreOpen] = useState(false);
   const [isPartnerOpen, setIsPartnerOpen] = useState(false);
   const moreRef = useRef(null);
@@ -35,6 +37,21 @@ export function MobileNav({ page, setPage, onReset }) {
     { id: 'documentation',   label: 'Documentation',   icon: <FileText size={16} /> },
     { id: 'settings',        label: 'Settings',        icon: <Settings size={16} /> }
   ];
+
+  const mainTabs = MAIN_TABS.map(tab => ({
+    ...tab,
+    label: t(tab.key, tab.label)
+  }));
+
+  const partnerTabs = PARTNER_TABS.map(tab => ({
+    ...tab,
+    label: tab.id === 'partner-committed' ? t('partner', 'Partner') : t('family', 'Family')
+  }));
+
+  const moreTabs = MORE_TABS.map(tab => ({
+    ...tab,
+    label: t(tab.id, tab.label)
+  }));
 
   const bgGlass = theme === 'dark' ? 'rgba(15, 20, 30, 0.75)' : 'rgba(255, 255, 255, 0.75)';
   const borderGlass = theme === 'dark' ? '1px solid rgba(255, 255, 255, 0.15)' : '1px solid rgba(255, 255, 255, 0.4)';
@@ -182,7 +199,7 @@ export function MobileNav({ page, setPage, onReset }) {
                 gap: '8px'
               }}
             >
-              {PARTNER_TABS.map(tab => {
+              {partnerTabs.map(tab => {
                 const isItemActive = page === tab.id;
                 return (
                   <button
@@ -230,7 +247,7 @@ export function MobileNav({ page, setPage, onReset }) {
                 gap: '8px'
               }}
             >
-              {MORE_TABS.map(tab => {
+              {moreTabs.map(tab => {
                 const isItemActive = page === tab.id;
                 return (
                   <button
@@ -270,7 +287,7 @@ export function MobileNav({ page, setPage, onReset }) {
             position: 'relative'
           }}
         >
-          {MAIN_TABS.map(item => {
+          {mainTabs.map(item => {
             const isActive = page === item.key && !isMoreOpen && !isPartnerOpen;
             const Icon = item.icon;
             
@@ -324,7 +341,7 @@ export function MobileNav({ page, setPage, onReset }) {
               />
             )}
             <Heart size={(isPartnerOpen || activeInPartner) ? 22 : 20} style={{ position: 'relative', zIndex: 1 }} />
-            <span style={{ fontSize: '0.55rem', fontWeight: (isPartnerOpen || activeInPartner) ? 700 : 500, position: 'relative', zIndex: 1 }}>Partner</span>
+            <span style={{ fontSize: '0.55rem', fontWeight: (isPartnerOpen || activeInPartner) ? 700 : 500, position: 'relative', zIndex: 1 }}>{t('partner', 'Partner')}</span>
           </button>
 
           <button
@@ -349,7 +366,7 @@ export function MobileNav({ page, setPage, onReset }) {
               />
             )}
             <MoreHorizontal size={(isMoreOpen || activeInMore) ? 22 : 20} style={{ position: 'relative', zIndex: 1 }} />
-            <span style={{ fontSize: '0.55rem', fontWeight: (isMoreOpen || activeInMore) ? 700 : 500, position: 'relative', zIndex: 1 }}>More</span>
+            <span style={{ fontSize: '0.55rem', fontWeight: (isMoreOpen || activeInMore) ? 700 : 500, position: 'relative', zIndex: 1 }}>{t('more', 'More')}</span>
           </button>
 
         </div>

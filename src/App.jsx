@@ -7,6 +7,7 @@ import { MobileNav } from './components/layout/MobileNav';
 import { Logo } from './components/common/Logo';
 import { ThemeToggle } from './components/common/ThemeToggle';
 import { NotificationCenter } from './components/layout/NotificationCenter';
+import { LanguageSelector } from './components/layout/LanguageSelector';
 import { ToastProvider } from './components/common/Toast';
 import { CookieConsent } from './components/common/CookieConsent';
 import { PrivacyDrawer } from './components/common/PrivacyDrawer';
@@ -286,6 +287,13 @@ export default function App() {
     localStorage.removeItem('eb_v6');
     setShowResetModal(false);
     window.location.reload();
+  }, []);
+
+  // Start live exchange rates scheduler on app mount
+  useEffect(() => {
+    import('./utils/currency').then(m => {
+      m.startExchangeRateScheduler();
+    });
   }, []);
 
   // Listen to Firebase Auth state changes and sync with global store
@@ -569,6 +577,9 @@ export default function App() {
             </div>
           )}
           <div className="eb-top-actions">
+            <ErrorBoundary mini={true}>
+              <LanguageSelector />
+            </ErrorBoundary>
             <ErrorBoundary mini={true}>
               <ThemeToggle />
             </ErrorBoundary>

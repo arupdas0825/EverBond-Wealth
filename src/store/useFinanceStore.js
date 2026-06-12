@@ -20,6 +20,10 @@ export const useFinanceStore = create(
       region:    'India',
       country:   'India',
       currency:  'INR',
+      language:  'English',
+      timezone:  'GMT+5:30',
+      exchangeRates: null,
+      ratesLastUpdated: null,
       dreamGoals: [],
       mindset:   'Balanced',
       theme:     'light',
@@ -636,6 +640,8 @@ export const useFinanceStore = create(
           profilePhoto,
           bio,
           country,
+          language,
+          timezone,
         } = profileData;
 
         const wasCompleted = get().onboardingComplete;
@@ -651,6 +657,8 @@ export const useFinanceStore = create(
           country: country || region || 'India',
           currency: currency || 'INR'
         };
+        if (language !== undefined) update.language = language;
+        if (timezone !== undefined) update.timezone = timezone;
         if (profilePhoto !== undefined) update.profilePhoto = profilePhoto;
         if (bio !== undefined) update.bio = bio;
         if (!get().joinDate) {
@@ -748,6 +756,44 @@ export const useFinanceStore = create(
 
         set(update);
         get().syncInsightsData();
+      },
+
+      setLanguage: async lang => {
+        set({ language: lang });
+        const { db } = await import('../utils/firebase');
+        const currentUser = get().user;
+        if (currentUser?.uid && db) {
+          const { doc, updateDoc } = await import('firebase/firestore');
+          try {
+            const userRef = doc(db, 'users', currentUser.uid);
+            await updateDoc(userRef, {
+              language: lang,
+              'settings.language': lang
+            });
+            console.log("Firestore language preference saved.");
+          } catch (err) {
+            console.warn("Could not save language to Firestore:", err);
+          }
+        }
+      },
+
+      setTimezone: async tz => {
+        set({ timezone: tz });
+        const { db } = await import('../utils/firebase');
+        const currentUser = get().user;
+        if (currentUser?.uid && db) {
+          const { doc, updateDoc } = await import('firebase/firestore');
+          try {
+            const userRef = doc(db, 'users', currentUser.uid);
+            await updateDoc(userRef, {
+              timezone: tz,
+              'settings.timezone': tz
+            });
+            console.log("Firestore timezone preference saved.");
+          } catch (err) {
+            console.warn("Could not save timezone to Firestore:", err);
+          }
+        }
       },
 
       setP1Salary: v => {

@@ -8,10 +8,12 @@ import { X, Upload, RotateCw, ZoomIn, Loader2, Check, Trash2 } from 'lucide-reac
 import { db, storage } from '../../utils/firebase';
 import { doc, setDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { useTranslation } from '../../utils/i18n';
 
 export function ProfileEditModal({ isOpen, onClose }) {
   const store = useFinanceStore();
   const toast = useToast();
+  const { t } = useTranslation();
   const { 
     partner1, userName, country, currency, bio, profilePhoto, relationshipStage, everBondId, 
     email, user, setProfile, theme, language, timezone, verificationStatus, partnerId
@@ -242,8 +244,19 @@ export function ProfileEditModal({ isOpen, onClose }) {
           bio: bioVal.trim(),
           photoURL: finalPhotoURL,
           relationshipMode: mappedMode,
-          verificationStatus: finalVerificationStatus
+          verificationStatus: finalVerificationStatus,
+          settings: {
+            language: languageVal,
+            currency: currencyVal,
+            timezone: timezoneVal
+          }
         }, { merge: true });
+      }
+
+      // Check if preferred currency has changed
+      if (currencyVal !== currency) {
+        const { changeUserCurrency } = await import('../../utils/currency');
+        await changeUserCurrency(currencyVal);
       }
 
       // 3. Update local Zustand store
@@ -341,7 +354,7 @@ export function ProfileEditModal({ isOpen, onClose }) {
               borderBottom: '1px solid var(--border-mid)'
             }}>
               <h3 style={{ fontFamily: T.fontDisplay, fontSize: '1.6rem', fontWeight: 700, color: 'var(--text)', margin: 0 }}>
-                Edit <em>Profile</em>
+                {t('edit_profile', 'Edit Profile')}
               </h3>
               <button 
                 onClick={onClose}
@@ -362,7 +375,7 @@ export function ProfileEditModal({ isOpen, onClose }) {
               {/* Photo Upload System */}
               <div style={{ marginBottom: '28px' }}>
                 <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.gold, display: 'block', marginBottom: '10px' }}>
-                  Profile Photo
+                  {t('profile_photo', 'Profile Photo')}
                 </span>
 
                 {!rawImageSrc && !photoVal ? (
@@ -389,10 +402,10 @@ export function ProfileEditModal({ isOpen, onClose }) {
                   >
                     <Upload size={24} style={{ color: dragActive ? T.gold : 'var(--text-faint)', marginBottom: '8px' }} />
                     <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)' }}>
-                      Drag & drop image here or <span style={{ color: T.gold }}>browse</span>
+                      {t('drag_drop_prefix', 'Drag & drop image here or')} <span style={{ color: T.gold }}>{t('browse', 'browse')}</span>
                     </span>
                     <span style={{ fontSize: '0.68rem', color: 'var(--text-faint)', marginTop: '4px' }}>
-                      PNG, JPG or WEBP up to 5MB
+                      {t('photo_spec', 'PNG, JPG or WEBP up to 5MB')}
                     </span>
                   </div>
                 ) : (
@@ -440,7 +453,7 @@ export function ProfileEditModal({ isOpen, onClose }) {
                         style={{ padding: '6px 14px', fontSize: '0.78rem', width: 'auto', display: 'inline-flex', gap: '6px', alignItems: 'center' }}
                         onClick={() => fileInputRef.current.click()}
                       >
-                        <RotateCw size={12} /> Replace Image
+                        <RotateCw size={12} /> {t('replace_image', 'Replace Image')}
                       </button>
                       <button 
                         onClick={handleRemovePhoto}
@@ -451,7 +464,7 @@ export function ProfileEditModal({ isOpen, onClose }) {
                           borderRadius: '8px', cursor: 'pointer', display: 'inline-flex', gap: '6px', alignItems: 'center'
                         }}
                       >
-                        <Trash2 size={12} /> Remove Photo
+                        <Trash2 size={12} /> {t('remove_photo', 'Remove Photo')}
                       </button>
                     </div>
                   </div>
@@ -471,7 +484,7 @@ export function ProfileEditModal({ isOpen, onClose }) {
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
                   <div>
                     <label style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)', display: 'block', marginBottom: '6px' }}>
-                      Full Name
+                      {t('full_name', 'Full Name')}
                     </label>
                     <input 
                       type="text" 
@@ -485,7 +498,7 @@ export function ProfileEditModal({ isOpen, onClose }) {
 
                   <div>
                     <label style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)', display: 'block', marginBottom: '6px' }}>
-                      Country
+                      {t('country', 'Country')}
                     </label>
                     <select 
                       className="onb-input-glow" 
@@ -505,7 +518,7 @@ export function ProfileEditModal({ isOpen, onClose }) {
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
                   <div>
                     <label style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)', display: 'block', marginBottom: '6px' }}>
-                      Currency
+                      {t('currency', 'Currency')}
                     </label>
                     <select 
                       className="onb-input-glow" 
@@ -515,15 +528,20 @@ export function ProfileEditModal({ isOpen, onClose }) {
                     >
                       <option value="INR">INR (₹)</option>
                       <option value="USD">USD ($)</option>
-                      <option value="GBP">GBP (£)</option>
                       <option value="EUR">EUR (€)</option>
+                      <option value="GBP">GBP (£)</option>
+                      <option value="CHF">CHF (Fr)</option>
+                      <option value="CAD">CAD (C$)</option>
                       <option value="SGD">SGD (S$)</option>
+                      <option value="AED">AED (د.إ)</option>
+                      <option value="JPY">JPY (¥)</option>
+                      <option value="AUD">AUD (A$)</option>
                     </select>
                   </div>
 
                   <div>
                     <label style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)', display: 'block', marginBottom: '6px' }}>
-                      Language
+                      {t('language', 'Language')}
                     </label>
                     <select 
                       className="onb-input-glow" 
@@ -532,10 +550,16 @@ export function ProfileEditModal({ isOpen, onClose }) {
                       style={{ width: '100%', fontSize: '0.88rem', padding: '10px 14px', background: 'var(--bg-card)', boxSizing: 'border-box' }}
                     >
                       <option value="English">English</option>
-                      <option value="Hindi">Hindi</option>
-                      <option value="Spanish">Spanish</option>
-                      <option value="French">French</option>
-                      <option value="German">German</option>
+                      <option value="Deutsch">Deutsch</option>
+                      <option value="Français">Français</option>
+                      <option value="Español">Español</option>
+                      <option value="Italiano">Italiano</option>
+                      <option value="Português">Português</option>
+                      <option value="Nederlands">Nederlands</option>
+                      <option value="हिन्दी">हिन्दी</option>
+                      <option value="বাংলা">বাংলা</option>
+                      <option value="简体中文">简体中文</option>
+                      <option value="日本語">日本語</option>
                     </select>
                   </div>
                 </div>
@@ -543,7 +567,7 @@ export function ProfileEditModal({ isOpen, onClose }) {
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
                   <div>
                     <label style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)', display: 'block', marginBottom: '6px' }}>
-                      Timezone
+                      {t('timezone', 'Timezone')}
                     </label>
                     <select 
                       className="onb-input-glow" 
@@ -551,17 +575,21 @@ export function ProfileEditModal({ isOpen, onClose }) {
                       onChange={(e) => setTimezoneVal(e.target.value)}
                       style={{ width: '100%', fontSize: '0.88rem', padding: '10px 14px', background: 'var(--bg-card)', boxSizing: 'border-box' }}
                     >
-                      <option value="GMT+5:30">GMT+5:30 (IST)</option>
+                      <option value="GMT-8:00">GMT-8:00 (PST)</option>
                       <option value="GMT-5:00">GMT-5:00 (EST)</option>
                       <option value="GMT+0:00">GMT+0:00 (UTC/GMT)</option>
-                      <option value="GMT+8:00">GMT+8:00 (SGT)</option>
                       <option value="GMT+1:00">GMT+1:00 (CET)</option>
+                      <option value="GMT+4:00">GMT+4:00 (GST)</option>
+                      <option value="GMT+5:30">GMT+5:30 (IST)</option>
+                      <option value="GMT+8:00">GMT+8:00 (SGT/CST)</option>
+                      <option value="GMT+9:00">GMT+9:00 (JST)</option>
+                      <option value="GMT+10:00">GMT+10:00 (AEST)</option>
                     </select>
                   </div>
 
                   <div>
                     <label style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-faint)', display: 'block', marginBottom: '6px' }}>
-                      Relationship Stage (Read-only)
+                      {t('relationship_stage', 'Relationship Stage')} ({t('read_only', 'Read-only')})
                     </label>
                     <div 
                       className="onb-input-glow" 
@@ -575,7 +603,7 @@ export function ProfileEditModal({ isOpen, onClose }) {
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
                   <div>
                     <label style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-faint)', display: 'block', marginBottom: '6px' }}>
-                      Account Email (Read-only)
+                      {t('account_email', 'Account Email')} ({t('read_only', 'Read-only')})
                     </label>
                     <div 
                       className="onb-input-glow" 
@@ -587,7 +615,7 @@ export function ProfileEditModal({ isOpen, onClose }) {
 
                   <div>
                     <label style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-faint)', display: 'block', marginBottom: '6px' }}>
-                      EverBond ID (Read-only)
+                      {t('everbond_id', 'EverBond ID')} ({t('read_only', 'Read-only')})
                     </label>
                     <div 
                       className="onb-input-glow" 
@@ -600,7 +628,7 @@ export function ProfileEditModal({ isOpen, onClose }) {
 
                 <div>
                   <label style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)', display: 'block', marginBottom: '6px' }}>
-                    Bio
+                    {t('bio', 'Bio')}
                   </label>
                   <textarea 
                     className="onb-input-glow" 
@@ -632,7 +660,7 @@ export function ProfileEditModal({ isOpen, onClose }) {
                 style={{ width: 'auto', padding: '10px 24px', cursor: 'pointer', borderRadius: '100px', display: 'flex', alignItems: 'center', border: '1px solid var(--border-mid)', background: 'transparent', color: 'var(--text)' }} 
                 onClick={onClose}
               >
-                Cancel
+                {t('cancel', 'Cancel')}
               </button>
               
               <button 
@@ -656,9 +684,9 @@ export function ProfileEditModal({ isOpen, onClose }) {
               >
                 {saveState === 'loading' && <Loader2 size={16} className="spinner" style={{ animation: 'spin 1.5s linear infinite' }} />}
                 {saveState === 'success' && <Check size={16} />}
-                {saveState === 'idle' && 'Save Changes'}
-                {saveState === 'loading' && 'Saving...'}
-                {saveState === 'success' && 'Saved!'}
+                {saveState === 'idle' && t('save_changes', 'Save Changes')}
+                {saveState === 'loading' && t('saving', 'Saving...')}
+                {saveState === 'success' && t('saved', 'Saved!')}
               </button>
             </div>
           </motion.div>
