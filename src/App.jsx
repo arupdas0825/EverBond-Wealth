@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useRef, useCallback, Suspense, lazy } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useFinanceStore } from './store/useFinanceStore';
-import { WelcomeScreen } from './components/welcome/WelcomeScreen';
+import { LandingPage } from './components/welcome/LandingPage';
+import { AuthPage } from './components/welcome/AuthPage';
+import { OnboardingSystem } from './components/welcome/OnboardingSystem';
 import { FloatingNav } from './components/layout/FloatingNav';
 import { ProfileChip } from './components/layout/ProfileChip';
 import { MobileNav } from './components/layout/MobileNav';
@@ -16,6 +18,8 @@ import { RouteGuardScreen } from './components/common/RouteGuardScreen';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { SplashScreen } from './components/common/SplashScreen';
 import './index.css';
+import { onAuthStateChanged } from 'firebase/auth';
+import { auth, db, createUserDocument } from './utils/firebase';
 
 /* ═══════════════════════════════════════════════════════════
    LAZY-LOADED PAGE COMPONENTS
@@ -67,27 +71,49 @@ function PageSkeleton() {
 /**
  * Onboarding Guard & Protected Route System
  */
-function OnboardingGuard({ children }) {
+function OnboardingGuard({ children, page, setPage }) {
+  const isAuthenticated = useFinanceStore(s => s.isAuthenticated);
   const onboardingComplete = useFinanceStore(s => s.onboardingComplete);
   
   return (
     <AnimatePresence mode="wait">
-      {!onboardingComplete ? (
+      {!isAuthenticated ? (
+        page === 'auth' ? (
+          <motion.div
+            key="auth"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            style={{ width: '100%', height: '100%' }}
+          >
+            <AuthPage 
+              onAuthSuccess={() => setPage('onboarding')} 
+              onBackToLanding={() => setPage('landing')} 
+            />
+          </motion.div>
+        ) : (
+          <motion.div
+            key="landing"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            style={{ width: '100%', height: '100%' }}
+          >
+            <LandingPage 
+              onStartJourney={() => setPage('auth')} 
+              onLoginClick={() => setPage('auth')} 
+            />
+          </motion.div>
+        )
+      ) : !onboardingComplete ? (
         <motion.div
           key="onboarding"
-          initial={{ opacity: 1 }}
-          exit={{ 
-            opacity: 0, 
-            filter: 'blur(10px)',
-            scale: 0.96,
-            transition: { duration: 0.3, ease: [0.16, 1, 0.3, 1] }
-          }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
           style={{ width: '100%', height: '100%' }}
         >
-          <div style={{ position: 'fixed', top: '24px', left: '24px', zIndex: 9999 }}>
-            <ThemeToggle />
-          </div>
-          <WelcomeScreen />
+          <OnboardingSystem onComplete={() => setPage('dashboard')} />
         </motion.div>
       ) : (
         <motion.div
@@ -179,75 +205,43 @@ function CursorSpotlight() {
  * lazy-loaded chunks show the skeleton fallback during load.
  */
 function PageRenderer({ page, setPage, setActivePolicyDoc, setShowResetModal }) {
-  const { relationshipStatus, partnerLinked, setStage } = useFinanceStore();
+  const { relationshipStatus, partnerLinked } = useFinanceStore();
   const status = relationshipStatus || 'Single';
 
-  // 1. Guard against Single Journey
-  if (page === 'single') {
-    if (status === 'Committed') {
+  // 1. Single Mode Access Restrictions
+  if (status === 'Single') {
+    const isCommittedPage = ['partner', 'partner-committed', 'couple-planning'].includes(page);
+    const isFamilyPage = ['partner-family', 'family-planning'].includes(page);
+    
+    if (isCommittedPage) {
       return (
         <RouteGuardScreen 
-          title="Single Journey Locked"
-          description="Committed accounts cannot access Single Journey mode. Downgrades are not permitted."
+          title="Partner Workspace Locked"
+          description="This workspace is locked for Single mode accounts. To plan with a partner, you must register a Committed account."
           onBack={() => setPage('dashboard')}
         />
       );
     }
-    if (status === 'Married') {
-      return (
-        <RouteGuardScreen 
-          title="Single Journey Unavailable"
-          description="This account is configured for Family Dynasty planning."
-          onBack={() => setPage('dashboard')}
-        />
-      );
-    }
-  }
-
-  // 2. Guard against Committed Partner page
-  if (page === 'partner' || page === 'partner-committed') {
-    if (status === 'Single') {
-      return (
-        <RouteGuardScreen 
-          title="Committed Partner Locked"
-          description="Upgrade your financial journey to a verified partner experience to unlock shared planning and dual-income wealth management."
-          onAction={() => {
-            setStage('Committed');
-            setPage('partner-committed');
-          }}
-          actionText="Upgrade Journey"
-          onBack={() => setPage('dashboard')}
-        />
-      );
-    }
-    if (status === 'Married') {
-      return (
-        <RouteGuardScreen 
-          title="Committed Partner Unavailable"
-          description="This account is configured for Family Dynasty planning."
-          onBack={() => setPage('dashboard')}
-        />
-      );
-    }
-  }
-
-  // 3. Guard against Family Dynasty page
-  if (page === 'partner-family' || page === 'family-planning') {
-    if (status === 'Single') {
+    if (isFamilyPage) {
       return (
         <RouteGuardScreen 
           title="Family Dynasty Locked"
-          description="Build a verified family connection to unlock multi-generational wealth planning and legacy management."
+          description="This workspace is locked for Single mode accounts. Multi-generational wealth planning requires a Family Dynasty account."
           onBack={() => setPage('dashboard')}
         />
       );
     }
-    if (status === 'Committed') {
+  }
+
+  // 2. Committed Mode Access Restrictions
+  if (status === 'Committed') {
+    const isFamilyPage = ['partner-family', 'family-planning'].includes(page);
+    if (isFamilyPage) {
       if (!partnerLinked) {
         return (
           <RouteGuardScreen 
             title="Family Dynasty Locked"
-            description="Build a verified family connection to unlock multi-generational wealth planning and legacy management."
+            description="Verified partner connection required. Connect your partner node to unlock Family Dynasty multi-generational planning tools."
             lockReason="Connect your partner to unlock Family Dynasty."
             onAction={() => setPage('partner-committed')}
             actionText="Connect Partner"
@@ -256,17 +250,30 @@ function PageRenderer({ page, setPage, setActivePolicyDoc, setShowResetModal }) 
         );
       }
     }
-    if (status === 'Married') {
-      if (!partnerLinked) {
-        return (
-          <RouteGuardScreen 
-            title="Family Dynasty Locked"
-            description="Build a verified family connection to unlock multi-generational wealth planning and legacy management."
-            lockReason="Please connect a spouse node to activate Family Dynasty."
-            onBack={() => setPage('dashboard')}
-          />
-        );
-      }
+  }
+
+  // 3. Family Dynasty Mode Access Restrictions
+  if (status === 'Married') {
+    const isSinglePage = page === 'single';
+    const isCommittedPage = ['partner', 'partner-committed', 'couple-planning'].includes(page);
+    
+    if (isSinglePage) {
+      return (
+        <RouteGuardScreen 
+          title="Single Workspace Locked"
+          description="This account is calibrated permanently for Family Dynasty planning. Dedicated single workspace tools are locked."
+          onBack={() => setPage('dashboard')}
+        />
+      );
+    }
+    if (isCommittedPage) {
+      return (
+        <RouteGuardScreen 
+          title="Committed Workspace Locked"
+          description="This account is calibrated permanently for Family Dynasty planning. Dedicated committed partner setup tools are locked."
+          onBack={() => setPage('dashboard')}
+        />
+      );
     }
   }
 
@@ -330,11 +337,22 @@ function PageRenderer({ page, setPage, setActivePolicyDoc, setShowResetModal }) 
 export default function App() {
   const theme = useFinanceStore(s => s.theme);
   const initEverBondId = useFinanceStore(s => s.initEverBondId);
-  const [page, setPage] = useState('dashboard');
+  const isAuthenticated = useFinanceStore(s => s.isAuthenticated);
+  const onboardingComplete = useFinanceStore(s => s.onboardingComplete);
+
+  const [page, setPage] = useState(() => {
+    const isAuth = useFinanceStore.getState().isAuthenticated;
+    const isComplete = useFinanceStore.getState().onboardingComplete;
+    if (!isAuth) return 'landing';
+    if (!isComplete) return 'onboarding';
+    return 'dashboard';
+  });
+
   const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1024);
   const [activePolicyDoc, setActivePolicyDoc] = useState(null);
   const [showResetModal, setShowResetModal] = useState(false);
   const [showSplash, setShowSplash] = useState(true);
+  const [authLoading, setAuthLoading] = useState(true);
 
   const handleConfirmReset = useCallback(() => {
     const storeReset = useFinanceStore.getState().reset;
@@ -342,6 +360,113 @@ export default function App() {
     localStorage.removeItem('eb_v6');
     setShowResetModal(false);
     window.location.reload();
+  }, []);
+
+  // Listen to Firebase Auth state changes and sync with global store
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
+        console.log("AUTH SUCCESS");
+        console.log("USER UID:", firebaseUser.uid);
+        try {
+          const userDocSnap = await getDoc(doc(db, 'users', firebaseUser.uid));
+          if (userDocSnap.exists()) {
+            const data = userDocSnap.data();
+            console.log("USER DOCUMENT FOUND:", data);
+            console.log("ONBOARDING STATUS:", data.onboardingCompleted);
+            
+            // Map Firestore mode to store stage formats
+            const mappedStage = data.mode === 'Family Dynasty' ? 'Married' : data.mode || 'Single';
+            let p1Salary = 100000;
+            let p2Salary = 0;
+            let partnerName = '';
+            if (data.mode === 'Committed') {
+              p1Salary = 100000;
+              p2Salary = 80000;
+              partnerName = 'Partner';
+            } else if (data.mode === 'Family Dynasty') {
+              p1Salary = 150000;
+              p2Salary = 120000;
+              partnerName = 'Spouse';
+            }
+
+            useFinanceStore.setState({
+              isAuthenticated: true,
+              user: {
+                uid: firebaseUser.uid,
+                name: data.fullName || firebaseUser.displayName || 'User',
+                email: firebaseUser.email || '',
+                authProvider: data.authProvider || 'google.com'
+              },
+              userId: data.ebId,
+              everBondId: data.ebId,
+              partner1: data.fullName || firebaseUser.displayName || 'User',
+              userName: data.fullName || firebaseUser.displayName || 'User',
+              partner2: partnerName,
+              partnerName: partnerName,
+              region: data.country || 'India',
+              country: data.country || 'India',
+              currency: data.country === 'India' ? 'INR' : 'USD',
+              stage: mappedStage,
+              relationshipStage: mappedStage,
+              relationshipStatus: mappedStage,
+              onboardingComplete: data.onboardingCompleted || false,
+              started: data.onboardingCompleted || false,
+              p1Salary,
+              p2Salary,
+              connectionStatus: data.mode === 'Family Dynasty' ? 'connected' : 'none'
+            });
+            console.log("REDIRECT TARGET:", data.onboardingCompleted ? "dashboard" : "onboarding");
+          } else {
+            console.log("USER DOCUMENT NOT FOUND, CREATING...");
+            const data = await createUserDocument(firebaseUser, firebaseUser.displayName || '', 'google.com');
+            useFinanceStore.setState({
+              isAuthenticated: true,
+              user: {
+                uid: firebaseUser.uid,
+                name: data.fullName,
+                email: firebaseUser.email || '',
+                authProvider: data.authProvider
+              },
+              userId: data.ebId,
+              everBondId: data.ebId,
+              onboardingComplete: false,
+              started: false
+            });
+            console.log("ONBOARDING STATUS: false");
+            console.log("REDIRECT TARGET: onboarding");
+          }
+        } catch (err) {
+          console.error("Firestore sync error:", err);
+          // Fallback even if read fails (e.g. permission issues), to prevent redirect loop to landing
+          useFinanceStore.setState({
+            isAuthenticated: true,
+            user: {
+              uid: firebaseUser.uid,
+              name: firebaseUser.displayName || 'User',
+              email: firebaseUser.email || '',
+              authProvider: 'google.com'
+            },
+            onboardingComplete: false,
+            started: false
+          });
+          console.log("ONBOARDING STATUS (FALLBACK): false");
+          console.log("REDIRECT TARGET (FALLBACK): onboarding");
+        }
+      } else {
+        console.log("NO AUTHENTICATED USER");
+        // User logged out
+        useFinanceStore.setState({
+          isAuthenticated: false,
+          user: null,
+          onboardingComplete: false,
+          started: false
+        });
+      }
+      setAuthLoading(false);
+    });
+
+    return () => unsubscribe();
   }, []);
 
   // Initialize EverBond ID on first load
@@ -365,14 +490,40 @@ export default function App() {
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
   }, [page]);
 
+  // Route protection effect
+  useEffect(() => {
+    if (authLoading) return;
+
+    if (!isAuthenticated) {
+      if (page !== 'landing' && page !== 'auth') {
+        setPage('landing');
+      }
+    } else if (!onboardingComplete) {
+      if (page !== 'onboarding') {
+        setPage('onboarding');
+      }
+    } else {
+      if (page === 'landing' || page === 'auth' || page === 'onboarding') {
+        setPage('dashboard');
+      }
+    }
+  }, [authLoading, isAuthenticated, onboardingComplete, page]);
+
   // Synchronize URL hash with page state for hash-based routing
   useEffect(() => {
     const handleHashChange = () => {
       const hash = window.location.hash.replace('#/', '');
-      if (hash === 'single') setPage('single');
+      if (hash === 'login' || hash === 'auth') setPage('auth');
+      else if (hash === 'landing') setPage('landing');
+      else if (hash === 'onboarding') setPage('onboarding');
+      else if (hash === 'single') setPage('single');
       else if (hash === 'partner' || hash === 'partner-committed') setPage('partner-committed');
       else if (hash === 'family-dynasty' || hash === 'partner-family') setPage('partner-family');
       else if (hash) setPage(hash);
+      else {
+        const isAuth = useFinanceStore.getState().isAuthenticated;
+        setPage(isAuth ? 'dashboard' : 'landing');
+      }
     };
     window.addEventListener('hashchange', handleHashChange);
     handleHashChange(); // Sync initial hash
@@ -384,8 +535,15 @@ export default function App() {
     let path = page;
     if (page === 'partner-committed') path = 'partner';
     else if (page === 'partner-family') path = 'family-dynasty';
-    if (window.location.hash !== `#/${path}`) {
-      window.location.hash = `#/${path}`;
+    
+    if (page === 'landing') {
+      if (window.location.hash !== '' && window.location.hash !== '#/') {
+        window.location.hash = '#/';
+      }
+    } else {
+      if (window.location.hash !== `#/${path}`) {
+        window.location.hash = `#/${path}`;
+      }
     }
   }, [page]);
 
@@ -411,12 +569,12 @@ export default function App() {
   return (
     <ToastProvider>
       <AnimatePresence>
-        {showSplash && (
-          <SplashScreen onComplete={() => setShowSplash(false)} />
+        {(showSplash || authLoading) && (
+          <SplashScreen onComplete={() => { if (!authLoading) setShowSplash(false); }} />
         )}
       </AnimatePresence>
       <CursorSpotlight />
-      <OnboardingGuard>
+      <OnboardingGuard page={page} setPage={setPage}>
         <div className="eb-app">
           {!isMobile && (
             <div className="eb-desktop-brand" style={{

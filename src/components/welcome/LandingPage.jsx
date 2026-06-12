@@ -86,7 +86,7 @@ const line2Variants = {
   }
 };
 
-export function LandingPage({ onStartJourney }) {
+export function LandingPage({ onStartJourney, onLoginClick }) {
   const theme = useFinanceStore(s => s.theme);
   const [activeStage, setActiveStage] = useState('Single');
   const [imgFailed, setImgFailed] = useState(false);
@@ -283,6 +283,50 @@ export function LandingPage({ onStartJourney }) {
           position: 'relative',
         }}
       >
+
+        {/* Landing Page Sticky Header Navbar */}
+        <header
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '70px',
+            background: theme === 'dark' ? 'rgba(18, 17, 14, 0.75)' : 'rgba(250, 246, 238, 0.75)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            borderBottom: '1px solid var(--border)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '0 24px',
+            zIndex: 100,
+            transition: 'background 0.3s ease'
+          }}
+          className="lp-header"
+        >
+          <Logo size={32} showText={true} />
+          
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={onLoginClick}
+            style={{
+              padding: '8px 20px',
+              borderRadius: '100px',
+              border: '1.5px solid var(--border-mid)',
+              background: 'var(--bg-card)',
+              color: 'var(--text)',
+              fontSize: '0.82rem',
+              fontWeight: 700,
+              cursor: 'pointer',
+              boxShadow: 'var(--sh-xs)',
+              transition: 'all 0.2s ease'
+            }}
+          >
+            Login
+          </motion.button>
+        </header>
 
       {/* ── SECTION 1: HERO SECTION ── */}
       <motion.section 

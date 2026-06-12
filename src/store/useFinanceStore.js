@@ -2,6 +2,8 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { generatePersonalId, generateRelationshipId, generateFamilyId, generateEverBondId } from '../utils/everbondId';
 import { generateInsightsData } from '../utils/insightsData';
+import { signOut } from 'firebase/auth';
+import { auth } from '../utils/firebase';
 
 export const useFinanceStore = create(
   persist(
@@ -127,7 +129,9 @@ export const useFinanceStore = create(
         }
       ],
 
-      // ── EverBond ID Partner Linking System ──
+      // ── EverBond Authentication & ID System ──
+      isAuthenticated:     false,
+      user:                null,
       userId:              '',              // User's permanent EB-[NAME_4]-[HEX_4]
       everBondId:          '',              // Kept for backward compatibility
       partnerId:           '',              // Partner's permanent EverBond ID
@@ -285,6 +289,24 @@ export const useFinanceStore = create(
         } else if (!get().userId || !get().everBondId) {
           set({ userId: current, everBondId: current });
         }
+      },
+
+      loginWithGoogle: (googleUser) => {
+        let generatedId = get().userId || get().everBondId;
+        if (!generatedId || generatedId.length <= 9) {
+          generatedId = generatePersonalId(googleUser.name);
+        }
+        set({
+          isAuthenticated: true,
+          user: {
+            ...googleUser,
+            everBondId: generatedId
+          },
+          userId: generatedId,
+          everBondId: generatedId,
+          partner1: googleUser.name,
+          userName: googleUser.name
+        });
       },
 
       /** Send a connection request to a partner */
@@ -1125,6 +1147,13 @@ export const useFinanceStore = create(
         // 1. Capture theme so we keep it post-logout
         const currentTheme = get().theme;
 
+        // Sign out from Firebase Auth
+        try {
+          signOut(auth);
+        } catch (err) {
+          console.error("Firebase signOut failed:", err);
+        }
+
         // 2. Synchronously patch localStorage BEFORE state update
         // This ensures any reload sees the logged-out state
         try {
@@ -1135,6 +1164,10 @@ export const useFinanceStore = create(
               ...(stored.state || {}),
               started: false,
               onboardingComplete: false,
+              isAuthenticated: false,
+              user: null,
+              userId: '',
+              everBondId: '',
               partner1: '',
               userName: '',
               partner2: '',
@@ -1169,6 +1202,10 @@ export const useFinanceStore = create(
         set({
           started: false,
           onboardingComplete: false,
+          isAuthenticated: false,
+          user: null,
+          userId: '',
+          everBondId: '',
           partner1: '',
           userName: '',
           partner2: '',

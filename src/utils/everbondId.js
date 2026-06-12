@@ -11,35 +11,23 @@ const HEX = '0123456789ABCDEF';
 const CHARSET = 'ABCDEFGHJKMNPQRSTUVWXYZ2345679';
 
 /**
- * Generate a new Personal EverBond ID
- * @param {string} name - The user's name
- * @returns {string} e.g. "EB-ARUP-84F2"
+ * Generate a new Personal EverBond ID (EB-[A-Z0-9]{6})
+ * @returns {string} e.g. "EB-AR7X92"
  */
-export function generatePersonalId(name) {
-  let cleanName = (name || 'USER')
-    .trim()
-    .toUpperCase()
-    .replace(/[^A-Z]/g, ''); // Keep only letters
-  
-  if (cleanName.length < 4) {
-    cleanName = (cleanName + 'USER').slice(0, 4);
-  } else {
-    cleanName = cleanName.slice(0, 4);
+export function generatePersonalId() {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let randStr = '';
+  for (let i = 0; i < 6; i++) {
+    randStr += chars.charAt(Math.floor(Math.random() * chars.length));
   }
-  
-  let randHex = '';
-  for (let i = 0; i < 4; i++) {
-    randHex += HEX.charAt(Math.floor(Math.random() * HEX.length));
-  }
-  
-  return `EB-${cleanName}-${randHex}`;
+  return `EB-${randStr}`;
 }
 
 /**
  * Legacy generator (repurposed to fallback/default)
  */
 export function generateEverBondId() {
-  return generatePersonalId('USER');
+  return generatePersonalId();
 }
 
 /**
@@ -65,12 +53,12 @@ export function generateFamilyId() {
 /**
  * Validate an EverBond Personal ID string
  * @param {string} id - The ID to validate
- * @returns {boolean} true if valid format EB-[A-Z]{4}-[0-9A-F]{4}
+ * @returns {boolean} true if valid format EB-[A-Z0-9]{6} or old format EB-[A-Z]{4}-[0-9A-F]{4}
  */
 export function isValidEverBondId(id) {
   if (!id || typeof id !== 'string') return false;
   const cleaned = id.trim().toUpperCase();
-  return /^EB-[A-Z]{4}-[0-9A-F]{4}$/.test(cleaned);
+  return /^EB-[A-Z0-9]{6}$/.test(cleaned) || /^EB-[A-Z]{4}-[0-9A-F]{4}$/.test(cleaned);
 }
 
 /**
