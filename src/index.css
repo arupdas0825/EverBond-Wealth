@@ -3197,3 +3197,19 @@ input,select{font-family:var(--fb)}
     padding: 24px;
   }
 }
+
+/* Landing Page Hero CTA Mobile Stacking */
+@media (max-width: 480px) {
+  .hero-ctas-container {
+    flex-direction: column !important;
+    width: 100% !important;
+    max-width: 320px !important;
+    margin: 0 auto !important;
+    gap: 12px !important;
+  }
+  .hero-ctas-container .btn-primary,
+  .hero-ctas-container .btn-secondary {
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+}

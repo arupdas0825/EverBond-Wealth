@@ -7,6 +7,7 @@ import {
   UserCheck, HelpCircle, Layers, Info
 } from 'lucide-react';
 import { Logo } from '../common/Logo';
+import { ThemeToggle } from '../common/ThemeToggle';
 import { T } from '../../theme/tokens';
 import { useFinanceStore } from '../../store/useFinanceStore';
 
@@ -298,14 +299,15 @@ export function LandingPage({ onStartJourney, onLoginClick }) {
             borderBottom: '1px solid var(--border)',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'space-between',
+            justifyContent: 'flex-end',
             padding: '0 24px',
             zIndex: 100,
-            transition: 'background 0.3s ease'
+            transition: 'background 0.3s ease',
+            gap: '16px'
           }}
           className="lp-header"
         >
-          <Logo size={32} showText={true} />
+          <ThemeToggle />
           
           <motion.button
             whileHover={{ scale: 1.02 }}
@@ -321,7 +323,10 @@ export function LandingPage({ onStartJourney, onLoginClick }) {
               fontWeight: 700,
               cursor: 'pointer',
               boxShadow: 'var(--sh-xs)',
-              transition: 'all 0.2s ease'
+              transition: 'all 0.2s ease',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
             }}
           >
             Login
@@ -481,6 +486,7 @@ export function LandingPage({ onStartJourney, onLoginClick }) {
 
         {/* CTAs */}
         <div 
+          className="hero-ctas-container"
           style={{
             display: 'flex',
             gap: '18px',
@@ -507,7 +513,9 @@ export function LandingPage({ onStartJourney, onLoginClick }) {
             style={{
               padding: '16px 36px',
               fontSize: '1rem',
-              borderRadius: T.radius,
+              borderRadius: '12px',
+              height: '54px',
+              boxSizing: 'border-box',
               fontWeight: 600,
               background: `linear-gradient(135deg, ${T.goldMid} 0%, ${T.gold} 100%)`,
               width: 'auto',
@@ -516,6 +524,7 @@ export function LandingPage({ onStartJourney, onLoginClick }) {
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
+              justifyContent: 'center',
               boxShadow: 'var(--sh-gold)'
             }}
           >
@@ -524,6 +533,7 @@ export function LandingPage({ onStartJourney, onLoginClick }) {
           
           <motion.a 
             href="#features"
+            className="btn-secondary"
             initial={{ opacity: 0, y: 12 }}
             animate={!isLoading ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
             transition={{ duration: 0.5, ease: 'easeOut', delay: 1.15 }}
@@ -537,7 +547,9 @@ export function LandingPage({ onStartJourney, onLoginClick }) {
             style={{
               padding: '16px 32px',
               fontSize: '0.95rem',
-              borderRadius: T.radius,
+              borderRadius: '12px',
+              height: '54px',
+              boxSizing: 'border-box',
               fontWeight: 600,
               border: '1.5px solid var(--border-mid)',
               background: 'var(--bg-card)',
@@ -546,6 +558,7 @@ export function LandingPage({ onStartJourney, onLoginClick }) {
               transition: 'background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease',
               display: 'flex',
               alignItems: 'center',
+              justifyContent: 'center',
               boxShadow: 'var(--sh-xs)'
             }}
           >
@@ -561,12 +574,9 @@ export function LandingPage({ onStartJourney, onLoginClick }) {
           }}
           transition={{ duration: 3.5, repeat: Infinity, ease: 'easeInOut' }}
           style={{
-            position: 'absolute',
-            bottom: '24px',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            marginTop: 0,
-            zIndex: 10
+            marginTop: '48px',
+            zIndex: 10,
+            textAlign: 'center'
           }}
         >
           <a href="#journey" style={{ color: 'var(--text-faint)', textDecoration: 'none' }}>
@@ -1549,7 +1559,9 @@ export function LandingPage({ onStartJourney, onLoginClick }) {
           style={{
             padding: '16px 40px',
             fontSize: '1.05rem',
-            borderRadius: T.radius,
+            borderRadius: '12px',
+            height: '54px',
+            boxSizing: 'border-box',
             fontWeight: 600,
             background: `linear-gradient(135deg, ${T.goldMid} 0%, ${T.gold} 100%)`,
             width: 'auto',
