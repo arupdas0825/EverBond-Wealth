@@ -3157,64 +3157,131 @@ input,select{font-family:var(--fb)}
 /* ── AUTHENTICATION SPLIT & GLASS DESIGN ──────────────── */
 .auth-split-container {
   display: grid;
-  grid-template-columns: 48fr 52fr;
-  min-height: 0;
-  max-height: calc(100vh - 48px);
-  border-radius: 28px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
+  grid-template-columns: 460px 1fr;
+  height: auto !important;
+  max-height: calc(100vh - 48px) !important;
+  border-radius: 32px !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  background: rgba(255, 255, 255, 0.18) !important;
+  backdrop-filter: blur(30px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(30px) saturate(180%) !important;
+  box-shadow: 0 12px 50px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+  overflow: hidden;
 }
 
 .auth-left-col {
-  padding: 42px 48px;
-  overflow-y: auto;
-  overscroll-behavior: contain;
+  padding: 44px 44px 40px !important;
+  box-sizing: border-box !important;
+  display: flex !important;
+  flex-direction: column !important;
+  height: auto !important;
 }
 
-.auth-left-col::-webkit-scrollbar {
-  width: 0;
+.auth-scrollable-content {
+  overflow-y: visible !important;
+}
+
+.auth-fixed-footer {
+  margin-top: 24px !important;
 }
 
 .auth-right-col {
-  padding: 0;
-  min-height: 480px;
+  padding: 16px !important;
+  display: flex !important;
+  box-sizing: border-box !important;
 }
 
-.auth-input.eb-input {
-  padding-left: 38px !important;
+.auth-image-panel {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  border-radius: 24px;
+  box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.3);
+}
+
+/* Glass Inputs */
+.auth-glass-input {
+  width: 100%;
+  height: 56px;
+  padding-left: 46px !important;
+  padding-right: 16px !important;
+  border-radius: 18px !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.28) 0%, rgba(255, 255, 255, 0.16) 100%) !important;
+  color: var(--text) !important;
+  font-size: 0.95rem !important;
+  outline: none !important;
+  backdrop-filter: blur(18px) !important;
+  -webkit-backdrop-filter: blur(18px) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45), 0 2px 8px rgba(0, 0, 0, 0.02) !important;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  box-sizing: border-box !important;
+  font-family: inherit !important;
+}
+
+.auth-glass-input:hover {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.35) 0%, rgba(255, 255, 255, 0.2) 100%) !important;
+  border-color: rgba(255, 255, 255, 0.45) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), 0 0 12px rgba(255, 255, 255, 0.2) !important;
+}
+
+.auth-glass-input:focus {
+  border-color: #C9A227 !important;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.38) 0%, rgba(255, 255, 255, 0.22) 100%) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), 0 0 0 4px rgba(201, 168, 76, 0.25), 0 4px 12px rgba(0, 0, 0, 0.05) !important;
+}
+
+.auth-glass-input.has-error {
+  border-color: rgba(208, 92, 114, 0.6) !important;
+}
+
+.auth-glass-input.has-error:focus {
+  border-color: #d05c72 !important;
+  box-shadow: 0 0 0 4px rgba(208, 92, 114, 0.2) !important;
 }
 
 @media (max-width: 900px) {
   .auth-split-container {
-    grid-template-columns: 46fr 54fr;
-  }
-  .auth-left-col {
-    padding: 28px 28px;
+    grid-template-columns: 420px 1fr;
   }
 }
 
 @media (max-width: 768px) {
   .auth-split-container {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr !important;
     max-width: 440px;
     margin: 0 auto;
-    min-height: auto;
-    max-height: none;
-    border-radius: 22px;
+    height: auto !important;
+    max-height: none !important;
+    border-radius: 28px !important;
   }
   
   .auth-left-col {
-    order: 2;
-    padding: 28px 22px;
-    overflow-y: visible;
+    order: 2 !important;
+    padding: 32px 24px !important;
+    height: auto !important;
+    overflow: visible !important;
+    display: block !important;
+  }
+  
+  .auth-scrollable-content {
+    overflow-y: visible !important;
+    margin-right: 0 !important;
+    padding-right: 0 !important;
+  }
+  
+  .auth-fixed-footer {
+    margin-top: 28px !important;
   }
   
   .auth-right-col {
-    order: 1;
-    height: 200px;
-    min-height: 200px;
-    padding: 0;
+    order: 1 !important;
+    height: 200px !important;
+    min-height: 200px !important;
+    padding: 12px !important;
+  }
+  .auth-image-panel {
+    border-radius: 20px;
   }
 }
 
