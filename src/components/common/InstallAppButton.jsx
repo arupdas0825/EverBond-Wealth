@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Download, ExternalLink, X, Smartphone, Laptop, Info, ArrowUpRight, PlusSquare } from 'lucide-react';
 import { T } from '../../theme/tokens';
@@ -16,13 +17,40 @@ export function InstallAppButton({ variant = 'default', style = {}, onClick }) {
     openApp
   } = usePWA();
   
-  const [showManualModal, setShowManualModal] = useState(false);
+  const [isOpenModal, setIsOpenModal] = useState(false);
   const [activeTab, setActiveTab] = useState(
     platform.isIOS ? 'ios' : platform.isAndroid ? 'android' : 'desktop'
   );
   const toast = useToast();
 
-  const handleAction = async (e) => {
+  // Handle scroll lock and ESC key when modal opens
+  useEffect(() => {
+    if (isOpenModal) {
+      // 1. Measure and lock scrollbar to prevent layout shift
+      const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+      document.body.style.overflow = 'hidden';
+      if (scrollbarWidth > 0) {
+        document.body.style.paddingRight = `${scrollbarWidth}px`;
+      }
+      
+      // 2. Global Escape key handler
+      const handleKeyDown = (e) => {
+        if (e.key === 'Escape') {
+          setIsOpenModal(false);
+        }
+      };
+      window.addEventListener('keydown', handleKeyDown);
+
+      return () => {
+        // Restore styling on close
+        document.body.style.overflow = '';
+        document.body.style.paddingRight = '';
+        window.removeEventListener('keydown', handleKeyDown);
+      };
+    }
+  }, [isOpenModal]);
+
+  const handleAction = (e) => {
     e.stopPropagation();
     if (onClick) onClick(e);
     
@@ -32,13 +60,14 @@ export function InstallAppButton({ variant = 'default', style = {}, onClick }) {
       return;
     }
 
-    if (installState === 'INSTALLABLE' || isInstallable) {
-      const result = await triggerInstallFlow();
-      return;
-    }
+    // Open our unified centered modal
+    setIsOpenModal(true);
+  };
 
-    // Otherwise, show manual install modal
-    setShowManualModal(true);
+  const handleConfirmNativeInstall = async (e) => {
+    e.stopPropagation();
+    setIsOpenModal(false); // Close modal immediately so native prompt is not obscured
+    await triggerInstallFlow();
   };
 
   // Determine button text and icons based on status
@@ -46,10 +75,10 @@ export function InstallAppButton({ variant = 'default', style = {}, onClick }) {
   const buttonText = isInstalledState ? 'Open App' : 'Install App';
   const Icon = isInstalledState ? ExternalLink : Download;
 
-  // Render variants
-  if (variant === 'profile') {
-    return (
-      <>
+  // Render trigger button depending on variant
+  const renderTriggerButton = () => {
+    if (variant === 'profile') {
+      return (
         <button
           onClick={handleAction}
           className="eb-profile-menu-item"
@@ -63,14 +92,11 @@ export function InstallAppButton({ variant = 'default', style = {}, onClick }) {
           </span>
           {buttonText}
         </button>
-        {renderManualModal()}
-      </>
-    );
-  }
+      );
+    }
 
-  if (variant === 'icon') {
-    return (
-      <>
+    if (variant === 'icon') {
+      return (
         <button
           onClick={handleAction}
           aria-label={buttonText}
@@ -94,14 +120,11 @@ export function InstallAppButton({ variant = 'default', style = {}, onClick }) {
         >
           <Icon size={16} />
         </button>
-        {renderManualModal()}
-      </>
-    );
-  }
+      );
+    }
 
-  if (variant === 'navbar') {
-    return (
-      <>
+    if (variant === 'navbar') {
+      return (
         <motion.button
           onClick={handleAction}
           whileHover={{ scale: 1.02, y: -1 }}
@@ -130,14 +153,11 @@ export function InstallAppButton({ variant = 'default', style = {}, onClick }) {
           <Icon size={14} />
           <span>{buttonText}</span>
         </motion.button>
-        {renderManualModal()}
-      </>
-    );
-  }
+      );
+    }
 
-  // Default / Hero / Settings Full Button
-  return (
-    <>
+    // Default / Hero / Settings Full Button
+    return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', width: '100%', ...style }}>
         <button
           onClick={handleAction}
@@ -173,15 +193,16 @@ export function InstallAppButton({ variant = 'default', style = {}, onClick }) {
             : `Manually add EverBond to your home screen using browser settings.`}
         </span>
       </div>
-      {renderManualModal()}
-    </>
-  );
+    );
+  };
 
-  // Manual Installation Instructions Modal
-  function renderManualModal() {
-    return (
+  // Render centered portal modal when active
+  const renderPortalModal = () => {
+    const isNativePromptAvailable = installState === 'INSTALLABLE' || isInstallable;
+    
+    return createPortal(
       <AnimatePresence>
-        {showManualModal && (
+        {isOpenModal && (
           <div
             style={{
               position: 'fixed',
@@ -191,261 +212,329 @@ export function InstallAppButton({ variant = 'default', style = {}, onClick }) {
               alignItems: 'center',
               justifyContent: 'center',
               padding: '16px',
-              background: 'rgba(0,0,0,0.5)',
-              backdropFilter: 'blur(8px)',
-              WebkitBackdropFilter: 'blur(8px)'
+              pointerEvents: 'auto'
             }}
           >
-            <div 
-              style={{ position: 'absolute', inset: 0 }} 
-              onClick={() => setShowManualModal(false)} 
+            {/* Darkened Overlay Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              onClick={() => setIsOpenModal(false)}
+              style={{
+                position: 'absolute',
+                inset: 0,
+                background: 'rgba(10, 8, 6, 0.65)',
+                backdropFilter: 'blur(10px)',
+                WebkitBackdropFilter: 'blur(10px)',
+                touchAction: 'none' // Prevent scroll drag on mobile background
+              }}
             />
 
+            {/* Modal Box */}
             <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              initial={{ opacity: 0, scale: 0.96, y: 15 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              exit={{ opacity: 0, scale: 0.96, y: 15 }}
+              transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
               style={{
                 position: 'relative',
-                zIndex: 1,
+                zIndex: 100001,
                 width: '100%',
-                maxWidth: '430px',
+                // Mobile: 90%-92% width (max-width 420px). Desktop: max-width 480px.
+                maxWidth: isNativePromptAvailable ? '420px' : '460px',
                 background: 'var(--bg-card)',
                 border: '1px solid var(--border-mid)',
                 borderRadius: '24px',
-                padding: '24px',
-                boxShadow: 'var(--sh-xl)',
+                padding: '28px 24px',
+                boxShadow: '0 20px 50px rgba(0, 0, 0, 0.35)',
                 color: 'var(--text)',
                 display: 'flex',
                 flexDirection: 'column',
-                gap: '16px'
+                gap: '20px',
+                maxHeight: 'calc(100vh - 40px)',
+                overflowY: 'auto',
+                boxSizing: 'border-box'
               }}
             >
-              {/* Modal Header */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              {/* Close Button X (Top Right) */}
+              <button
+                onClick={() => setIsOpenModal(false)}
+                style={{
+                  position: 'absolute',
+                  top: '16px',
+                  right: '16px',
+                  background: 'none',
+                  border: 'none',
+                  color: 'var(--text-muted)',
+                  cursor: 'pointer',
+                  padding: '8px',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'background 0.2s',
+                  zIndex: 2
+                }}
+                className="eb-theme-btn-reset"
+              >
+                <X size={16} />
+              </button>
+
+              {/* FLOW 1: Native Installation Confirmation */}
+              {isNativePromptAvailable ? (
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '16px', marginTop: '12px' }}>
+                  {/* Icon */}
                   <div style={{
-                    width: '32px',
-                    height: '32px',
-                    borderRadius: '8px',
+                    width: '64px',
+                    height: '64px',
+                    borderRadius: '18px',
                     background: 'var(--gold-pale)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    border: '1px solid var(--gold-border)'
+                    border: '1.5px solid var(--gold-border)',
+                    boxShadow: `0 8px 20px ${T.gold}15`
                   }}>
-                    <Download size={16} style={{ color: T.gold }} />
+                    <Download size={28} style={{ color: T.gold }} />
                   </div>
+
                   <div>
-                    <h3 style={{ fontSize: '1.1rem', fontWeight: 700, margin: 0 }}>Install EverBond</h3>
-                    <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', margin: 0 }}>Manual Installation Guide</p>
+                    <h3 style={{ fontSize: '1.4rem', fontWeight: 800, margin: '0 0 8px 0', fontFamily: T.fontDisplay }}>
+                      Install EverBond Wealth
+                    </h3>
+                    <p style={{ fontSize: '0.86rem', color: 'var(--text-muted)', margin: 0, lineHeight: 1.5 }}>
+                      Access your shared financial workspace directly from your desktop and mobile device with instant loading and offline capabilities.
+                    </p>
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', width: '100%', marginTop: '8px' }}>
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={handleConfirmNativeInstall}
+                      style={{
+                        width: '100%',
+                        padding: '14px',
+                        borderRadius: '12px',
+                        background: `linear-gradient(135deg, ${T.gold} 0%, #a07d22 100%)`,
+                        color: '#fff',
+                        fontSize: '0.9rem',
+                        fontWeight: 700,
+                        border: 'none',
+                        cursor: 'pointer',
+                        boxShadow: 'var(--sh-gold)'
+                      }}
+                    >
+                      Install App
+                    </motion.button>
+                    
+                    <button
+                      onClick={() => setIsOpenModal(false)}
+                      style={{
+                        width: '100%',
+                        padding: '12px',
+                        borderRadius: '12px',
+                        background: 'transparent',
+                        color: 'var(--text-muted)',
+                        fontSize: '0.85rem',
+                        fontWeight: 600,
+                        border: 'none',
+                        cursor: 'pointer',
+                        transition: 'color 0.2s'
+                      }}
+                    >
+                      Not Now
+                    </button>
                   </div>
                 </div>
-                <button
-                  onClick={() => setShowManualModal(false)}
-                  style={{
-                    background: 'none',
-                    border: 'none',
+              ) : (
+                /* FLOW 2: Manual Installation Guide */
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  {/* Header Title */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '4px' }}>
+                    <div style={{
+                      width: '32px',
+                      height: '32px',
+                      borderRadius: '8px',
+                      background: 'var(--gold-pale)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      border: '1px solid var(--gold-border)'
+                    }}>
+                      <Download size={16} style={{ color: T.gold }} />
+                    </div>
+                    <div>
+                      <h3 style={{ fontSize: '1.1rem', fontWeight: 800, margin: 0 }}>Install EverBond</h3>
+                      <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', margin: 0 }}>Manual Installation Guide</p>
+                    </div>
+                  </div>
+
+                  {/* Tabs for OS */}
+                  <div style={{
+                    display: 'flex',
+                    background: 'var(--border-thin)',
+                    borderRadius: '12px',
+                    padding: '3px',
+                    gap: '4px'
+                  }}>
+                    {['ios', 'android', 'desktop'].map((tab) => (
+                      <button
+                        key={tab}
+                        onClick={() => setActiveTab(tab)}
+                        style={{
+                          flex: 1,
+                          padding: '8px 4px',
+                          borderRadius: '9px',
+                          border: 'none',
+                          background: activeTab === tab ? 'var(--bg-card)' : 'transparent',
+                          color: activeTab === tab ? T.gold : 'var(--text-muted)',
+                          fontWeight: activeTab === tab ? 700 : 500,
+                          fontSize: '0.76rem',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '4px',
+                          transition: 'all 0.2s'
+                        }}
+                      >
+                        {tab === 'desktop' ? <Laptop size={12} /> : <Smartphone size={12} />}
+                        {tab === 'ios' ? 'iPhone/iPad' : tab === 'android' ? 'Android' : 'Desktop'}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Instruction Content area */}
+                  <div style={{ minHeight: '170px', padding: '4px 0' }}>
+                    {activeTab === 'ios' && (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                        <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                          <div style={stepNumStyle}>1</div>
+                          <div style={stepTextStyle}>
+                            Open <strong>EverBond Wealth</strong> in Safari browser on your iOS device.
+                          </div>
+                        </div>
+                        <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                          <div style={stepNumStyle}>2</div>
+                          <div style={stepTextStyle}>
+                            Tap the <strong>Share</strong> button in the browser menu bar (looks like a square with an arrow pointing up <ArrowUpRight size={14} style={{ display: 'inline', color: T.gold }} />).
+                          </div>
+                        </div>
+                        <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                          <div style={stepNumStyle}>3</div>
+                          <div style={stepTextStyle}>
+                            Scroll down and select <strong>Add to Home Screen</strong> (<PlusSquare size={14} style={{ display: 'inline', color: T.gold }} />).
+                          </div>
+                        </div>
+                        <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                          <div style={stepNumStyle}>4</div>
+                          <div style={stepTextStyle}>
+                            Tap <strong>Add</strong> in the top-right corner to complete installation.
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {activeTab === 'android' && (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                        <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                          <div style={stepNumStyle}>1</div>
+                          <div style={stepTextStyle}>
+                            Open the browser settings by tapping the <strong>three dots</strong> (⋮) in the top-right corner of Chrome.
+                          </div>
+                        </div>
+                        <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                          <div style={stepNumStyle}>2</div>
+                          <div style={stepTextStyle}>
+                            Select <strong>Install App</strong> or <strong>Add to Home Screen</strong>.
+                          </div>
+                        </div>
+                        <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                          <div style={stepNumStyle}>3</div>
+                          <div style={stepTextStyle}>
+                            Confirm the installation by tapping <strong>Install</strong> in the dialog.
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {activeTab === 'desktop' && (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                        <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                          <div style={stepNumStyle}>1</div>
+                          <div style={stepTextStyle}>
+                            In Chrome or Edge, look at the right side of the address bar at the top of your screen.
+                          </div>
+                        </div>
+                        <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                          <div style={stepNumStyle}>2</div>
+                          <div style={stepTextStyle}>
+                            Click the <strong>App Available / Install</strong> button (looks like a monitor with a down arrow <Download size={14} style={{ display: 'inline', color: T.gold }} /> or a plus sign).
+                          </div>
+                        </div>
+                        <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                          <div style={stepNumStyle}>3</div>
+                          <div style={stepTextStyle}>
+                            Alternatively, open browser options (⋮) → <strong>Save and share</strong> → <strong>Install page</strong>.
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Info helper */}
+                  <div style={{
+                    display: 'flex',
+                    gap: '10px',
+                    background: 'var(--border-thin)',
+                    padding: '12px',
+                    borderRadius: '12px',
+                    fontSize: '0.74rem',
                     color: 'var(--text-muted)',
-                    cursor: 'pointer',
-                    padding: '4px'
-                  }}
-                >
-                  <X size={18} />
-                </button>
-              </div>
-
-              {/* Tabs for OS type */}
-              <div style={{
-                display: 'flex',
-                background: 'var(--border-thin)',
-                borderRadius: '12px',
-                padding: '3px',
-                gap: '4px'
-              }}>
-                <button
-                  onClick={() => setActiveTab('ios')}
-                  style={{
-                    flex: 1,
-                    padding: '8px',
-                    borderRadius: '9px',
-                    border: 'none',
-                    background: activeTab === 'ios' ? 'var(--bg-card)' : 'transparent',
-                    color: activeTab === 'ios' ? T.gold : 'var(--text-muted)',
-                    fontWeight: activeTab === 'ios' ? 700 : 500,
-                    fontSize: '0.78rem',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '4px',
-                    transition: 'all 0.2s'
-                  }}
-                >
-                  <Smartphone size={14} /> iPhone/iPad
-                </button>
-                <button
-                  onClick={() => setActiveTab('android')}
-                  style={{
-                    flex: 1,
-                    padding: '8px',
-                    borderRadius: '9px',
-                    border: 'none',
-                    background: activeTab === 'android' ? 'var(--bg-card)' : 'transparent',
-                    color: activeTab === 'android' ? T.gold : 'var(--text-muted)',
-                    fontWeight: activeTab === 'android' ? 700 : 500,
-                    fontSize: '0.78rem',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '4px',
-                    transition: 'all 0.2s'
-                  }}
-                >
-                  <Smartphone size={14} /> Android
-                </button>
-                <button
-                  onClick={() => setActiveTab('desktop')}
-                  style={{
-                    flex: 1,
-                    padding: '8px',
-                    borderRadius: '9px',
-                    border: 'none',
-                    background: activeTab === 'desktop' ? 'var(--bg-card)' : 'transparent',
-                    color: activeTab === 'desktop' ? T.gold : 'var(--text-muted)',
-                    fontWeight: activeTab === 'desktop' ? 700 : 500,
-                    fontSize: '0.78rem',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '4px',
-                    transition: 'all 0.2s'
-                  }}
-                >
-                  <Laptop size={14} /> Desktop
-                </button>
-              </div>
-
-              {/* Instructions list */}
-              <div style={{ padding: '4px 0', minHeight: '180px' }}>
-                {activeTab === 'ios' && (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                    <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-                      <div style={stepNumStyle}>1</div>
-                      <div style={stepTextStyle}>
-                        Open <strong>EverBond Wealth</strong> website in Safari browser on your iOS device.
-                      </div>
-                    </div>
-                    <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-                      <div style={stepNumStyle}>2</div>
-                      <div style={stepTextStyle}>
-                        Tap the <strong>Share</strong> button in the browser toolbar (looks like a square with an arrow pointing up <ArrowUpRight size={14} style={{ display: 'inline', verticalAlign: 'middle', color: T.gold }} />).
-                      </div>
-                    </div>
-                    <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-                      <div style={stepNumStyle}>3</div>
-                      <div style={stepTextStyle}>
-                        Scroll down and select <strong>Add to Home Screen</strong> (<PlusSquare size={14} style={{ display: 'inline', verticalAlign: 'middle', color: T.gold }} />).
-                      </div>
-                    </div>
-                    <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-                      <div style={stepNumStyle}>4</div>
-                      <div style={stepTextStyle}>
-                        Tap <strong>Add</strong> in the top right corner to complete the process.
-                      </div>
-                    </div>
+                    alignItems: 'center'
+                  }}>
+                    <Info size={16} style={{ color: T.gold, flexShrink: 0 }} />
+                    <span>PWAs install directly on your device, enabling native performance, offline work, and standalone windows.</span>
                   </div>
-                )}
 
-                {activeTab === 'android' && (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                    <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-                      <div style={stepNumStyle}>1</div>
-                      <div style={stepTextStyle}>
-                        Open browser settings menu by tapping the <strong>three dots</strong> (⋮) in the top-right corner of Chrome.
-                      </div>
-                    </div>
-                    <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-                      <div style={stepNumStyle}>2</div>
-                      <div style={stepTextStyle}>
-                        Select <strong>Install App</strong> or <strong>Add to Home Screen</strong>.
-                      </div>
-                    </div>
-                    <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-                      <div style={stepNumStyle}>3</div>
-                      <div style={stepTextStyle}>
-                        Confirm the installation by tapping <strong>Install</strong> in the prompt.
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {activeTab === 'desktop' && (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                    <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-                      <div style={stepNumStyle}>1</div>
-                      <div style={stepTextStyle}>
-                        In Chrome or Edge, look at the right side of the address bar at the top of the browser.
-                      </div>
-                    </div>
-                    <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-                      <div style={stepNumStyle}>2</div>
-                      <div style={stepTextStyle}>
-                        Click the <strong>App Available / Install</strong> icon (looks like a monitor with a down arrow <Download size={14} style={{ display: 'inline', verticalAlign: 'middle', color: T.gold }} /> or a plus sign).
-                      </div>
-                    </div>
-                    <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-                      <div style={stepNumStyle}>3</div>
-                      <div style={stepTextStyle}>
-                        Alternatively, open the browser menu (⋮) → <strong>Save and share</strong> → <strong>Install page</strong>.
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Help Banner */}
-              <div style={{
-                display: 'flex',
-                gap: '10px',
-                background: 'var(--border-thin)',
-                padding: '12px',
-                borderRadius: '12px',
-                fontSize: '0.75rem',
-                color: 'var(--text-muted)',
-                alignItems: 'center'
-              }}>
-                <Info size={16} style={{ color: T.gold, flexShrink: 0 }} />
-                <span>Installing creates a native-feeling experience with offline capability and dock/home screen launching.</span>
-              </div>
-
-              {/* Close Action */}
-              <button
-                onClick={() => setShowManualModal(false)}
-                className="btn-primary"
-                style={{
-                  background: 'var(--text)',
-                  color: 'var(--bg-card)',
-                  border: 'none',
-                  borderRadius: '12px',
-                  padding: '12px',
-                  fontWeight: 700,
-                  fontSize: '0.82rem',
-                  cursor: 'pointer',
-                  textAlign: 'center'
-                }}
-              >
-                Got It
-              </button>
+                  {/* Close button */}
+                  <button
+                    onClick={() => setIsOpenModal(false)}
+                    className="btn-primary"
+                    style={{
+                      background: 'var(--text)',
+                      color: 'var(--bg-card)',
+                      border: 'none',
+                      borderRadius: '12px',
+                      padding: '12px',
+                      fontWeight: 700,
+                      fontSize: '0.82rem',
+                      cursor: 'pointer',
+                      textAlign: 'center',
+                      marginTop: '4px'
+                    }}
+                  >
+                    Got It
+                  </button>
+                </div>
+              )}
             </motion.div>
           </div>
         )}
-      </AnimatePresence>
+      </AnimatePresence>,
+      document.body
     );
-  }
+  };
+
+  return (
+    <>
+      {renderTriggerButton()}
+      {renderPortalModal()}
+    </>
+  );
 }
 
 const stepNumStyle = {
@@ -465,7 +554,7 @@ const stepNumStyle = {
 };
 
 const stepTextStyle = {
-  fontSize: '0.8rem',
+  fontSize: '0.82rem',
   lineHeight: 1.4,
   color: 'var(--text)'
 };
