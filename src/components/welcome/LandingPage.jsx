@@ -104,6 +104,69 @@ export function LandingPage({ onStartJourney, onLoginClick, onOpenPolicy }) {
     triggerInstallFlow,
   } = usePWA();
 
+  const [hoveredSocial, setHoveredSocial] = useState(null);
+
+  const socialLinks = [
+    {
+      name: 'github',
+      label: 'GitHub',
+      url: 'https://github.com/arupdas0825',
+      svg: (
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+          <path d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.464-1.11-1.464-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.831.092-.646.35-1.086.636-1.336-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.579.688.481C19.137 20.162 22 16.418 22 12c0-5.523-4.477-10-10-10z" />
+        </svg>
+      ),
+      glow: 'rgba(28, 26, 22, 0.15)'
+    },
+    {
+      name: 'linkedin',
+      label: 'LinkedIn',
+      url: 'https://www.linkedin.com/in/arup-das-381bb02a1/',
+      svg: (
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+          <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
+        </svg>
+      ),
+      glow: 'rgba(10, 102, 194, 0.25)'
+    },
+    {
+      name: 'instagram',
+      label: 'Instagram',
+      url: 'https://www.instagram.com/_arup_official_08/',
+      svg: (
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+          <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+          <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
+        </svg>
+      ),
+      glow: 'rgba(225, 48, 108, 0.25)'
+    },
+    {
+      name: 'facebook',
+      label: 'Facebook',
+      url: 'https://www.facebook.com/arupofficial08',
+      svg: (
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+          <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+        </svg>
+      ),
+      glow: 'rgba(24, 119, 242, 0.25)'
+    },
+    {
+      name: 'email',
+      label: 'Email',
+      url: 'mailto:arupdas080425@gmail.com',
+      svg: (
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+          <polyline points="22,6 12,13 2,6" />
+        </svg>
+      ),
+      glow: 'rgba(184, 144, 42, 0.25)'
+    }
+  ];
+
   // Setup Framer Motion scroll hook for Hero parallax (reduced by 80% for scroll performance)
   const { scrollY } = useScroll();
   const heroY = useTransform(scrollY, [0, 600], [0, 30]);
@@ -1749,16 +1812,120 @@ export function LandingPage({ onStartJourney, onLoginClick, onOpenPolicy }) {
             <button onClick={() => onOpenPolicy('data-handling')} style={{ background: 'none', border: 'none', padding: 0, color: 'var(--text-muted)', cursor: 'pointer', textDecoration: 'underline', font: 'inherit' }}>Data Handling</button>
           </div>
 
+          {/* Divider */}
+          <div style={{ width: '100%', maxWidth: '240px', height: '1px', background: 'var(--border-mid)', margin: '12px auto' }} />
+
+          {/* Social Section */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', alignItems: 'center' }}>
+            <span style={{ fontSize: '0.72rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '0.1em' }}>
+              Follow Development Journey
+            </span>
+
+            <div 
+              style={{ 
+                display: 'flex', 
+                gap: '16px', 
+                justifyContent: 'center', 
+                alignItems: 'center',
+                flexWrap: 'wrap'
+              }}
+            >
+              {socialLinks.map((social) => {
+                const IconComp = social.icon;
+                const isHovered = hoveredSocial === social.name;
+
+                return (
+                  <div key={social.name} style={{ position: 'relative', display: 'flex', justifyContent: 'center' }}>
+                    <motion.a
+                      href={social.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={social.label}
+                      onMouseEnter={() => setHoveredSocial(social.name)}
+                      onMouseLeave={() => setHoveredSocial(null)}
+                      onFocus={() => setHoveredSocial(social.name)}
+                      onBlur={() => setHoveredSocial(null)}
+                      whileHover={{ scale: 1.12 }}
+                      whileTap={{ scale: 0.95 }}
+                      style={{
+                        width: '40px',
+                        height: '40px',
+                        borderRadius: '50%',
+                        border: '1.5px solid var(--border-mid)',
+                        background: isHovered ? 'var(--bg-card)' : 'transparent',
+                        borderColor: isHovered ? T.goldMid : 'var(--border-mid)',
+                        color: isHovered ? T.gold : 'var(--text-muted)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        boxShadow: isHovered ? `0 0 16px ${social.glow}` : 'none',
+                        transition: 'color 0.2s ease, border-color 0.2s ease, background-color 0.2s ease',
+                        cursor: 'pointer',
+                        outline: 'none'
+                      }}
+                    >
+                      <IconComp size={18} />
+                    </motion.a>
+
+                    <AnimatePresence>
+                      {isHovered && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                          transition={{ duration: 0.15, ease: 'easeOut' }}
+                          style={{
+                            position: 'absolute',
+                            bottom: '100%',
+                            marginBottom: '8px',
+                            padding: '6px 12px',
+                            background: 'var(--bg-card)',
+                            border: '1.5px solid var(--border-mid)',
+                            color: 'var(--text)',
+                            fontSize: '0.72rem',
+                            fontWeight: 700,
+                            borderRadius: '8px',
+                            boxShadow: 'var(--sh-md)',
+                            pointerEvents: 'none',
+                            whiteSpace: 'nowrap',
+                            zIndex: 10
+                          }}
+                        >
+                          {social.label}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
           <div style={{
             display: 'flex',
             flexDirection: 'column',
-            gap: '6px',
-            fontSize: '0.76rem',
-            color: 'var(--text-faint)'
+            gap: '8px',
+            alignItems: 'center',
+            marginTop: '8px'
           }}>
-            <span>Created by <strong>Arup Das</strong></span>
-            <span>Version 2.0</span>
-            <span style={{ marginTop: '12px' }}>© 2026 EverBond Wealth. All Rights Reserved.</span>
+            <p style={{
+              fontSize: '0.8rem',
+              color: 'var(--text-muted)',
+              fontWeight: 500,
+              letterSpacing: '0.02em',
+              margin: 0,
+              fontFamily: T.fontBody
+            }}>
+              Built in India 🇮🇳 • Designed for Global Wealth Planning
+            </p>
+            <p style={{
+              fontSize: '0.76rem',
+              color: 'var(--text-faint)',
+              margin: 0,
+              fontFamily: T.fontBody
+            }}>
+              © 2026 EverBond Wealth. All Rights Reserved.
+            </p>
           </div>
 
         </div>
