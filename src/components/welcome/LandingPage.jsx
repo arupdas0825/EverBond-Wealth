@@ -1943,7 +1943,6 @@ export function LandingPage({ onStartJourney, onLoginClick, onOpenPolicy }) {
               }}
             >
               {socialLinks.map((social) => {
-                const IconComp = social.icon;
                 const isHovered = hoveredSocial === social.name;
 
                 return (
@@ -1976,7 +1975,7 @@ export function LandingPage({ onStartJourney, onLoginClick, onOpenPolicy }) {
                         outline: 'none'
                       }}
                     >
-                      <IconComp size={18} />
+                      {social.svg}
                     </motion.a>
 
                     <AnimatePresence>

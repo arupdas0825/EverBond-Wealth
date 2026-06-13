@@ -25,24 +25,45 @@ import { OnboardingGuard } from './components/common/OnboardingGuard';
 
 
 /* ═══════════════════════════════════════════════════════════
-   LAZY-LOADED PAGE COMPONENTS
+   LAZY-LOADED PAGE COMPONENTS WITH LOGGING AND RETRY
    Each page is loaded on-demand when first navigated to.
-   This cuts the initial JS bundle by ~60% (from 1.3MB to ~520KB).
-   Subsequent navigations are near-instant from browser cache.
-═══════════════════════════════════════════════════════════ */
-const Dashboard         = lazy(() => import('./components/dashboard/Dashboard').then(m => ({ default: m.Dashboard })));
-const WealthInsightsPage = lazy(() => import('./components/insights/WealthInsightsPage').then(m => ({ default: m.WealthInsightsPage })));
-const IncomePage        = lazy(() => import('./components/income/IncomePage').then(m => ({ default: m.IncomePage })));
-const AllocationPage    = lazy(() => import('./components/allocation/AllocationPage').then(m => ({ default: m.AllocationPage })));
-const GoalsPage         = lazy(() => import('./components/goals/GoalsPage').then(m => ({ default: m.GoalsPage })));
-const MilestonePage     = lazy(() => import('./components/milestones/MilestonePage').then(m => ({ default: m.MilestonePage })));
-const SimulationPage    = lazy(() => import('./components/simulation/SimulationPage').then(m => ({ default: m.SimulationPage })));
-const PartnerPage       = lazy(() => import('./components/partner/PartnerPage').then(m => ({ default: m.PartnerPage })));
-const CouplePlanningPage = lazy(() => import('./components/welcome/CouplePlanningPage').then(m => ({ default: m.CouplePlanningPage })));
-const FamilyPlanningPage = lazy(() => import('./components/welcome/FamilyPlanningPage').then(m => ({ default: m.FamilyPlanningPage })));
-const SettingsPage      = lazy(() => import('./components/settings/SettingsPage').then(m => ({ default: m.SettingsPage })));
-const ProfilePage       = lazy(() => import('./components/profile/ProfilePage').then(m => ({ default: m.ProfilePage })));
-const DocumentationPage = lazy(() => import('./components/docs/DocumentationPage').then(m => ({ default: m.DocumentationPage })));
+   Includes automated single-retry fallback for network/hash errors.
+   ═══════════════════════════════════════════════════════════ */
+function lazyWithLogAndRetry(name, importFunc, componentGetter) {
+  return lazy(() => {
+    console.log(`App: Loading page chunk [${name}]...`);
+    return importFunc()
+      .then(m => {
+        console.log(`App: Page chunk [${name}] loaded successfully.`);
+        return { default: componentGetter(m) };
+      })
+      .catch(err => {
+        console.error(`App: Failed to load page chunk [${name}]:`, err);
+        const hasRetried = sessionStorage.getItem('chunk_retry_' + name);
+        if (!hasRetried) {
+          sessionStorage.setItem('chunk_retry_' + name, 'true');
+          console.warn(`App: Reloading page to fetch updated assets...`);
+          window.location.reload();
+          return new Promise(() => {});
+        }
+        throw err;
+      });
+  });
+}
+
+const Dashboard         = lazyWithLogAndRetry('Dashboard', () => import('./components/dashboard/Dashboard'), m => m.Dashboard);
+const WealthInsightsPage = lazyWithLogAndRetry('WealthInsightsPage', () => import('./components/insights/WealthInsightsPage'), m => m.WealthInsightsPage);
+const IncomePage        = lazyWithLogAndRetry('IncomePage', () => import('./components/income/IncomePage'), m => m.IncomePage);
+const AllocationPage    = lazyWithLogAndRetry('AllocationPage', () => import('./components/allocation/AllocationPage'), m => m.AllocationPage);
+const GoalsPage         = lazyWithLogAndRetry('GoalsPage', () => import('./components/goals/GoalsPage'), m => m.GoalsPage);
+const MilestonePage     = lazyWithLogAndRetry('MilestonePage', () => import('./components/milestones/MilestonePage'), m => m.MilestonePage);
+const SimulationPage    = lazyWithLogAndRetry('SimulationPage', () => import('./components/simulation/SimulationPage'), m => m.SimulationPage);
+const PartnerPage       = lazyWithLogAndRetry('PartnerPage', () => import('./components/partner/PartnerPage'), m => m.PartnerPage);
+const CouplePlanningPage = lazyWithLogAndRetry('CouplePlanningPage', () => import('./components/welcome/CouplePlanningPage'), m => m.CouplePlanningPage);
+const FamilyPlanningPage = lazyWithLogAndRetry('FamilyPlanningPage', () => import('./components/welcome/FamilyPlanningPage'), m => m.FamilyPlanningPage);
+const SettingsPage      = lazyWithLogAndRetry('SettingsPage', () => import('./components/settings/SettingsPage'), m => m.SettingsPage);
+const ProfilePage       = lazyWithLogAndRetry('ProfilePage', () => import('./components/profile/ProfilePage'), m => m.ProfilePage);
+const DocumentationPage = lazyWithLogAndRetry('DocumentationPage', () => import('./components/docs/DocumentationPage'), m => m.DocumentationPage);
 
 /* ═══════════════════════════════════════════════════════════
    LIGHTWEIGHT SUSPENSE FALLBACK
@@ -470,6 +491,7 @@ export default function App() {
 
   // Reset scroll on initial load
   useEffect(() => {
+    console.log("App: Root component mounted.");
     if ('scrollRestoration' in window.history) {
       window.history.scrollRestoration = 'manual';
     }
@@ -478,6 +500,7 @@ export default function App() {
 
   // Reset scroll on page change
   useEffect(() => {
+    console.log("App: Current page state synchronized:", page);
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
   }, [page]);
 
