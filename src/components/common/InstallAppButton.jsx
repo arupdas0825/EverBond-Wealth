@@ -6,7 +6,7 @@ import { T } from '../../theme/tokens';
 import { usePWA } from '../welcome/usePWA';
 import { useToast } from '../common/Toast';
 
-export function InstallAppButton({ variant = 'default', style = {}, onClick }) {
+export function InstallAppButton({ variant = 'default', style = {}, onClick, children }) {
   const {
     isInstalled,
     isInstallable,
@@ -18,22 +18,35 @@ export function InstallAppButton({ variant = 'default', style = {}, onClick }) {
   } = usePWA();
   
   const [isOpenModal, setIsOpenModal] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const [activeTab, setActiveTab] = useState(
     platform.isIOS ? 'ios' : platform.isAndroid ? 'android' : 'desktop'
   );
   const toast = useToast();
 
-  // Handle scroll lock and ESC key when modal opens
+  useEffect(() => {
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
+
+  // Handle scroll lock, layout shift, and Escape key on modal open
   useEffect(() => {
     if (isOpenModal) {
-      // 1. Measure and lock scrollbar to prevent layout shift
+      // 1. Capture current scroll position to prevent page jump
+      const scrollY = window.scrollY || window.pageYOffset;
+      
+      // 2. Lock body scroll by fixing position and top
       const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = '100%';
       document.body.style.overflow = 'hidden';
+      
       if (scrollbarWidth > 0) {
         document.body.style.paddingRight = `${scrollbarWidth}px`;
       }
       
-      // 2. Global Escape key handler
+      // 3. Global Escape key handler
       const handleKeyDown = (e) => {
         if (e.key === 'Escape') {
           setIsOpenModal(false);
@@ -42,9 +55,16 @@ export function InstallAppButton({ variant = 'default', style = {}, onClick }) {
       window.addEventListener('keydown', handleKeyDown);
 
       return () => {
-        // Restore styling on close
+        // Restore body styles
+        document.body.style.position = '';
+        document.body.style.top = '';
+        document.body.style.width = '';
         document.body.style.overflow = '';
         document.body.style.paddingRight = '';
+        
+        // Scroll back to original position
+        window.scrollTo(0, scrollY);
+        
         window.removeEventListener('keydown', handleKeyDown);
       };
     }
@@ -60,23 +80,27 @@ export function InstallAppButton({ variant = 'default', style = {}, onClick }) {
       return;
     }
 
-    // Open our unified centered modal
     setIsOpenModal(true);
   };
 
   const handleConfirmNativeInstall = async (e) => {
     e.stopPropagation();
-    setIsOpenModal(false); // Close modal immediately so native prompt is not obscured
+    setIsOpenModal(false); // Close modal first
     await triggerInstallFlow();
   };
 
-  // Determine button text and icons based on status
   const isInstalledState = isInstalled || installState === 'INSTALLED';
   const buttonText = isInstalledState ? 'Open App' : 'Install App';
   const Icon = isInstalledState ? ExternalLink : Download;
 
-  // Render trigger button depending on variant
+  // Render trigger button depending on variant or custom children
   const renderTriggerButton = () => {
+    if (React.isValidElement(children)) {
+      return React.cloneElement(children, {
+        onClick: handleAction
+      });
+    }
+
     if (variant === 'profile') {
       return (
         <button
@@ -196,8 +220,9 @@ export function InstallAppButton({ variant = 'default', style = {}, onClick }) {
     );
   };
 
-  // Render centered portal modal when active
   const renderPortalModal = () => {
+    if (!mounted) return null;
+    
     const isNativePromptAvailable = installState === 'INSTALLABLE' || isInstallable;
     
     return createPortal(
@@ -228,7 +253,7 @@ export function InstallAppButton({ variant = 'default', style = {}, onClick }) {
                 background: 'rgba(10, 8, 6, 0.65)',
                 backdropFilter: 'blur(10px)',
                 WebkitBackdropFilter: 'blur(10px)',
-                touchAction: 'none' // Prevent scroll drag on mobile background
+                touchAction: 'none'
               }}
             />
 
@@ -242,7 +267,6 @@ export function InstallAppButton({ variant = 'default', style = {}, onClick }) {
                 position: 'relative',
                 zIndex: 100001,
                 width: '100%',
-                // Mobile: 90%-92% width (max-width 420px). Desktop: max-width 480px.
                 maxWidth: isNativePromptAvailable ? '420px' : '460px',
                 background: 'var(--bg-card)',
                 border: '1px solid var(--border-mid)',
@@ -525,7 +549,7 @@ export function InstallAppButton({ variant = 'default', style = {}, onClick }) {
           </div>
         )}
       </AnimatePresence>,
-      document.body
+      document.getElementById('modal-root')
     );
   };
 

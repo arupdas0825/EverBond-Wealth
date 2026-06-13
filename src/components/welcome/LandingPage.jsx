@@ -11,6 +11,7 @@ import { ThemeToggle } from '../common/ThemeToggle';
 import { T } from '../../theme/tokens';
 import { useFinanceStore } from '../../store/useFinanceStore';
 import { usePWA } from './usePWA';
+import { InstallAppButton } from '../common/InstallAppButton';
 
 // Premium luxury animation variants for landing page
 const titleContainerVariants = {
@@ -475,35 +476,36 @@ export function LandingPage({ onStartJourney, onLoginClick, onOpenPolicy }) {
               <span className="install-btn-text">Installed</span>
             </button>
           ) : isInstallable ? (
-            <motion.button
-              whileHover={{ 
-                scale: 1.02,
-                borderColor: T.gold,
-                boxShadow: '0 0 10px rgba(184, 144, 42, 0.15)'
-              }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => setShowPopup(true)}
-              style={{
-                padding: '8px 20px',
-                borderRadius: '100px',
-                border: `1.5px solid ${T.goldMid}`,
-                background: 'transparent',
-                color: T.gold,
-                fontSize: '0.82rem',
-                fontWeight: 700,
-                cursor: 'pointer',
-                transition: 'all 0.2s ease',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
-                boxShadow: 'var(--sh-xs)'
-              }}
-              className="lp-header-install-btn"
-            >
-              <Download size={14} />
-              <span className="install-btn-text">Install App</span>
-            </motion.button>
+            <InstallAppButton>
+              <motion.button
+                whileHover={{ 
+                  scale: 1.02,
+                  borderColor: T.gold,
+                  boxShadow: '0 0 10px rgba(184, 144, 42, 0.15)'
+                }}
+                whileTap={{ scale: 0.98 }}
+                style={{
+                  padding: '8px 20px',
+                  borderRadius: '100px',
+                  border: `1.5px solid ${T.goldMid}`,
+                  background: 'transparent',
+                  color: T.gold,
+                  fontSize: '0.82rem',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  boxShadow: 'var(--sh-xs)'
+                }}
+                className="lp-header-install-btn"
+              >
+                <Download size={14} />
+                <span className="install-btn-text">Install App</span>
+              </motion.button>
+            </InstallAppButton>
           ) : null}
 
           <ThemeToggle />
@@ -812,44 +814,45 @@ export function LandingPage({ onStartJourney, onLoginClick, onOpenPolicy }) {
             </MagneticContainer>
           ) : isInstallable ? (
             <MagneticContainer>
-              <motion.button 
-                onClick={() => setShowPopup(true)}
-                className="btn-secondary"
-                initial={{ opacity: 0, y: 12 }}
-                animate={!isLoading ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
-                transition={{ duration: 0.5, ease: 'easeOut', delay: 1.3 }}
-                whileHover={{
-                  y: -2,
-                  borderColor: T.goldMid,
-                  boxShadow: '0 6px 16px rgba(184, 144, 42, 0.1), 0 0 10px rgba(184, 144, 42, 0.08)',
-                  background: theme === 'dark' ? 'rgba(255, 255, 255, 0.06)' : 'rgba(28, 26, 22, 0.04)'
-                }}
-                whileTap={{ scale: 0.97 }}
-                style={{
-                  padding: '0 32px',
-                  fontSize: '0.92rem',
-                  borderRadius: '100px',
-                  height: '52px',
-                  boxSizing: 'border-box',
-                  fontWeight: 700,
-                  border: `1.5px solid ${T.goldBorder}`,
-                  background: theme === 'dark' ? 'rgba(255, 255, 255, 0.03)' : 'rgba(28, 26, 22, 0.02)',
-                  color: 'var(--text)',
-                  backdropFilter: 'blur(12px)',
-                  WebkitBackdropFilter: 'blur(12px)',
-                  transition: 'background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '8px',
-                  cursor: 'pointer',
-                  boxShadow: 'var(--sh-xs)',
-                  outline: 'none'
-                }}
-              >
-                <Download size={18} />
-                Install App
-              </motion.button>
+              <InstallAppButton>
+                <motion.button 
+                  className="btn-secondary"
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={!isLoading ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
+                  transition={{ duration: 0.5, ease: 'easeOut', delay: 1.3 }}
+                  whileHover={{
+                    y: -2,
+                    borderColor: T.goldMid,
+                    boxShadow: '0 6px 16px rgba(184, 144, 42, 0.1), 0 0 10px rgba(184, 144, 42, 0.08)',
+                    background: theme === 'dark' ? 'rgba(255, 255, 255, 0.06)' : 'rgba(28, 26, 22, 0.04)'
+                  }}
+                  whileTap={{ scale: 0.97 }}
+                  style={{
+                    padding: '0 32px',
+                    fontSize: '0.92rem',
+                    borderRadius: '100px',
+                    height: '52px',
+                    boxSizing: 'border-box',
+                    fontWeight: 700,
+                    border: `1.5px solid ${T.goldBorder}`,
+                    background: theme === 'dark' ? 'rgba(255, 255, 255, 0.03)' : 'rgba(28, 26, 22, 0.02)',
+                    color: 'var(--text)',
+                    backdropFilter: 'blur(12px)',
+                    WebkitBackdropFilter: 'blur(12px)',
+                    transition: 'background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px',
+                    cursor: 'pointer',
+                    boxShadow: 'var(--sh-xs)',
+                    outline: 'none'
+                  }}
+                >
+                  <Download size={18} />
+                  Install App
+                </motion.button>
+              </InstallAppButton>
             </MagneticContainer>
           ) : null}
         </div>
@@ -2042,141 +2045,7 @@ export function LandingPage({ onStartJourney, onLoginClick, onOpenPolicy }) {
         </div>
       </footer>
 
-      {/* Custom PWA Mini Install Prompt Popup */}
-      <AnimatePresence>
-        {showPopup && (
-          <div 
-            style={{
-              position: 'fixed',
-              inset: 0,
-              zIndex: 99999,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '24px',
-              background: 'rgba(18, 17, 14, 0.4)',
-              backdropFilter: 'blur(8px)',
-              WebkitBackdropFilter: 'blur(8px)'
-            }}
-          >
-            {/* Backdrop click closer */}
-            <div 
-              style={{ position: 'absolute', inset: 0 }} 
-              onClick={() => setShowPopup(false)} 
-            />
 
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 15 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 15 }}
-              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-              style={{
-                position: 'relative',
-                zIndex: 1,
-                width: '100%',
-                maxWidth: '400px',
-                background: 'var(--bg-card)',
-                border: '1px solid var(--border-mid)',
-                borderRadius: '24px',
-                padding: '32px',
-                boxShadow: 'var(--sh-lg)',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                textAlign: 'center',
-              }}
-            >
-              {/* Logo container */}
-              <div 
-                style={{
-                  width: '56px',
-                  height: '56px',
-                  borderRadius: '16px',
-                  background: 'var(--gold-pale)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  marginBottom: '20px',
-                  border: '1px solid var(--gold-border)'
-                }}
-              >
-                <Logo size={32} showText={false} />
-              </div>
-
-              <h3 
-                style={{
-                  fontFamily: T.fontDisplay,
-                  fontSize: '1.5rem',
-                  fontWeight: 700,
-                  color: 'var(--text)',
-                  marginBottom: '8px'
-                }}
-              >
-                Install EverBond Wealth?
-              </h3>
-
-              <p 
-                style={{
-                  fontSize: '0.88rem',
-                  color: 'var(--text-muted)',
-                  lineHeight: 1.5,
-                  marginBottom: '28px',
-                }}
-              >
-                Access your financial workspace directly from your desktop and mobile device.
-              </p>
-
-              <div 
-                style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '12px',
-                  width: '100%'
-                }}
-              >
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={triggerInstallFlow}
-                  style={{
-                    width: '100%',
-                    padding: '14px',
-                    borderRadius: '12px',
-                    background: `linear-gradient(135deg, ${T.goldMid} 0%, ${T.gold} 100%)`,
-                    color: '#fff',
-                    fontSize: '0.9rem',
-                    fontWeight: 700,
-                    border: 'none',
-                    cursor: 'pointer',
-                    boxShadow: 'var(--sh-gold)'
-                  }}
-                >
-                  Install
-                </motion.button>
-
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => setShowPopup(false)}
-                  style={{
-                    width: '100%',
-                    padding: '14px',
-                    borderRadius: '12px',
-                    background: 'transparent',
-                    color: 'var(--text-muted)',
-                    fontSize: '0.9rem',
-                    fontWeight: 600,
-                    border: '1.5px solid var(--border-mid)',
-                    cursor: 'pointer'
-                  }}
-                >
-                  Not Now
-                </motion.button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
 
       {/* Mobile Floating Install Suggestion */}
       <AnimatePresence>
@@ -2231,28 +2100,25 @@ export function LandingPage({ onStartJourney, onLoginClick, onOpenPolicy }) {
               </p>
             </div>
 
-            {/* Action Button */}
-            <motion.button
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
-              onClick={() => {
-                setShowPopup(true);
-                dismissMobileSuggest();
-              }}
-              style={{
-                padding: '6px 14px',
-                fontSize: '0.75rem',
-                fontWeight: 700,
-                borderRadius: '100px',
-                background: `linear-gradient(135deg, ${T.goldMid} 0%, ${T.gold} 100%)`,
-                color: '#fff',
-                border: 'none',
-                cursor: 'pointer',
-                whiteSpace: 'nowrap'
-              }}
-            >
-              Install
-            </motion.button>
+            <InstallAppButton onClick={dismissMobileSuggest}>
+              <motion.button
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                style={{
+                  padding: '6px 14px',
+                  fontSize: '0.75rem',
+                  fontWeight: 700,
+                  borderRadius: '100px',
+                  background: `linear-gradient(135deg, ${T.goldMid} 0%, ${T.gold} 100%)`,
+                  color: '#fff',
+                  border: 'none',
+                  cursor: 'pointer',
+                  whiteSpace: 'nowrap'
+                }}
+              >
+                Install
+              </motion.button>
+            </InstallAppButton>
 
             {/* Close Button */}
             <button
