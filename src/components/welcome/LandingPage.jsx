@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
+import { motion, AnimatePresence, useScroll, useTransform, useMotionValue, useSpring } from 'framer-motion';
 import { 
   Sparkles, ArrowRight, Lock, Shield, Heart, Check, X, 
   ChevronRight, Calendar, Users, DollarSign, Award, Compass, 
@@ -84,6 +84,76 @@ const line2Variants = {
       duration: 0.5,
       ease: [0.16, 1, 0.3, 1],
       delay: 0.25
+    }
+  }
+};
+
+// GPU-accelerated magnetic container for premium SaaS button feel
+function MagneticContainer({ children }) {
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+
+  const springConfig = { damping: 20, stiffness: 200, mass: 0.8 };
+  const dx = useSpring(x, springConfig);
+  const dy = useSpring(y, springConfig);
+
+  const handleMouseMove = (e) => {
+    const { clientX, clientY, currentTarget } = e;
+    const { left, top, width, height } = currentTarget.getBoundingClientRect();
+    const centerX = left + width / 2;
+    const centerY = top + height / 2;
+    
+    // Subtle offset (max 8px) to keep it professional and feel premium
+    const maxOffset = 8;
+    const deltaX = (clientX - centerX) * 0.15;
+    const deltaY = (clientY - centerY) * 0.15;
+    
+    const clampedX = Math.max(-maxOffset, Math.min(maxOffset, deltaX));
+    const clampedY = Math.max(-maxOffset, Math.min(maxOffset, deltaY));
+
+    x.set(clampedX);
+    y.set(clampedY);
+  };
+
+  const handleMouseLeave = () => {
+    x.set(0);
+    y.set(0);
+  };
+
+  return (
+    <motion.div
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      style={{ x: dx, y: dy, display: 'inline-block' }}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+// Micro-animation variants for the premium CTA arrow
+const arrowVariants = {
+  idle: {
+    x: [0, 4, 0],
+    transition: {
+      duration: 2,
+      repeat: Infinity,
+      repeatDelay: 3,
+      ease: 'easeInOut'
+    }
+  },
+  hover: {
+    x: 6,
+    transition: {
+      duration: 0.25,
+      ease: 'easeOut'
+    }
+  },
+  tap: {
+    x: 12,
+    transition: {
+      duration: 0.15,
+      ease: 'easeIn'
     }
   }
 };
@@ -618,143 +688,169 @@ export function LandingPage({ onStartJourney, onLoginClick, onOpenPolicy }) {
           className="hero-ctas-container"
           style={{
             display: 'flex',
-            gap: '18px',
+            gap: '16px',
             flexWrap: 'wrap',
             justifyContent: 'center',
             alignItems: 'center'
           }}
         >
-          <motion.button 
-            onClick={onStartJourney}
-            className="btn-primary"
-            initial={{ opacity: 0, y: 12 }}
-            animate={!isLoading ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
-            transition={{ duration: 0.5, ease: 'easeOut', delay: 1.0 }}
-            whileHover={{
-              scale: 1.02,
-              boxShadow: '0 6px 15px rgba(184, 144, 42, 0.15)'
-            }}
-            whileTap={{ 
-              scale: 0.97, 
-              y: 1, 
-              transition: { type: 'spring', stiffness: 400, damping: 15 } 
-            }}
-            style={{
-              padding: '16px 36px',
-              fontSize: '1rem',
-              borderRadius: '12px',
-              height: '54px',
-              boxSizing: 'border-box',
-              fontWeight: 600,
-              background: `linear-gradient(135deg, ${T.goldMid} 0%, ${T.gold} 100%)`,
-              width: 'auto',
-              border: 'none',
-              color: '#fff',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: 'var(--sh-gold)'
-            }}
-          >
-            Start Your Journey <ArrowRight size={18} style={{ marginLeft: '8px', display: 'inline-block' }} />
-          </motion.button>
-          
-          <motion.a 
-            href="#features"
-            className="btn-secondary"
-            initial={{ opacity: 0, y: 12 }}
-            animate={!isLoading ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
-            transition={{ duration: 0.5, ease: 'easeOut', delay: 1.15 }}
-            whileHover={{
-              scale: 1.02,
-              borderColor: T.goldMid,
-              boxShadow: '0 4px 10px rgba(184, 144, 42, 0.1)',
-              background: 'var(--bg-warm)'
-            }}
-            whileTap={{ scale: 0.98 }}
-            style={{
-              padding: '16px 32px',
-              fontSize: '0.95rem',
-              borderRadius: '12px',
-              height: '54px',
-              boxSizing: 'border-box',
-              fontWeight: 600,
-              border: '1.5px solid var(--border-mid)',
-              background: 'var(--bg-card)',
-              color: 'var(--text)',
-              textDecoration: 'none',
-              transition: 'background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: 'var(--sh-xs)'
-            }}
-          >
-            Explore Features
-          </motion.a>
-
-          {isInstalled ? (
-            <button
-              disabled
+          <MagneticContainer>
+            <motion.button 
+              onClick={onStartJourney}
+              className="btn-primary premium-btn-primary"
+              initial={{ opacity: 0, y: 12 }}
+              animate={!isLoading ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
+              transition={{ duration: 0.5, ease: 'easeOut', delay: 1.0 }}
+              whileHover="hover"
+              whileTap="tap"
+              variants={{
+                idle: { y: 0 },
+                hover: { 
+                  y: -3, 
+                  boxShadow: '0 10px 25px rgba(184, 144, 42, 0.25), 0 0 15px rgba(184, 144, 42, 0.15)' 
+                },
+                tap: { scale: 0.96 }
+              }}
               style={{
-                padding: '16px 32px',
-                fontSize: '0.95rem',
-                borderRadius: '12px',
-                height: '54px',
+                padding: '0 36px',
+                fontSize: '0.98rem',
+                borderRadius: '100px',
+                height: '52px',
                 boxSizing: 'border-box',
-                fontWeight: 600,
-                border: '1.5px solid var(--border-mid)',
-                background: 'transparent',
-                color: 'var(--text-faint)',
+                fontWeight: 700,
+                background: `linear-gradient(135deg, ${T.goldMid} 0%, ${T.gold} 100%)`,
+                width: 'auto',
+                border: 'none',
+                color: '#fff',
+                cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: '8px',
-                cursor: 'not-allowed',
-                opacity: 0.6
+                boxShadow: 'var(--sh-gold)',
+                outline: 'none',
+                transition: 'box-shadow 0.2s ease, transform 0.1s ease'
               }}
-              className="btn-secondary"
             >
-              <Check size={18} />
-              Installed
-            </button>
-          ) : isInstallable ? (
-            <motion.button 
-              onClick={() => setShowPopup(true)}
+              Start Your Journey 
+              <motion.span 
+                variants={arrowVariants} 
+                animate="idle" 
+                style={{ display: 'inline-flex', alignItems: 'center', marginLeft: '8px' }}
+              >
+                <ArrowRight size={18} />
+              </motion.span>
+            </motion.button>
+          </MagneticContainer>
+          
+          <MagneticContainer>
+            <motion.a 
+              href="#features"
               className="btn-secondary"
               initial={{ opacity: 0, y: 12 }}
               animate={!isLoading ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
-              transition={{ duration: 0.5, ease: 'easeOut', delay: 1.3 }}
+              transition={{ duration: 0.5, ease: 'easeOut', delay: 1.15 }}
               whileHover={{
-                scale: 1.02,
+                y: -2,
                 borderColor: T.goldMid,
-                boxShadow: '0 4px 10px rgba(184, 144, 42, 0.1)',
-                background: 'var(--bg-warm)'
+                boxShadow: '0 6px 16px rgba(0, 0, 0, 0.04), 0 0 10px rgba(184, 144, 42, 0.08)',
+                background: theme === 'dark' ? 'rgba(255, 255, 255, 0.06)' : 'rgba(28, 26, 22, 0.04)'
               }}
-              whileTap={{ scale: 0.98 }}
+              whileTap={{ scale: 0.97 }}
               style={{
-                padding: '16px 32px',
-                fontSize: '0.95rem',
-                borderRadius: '12px',
-                height: '54px',
+                padding: '0 32px',
+                fontSize: '0.92rem',
+                borderRadius: '100px',
+                height: '52px',
                 boxSizing: 'border-box',
-                fontWeight: 600,
+                fontWeight: 700,
                 border: '1.5px solid var(--border-mid)',
-                background: 'var(--bg-card)',
+                background: theme === 'dark' ? 'rgba(255, 255, 255, 0.03)' : 'rgba(28, 26, 22, 0.02)',
                 color: 'var(--text)',
+                textDecoration: 'none',
+                backdropFilter: 'blur(12px)',
+                WebkitBackdropFilter: 'blur(12px)',
                 transition: 'background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: '8px',
+                boxShadow: 'var(--sh-xs)',
                 cursor: 'pointer',
-                boxShadow: 'var(--sh-xs)'
+                outline: 'none'
               }}
             >
-              <Download size={18} />
-              Install App
-            </motion.button>
+              Explore Features
+            </motion.a>
+          </MagneticContainer>
+
+          {isInstalled ? (
+            <MagneticContainer>
+              <button
+                disabled
+                style={{
+                  padding: '0 32px',
+                  fontSize: '0.92rem',
+                  borderRadius: '100px',
+                  height: '52px',
+                  boxSizing: 'border-box',
+                  fontWeight: 700,
+                  border: '1.5px solid var(--border-mid)',
+                  background: 'transparent',
+                  color: 'var(--text-faint)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  cursor: 'not-allowed',
+                  opacity: 0.6,
+                  outline: 'none'
+                }}
+                className="btn-secondary"
+              >
+                <Check size={18} />
+                Installed
+              </button>
+            </MagneticContainer>
+          ) : isInstallable ? (
+            <MagneticContainer>
+              <motion.button 
+                onClick={() => setShowPopup(true)}
+                className="btn-secondary"
+                initial={{ opacity: 0, y: 12 }}
+                animate={!isLoading ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
+                transition={{ duration: 0.5, ease: 'easeOut', delay: 1.3 }}
+                whileHover={{
+                  y: -2,
+                  borderColor: T.goldMid,
+                  boxShadow: '0 6px 16px rgba(184, 144, 42, 0.1), 0 0 10px rgba(184, 144, 42, 0.08)',
+                  background: theme === 'dark' ? 'rgba(255, 255, 255, 0.06)' : 'rgba(28, 26, 22, 0.04)'
+                }}
+                whileTap={{ scale: 0.97 }}
+                style={{
+                  padding: '0 32px',
+                  fontSize: '0.92rem',
+                  borderRadius: '100px',
+                  height: '52px',
+                  boxSizing: 'border-box',
+                  fontWeight: 700,
+                  border: `1.5px solid ${T.goldBorder}`,
+                  background: theme === 'dark' ? 'rgba(255, 255, 255, 0.03)' : 'rgba(28, 26, 22, 0.02)',
+                  color: 'var(--text)',
+                  backdropFilter: 'blur(12px)',
+                  WebkitBackdropFilter: 'blur(12px)',
+                  transition: 'background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  cursor: 'pointer',
+                  boxShadow: 'var(--sh-xs)',
+                  outline: 'none'
+                }}
+              >
+                <Download size={18} />
+                Install App
+              </motion.button>
+            </MagneticContainer>
           ) : null}
         </div>
 
@@ -1740,35 +1836,51 @@ export function LandingPage({ onStartJourney, onLoginClick, onOpenPolicy }) {
           Calibrate your personal trajectory, align with your partner, and compound family wealth safely.
         </p>
 
-        <motion.button 
-          onClick={onStartJourney}
-          className="btn-primary"
-          whileHover={{
-            scale: 1.02,
-            boxShadow: '0 6px 15px rgba(184, 144, 42, 0.15)'
-          }}
-          whileTap={{ scale: 0.97 }}
-          style={{
-            padding: '16px 40px',
-            fontSize: '1.05rem',
-            borderRadius: '12px',
-            height: '54px',
-            boxSizing: 'border-box',
-            fontWeight: 600,
-            background: `linear-gradient(135deg, ${T.goldMid} 0%, ${T.gold} 100%)`,
-            width: 'auto',
-            border: 'none',
-            color: '#fff',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            margin: '0 auto',
-            boxShadow: 'var(--sh-gold)'
-          }}
-        >
-          Start Your Journey <ArrowRight size={18} style={{ marginLeft: '8px', display: 'inline-block' }} />
-        </motion.button>
+        <MagneticContainer>
+          <motion.button 
+            onClick={onStartJourney}
+            className="btn-primary premium-btn-primary"
+            whileHover="hover"
+            whileTap="tap"
+            variants={{
+              idle: { y: 0 },
+              hover: { 
+                y: -3, 
+                boxShadow: '0 10px 25px rgba(184, 144, 42, 0.25), 0 0 15px rgba(184, 144, 42, 0.15)' 
+              },
+              tap: { scale: 0.96 }
+            }}
+            style={{
+              padding: '0 40px',
+              fontSize: '1.02rem',
+              borderRadius: '100px',
+              height: '52px',
+              boxSizing: 'border-box',
+              fontWeight: 700,
+              background: `linear-gradient(135deg, ${T.goldMid} 0%, ${T.gold} 100%)`,
+              width: 'auto',
+              border: 'none',
+              color: '#fff',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto',
+              boxShadow: 'var(--sh-gold)',
+              outline: 'none',
+              transition: 'box-shadow 0.2s ease, transform 0.1s ease'
+            }}
+          >
+            Start Your Journey 
+            <motion.span 
+              variants={arrowVariants} 
+              animate="idle" 
+              style={{ display: 'inline-flex', alignItems: 'center', marginLeft: '8px' }}
+            >
+              <ArrowRight size={18} />
+            </motion.span>
+          </motion.button>
+        </MagneticContainer>
       </motion.section>
 
       {/* ── SECTION 9: FOOTER ── */}

@@ -3277,19 +3277,51 @@ input,select{font-family:var(--fb)}
 }
 
 /* Landing Page Hero CTA Mobile Stacking */
-@media (max-width: 480px) {
+@media (max-width: 768px) {
   .hero-ctas-container {
     flex-direction: column !important;
     width: 100% !important;
-    max-width: 320px !important;
+    max-width: 340px !important;
     margin: 0 auto !important;
-    gap: 12px !important;
+    gap: 14px !important;
+  }
+  .hero-ctas-container > div {
+    width: 100% !important;
   }
   .hero-ctas-container .btn-primary,
   .hero-ctas-container .btn-secondary {
     width: 100% !important;
     box-sizing: border-box !important;
   }
+}
+
+/* ── PREMIUM BUTTON SHINE SWEEP ── */
+.premium-btn-primary {
+  position: relative;
+  overflow: hidden;
+  border: 1.5px solid rgba(255, 255, 255, 0.15) !important;
+}
+.premium-btn-primary::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -80%;
+  width: 40%;
+  height: 200%;
+  background: linear-gradient(
+    to right,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.35) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: rotate(30deg);
+  opacity: 0;
+  pointer-events: none;
+}
+.premium-btn-primary:hover::after {
+  left: 140%;
+  opacity: 1;
+  transition: all 0.75s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* ── ONBOARDING PREMIUM BUTTON RESPONSIVE STACKING ── */
