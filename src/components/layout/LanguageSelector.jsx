@@ -7,22 +7,39 @@ import { T } from '../../theme/tokens';
 import { getNormalizedLanguage } from '../../utils/i18n';
 
 const LANGUAGES = [
-  { code: 'English', native: 'English', flag: '🇺🇸' },
-  { code: 'Deutsch', native: 'Deutsch', flag: '🇩🇪' },
-  { code: 'Français', native: 'Français', flag: '🇫🇷' },
-  { code: 'Español', native: 'Español', flag: '🇪🇸' },
-  { code: 'Italiano', native: 'Italiano', flag: '🇮🇹' },
-  { code: 'Português', native: 'Português', flag: '🇵🇹' },
-  { code: 'Nederlands', native: 'Nederlands', flag: '🇳🇱' },
-  { code: 'हिन्दी', native: 'हिन्दी', flag: '🇮🇳' },
-  { code: 'বাংলা', native: 'বাংলা', flag: '🇧🇩' },
-  { code: '简体中文', native: '简体中文', flag: '🇨🇳' },
-  { code: '日本語', native: '日本語', flag: '🇯🇵' }
+  { code: 'English', name: 'English', native: 'English', flag: '🇺🇸' },
+  { code: 'Deutsch', name: 'German', native: 'Deutsch', flag: '🇩🇪' },
+  { code: 'Français', name: 'French', native: 'Français', flag: '🇫🇷' },
+  { code: 'Español', name: 'Spanish', native: 'Español', flag: '🇪🇸' },
+  { code: 'Italiano', name: 'Italian', native: 'Italiano', flag: '🇮🇹' },
+  { code: 'Português', name: 'Portuguese', native: 'Português', flag: '🇵🇹' },
+  { code: 'Nederlands', name: 'Dutch', native: 'Nederlands', flag: '🇳🇱' },
+  { code: 'Svenska', name: 'Swedish', native: 'Svenska', flag: '🇸🇪' },
+  { code: 'Norsk', name: 'Norwegian', native: 'Norsk', flag: '🇳🇴' },
+  { code: 'Dansk', name: 'Danish', native: 'Dansk', flag: '🇩🇰' },
+  { code: 'Polski', name: 'Polish', native: 'Polski', flag: '🇵🇱' },
+  { code: 'Čeština', name: 'Czech', native: 'Čeština', flag: '🇨🇿' },
+  { code: 'Magyar', name: 'Hungarian', native: 'Magyar', flag: '🇭🇺' },
+  { code: 'Română', name: 'Romanian', native: 'Română', flag: '🇷🇴' },
+  { code: 'Türkçe', name: 'Turkish', native: 'Türkçe', flag: '🇹🇷' },
+  { code: 'Русский', name: 'Russian', native: 'Русский', flag: '🇷🇺' },
+  { code: 'Українська', name: 'Ukrainian', native: 'Українська', flag: '🇺🇦' },
+  { code: 'Arabic', name: 'Arabic', native: 'العربية', flag: '🇸🇦' },
+  { code: 'हिन्दी', name: 'Hindi', native: 'हिन्दी', flag: '🇮🇳' },
+  { code: 'বাংলা', name: 'Bengali', native: 'বাংলা', flag: '🇧🇩' },
+  { code: '简体中文', name: 'Chinese', native: '简体中文', flag: '🇨🇳' },
+  { code: '日本語', name: 'Japanese', native: '日本語', flag: '🇯🇵' },
+  { code: 'Korean', name: 'Korean', native: '한국어', flag: '🇰🇷' },
+  { code: 'Thai', name: 'Thai', native: 'ไทย', flag: '🇹🇭' },
+  { code: 'Vietnamese', name: 'Vietnamese', native: 'Tiếng Việt', flag: '🇻🇳' },
+  { code: 'Indonesian', name: 'Indonesian', native: 'Bahasa Indonesia', flag: '🇮🇩' },
+  { code: 'Malay', name: 'Malay', native: 'Bahasa Melayu', flag: '🇲🇾' }
 ];
 
 export function LanguageSelector() {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef(null);
+  const timeoutRef = useRef(null);
   
   const { language: rawLanguage, setLanguage, theme } = useFinanceStore();
   const currentLanguage = getNormalizedLanguage(rawLanguage);
@@ -36,36 +53,25 @@ export function LanguageSelector() {
   }, []);
 
   const isMobile = windowWidth < 768;
-  const isTablet = windowWidth >= 768 && windowWidth < 1024;
   const isDark = theme === 'dark';
 
-  // Click outside listener for desktop dropdown
-  useEffect(() => {
+  const handleMouseEnter = () => {
     if (isMobile) return;
-    const handleClickOutside = (e) => {
-      if (containerRef.current && !containerRef.current.contains(e.target)) {
-        setIsOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [isMobile]);
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    setIsOpen(true);
+  };
 
-  // Dispatch global event on open to coordinate with other dropdowns
-  useEffect(() => {
-    if (isOpen) {
-      window.dispatchEvent(new CustomEvent('eb-menu-opened', { detail: 'language' }));
-    }
-  }, [isOpen]);
+  const handleMouseLeave = () => {
+    if (isMobile) return;
+    timeoutRef.current = setTimeout(() => {
+      setIsOpen(false);
+    }, 200);
+  };
 
   useEffect(() => {
-    const handleMenuOpened = (e) => {
-      if (e.detail !== 'language') {
-        setIsOpen(false);
-      }
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };
-    window.addEventListener('eb-menu-opened', handleMenuOpened);
-    return () => window.removeEventListener('eb-menu-opened', handleMenuOpened);
   }, []);
 
   const selectLanguage = (code) => {
@@ -75,7 +81,6 @@ export function LanguageSelector() {
 
   const selectedLangInfo = LANGUAGES.find(l => l.code === currentLanguage) || LANGUAGES[0];
 
-  // Animation variants
   const dropdownVariants = {
     hidden: { opacity: 0, y: -8, scale: 0.95 },
     visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.18, ease: 'easeOut' } },
@@ -89,12 +94,17 @@ export function LanguageSelector() {
   };
 
   return (
-    <div ref={containerRef} style={{ position: 'relative', display: 'inline-block' }}>
+    <div 
+      ref={containerRef} 
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      style={{ position: 'relative', display: 'inline-block' }}
+    >
       {/* Globe Button */}
       <motion.button
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.96 }}
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => { if (isMobile) setIsOpen(!isOpen); }}
         className="eb-theme-btn-reset"
         aria-label="Select Language"
         style={{
@@ -116,11 +126,7 @@ export function LanguageSelector() {
           padding: 0
         }}
       >
-        {isTablet ? (
-          <span style={{ fontSize: '0.9rem', fontWeight: 700 }}>{selectedLangInfo.flag}</span>
-        ) : (
-          <Globe size={18} />
-        )}
+        <Globe size={18} />
       </motion.button>
 
       {/* Desktop & Tablet Dropdown */}
@@ -135,46 +141,53 @@ export function LanguageSelector() {
               className="eb-profile-dropdown-glass"
               style={{
                 position: 'absolute',
-                top: '48px',
+                top: '44px',
                 right: 0,
-                width: '180px',
-                padding: '6px',
+                width: '240px',
+                padding: '8px',
                 zIndex: 1000,
                 display: 'flex',
                 flexDirection: 'column',
-                gap: '2px'
+                gap: '2px',
+                maxHeight: '380px',
+                overflowY: 'auto',
+                boxShadow: '0 10px 40px rgba(0,0,0,0.15)'
               }}
             >
               <div style={{ padding: '6px 10px', fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', color: T.gold, letterSpacing: '0.05em' }}>
                 Select Language
               </div>
-              {LANGUAGES.map(lang => (
-                <button
-                  key={lang.code}
-                  onClick={() => selectLanguage(lang.code)}
-                  className="eb-profile-menu-item"
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    padding: '8px 10px',
-                    fontSize: '0.82rem',
-                    borderRadius: '8px',
-                    background: currentLanguage === lang.code ? 'var(--gold-pale)' : 'transparent',
-                    color: currentLanguage === lang.code ? T.gold : 'var(--text)',
-                    border: 'none',
-                    textAlign: 'left',
-                    cursor: 'pointer',
-                    width: '100%'
-                  }}
-                >
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span>{lang.flag}</span>
-                    <span>{lang.native}</span>
-                  </span>
-                  {currentLanguage === lang.code && <Check size={12} style={{ color: T.gold }} />}
-                </button>
-              ))}
+              {LANGUAGES.map(lang => {
+                const isActive = currentLanguage === lang.code;
+                return (
+                  <button
+                    key={lang.code}
+                    onClick={() => selectLanguage(lang.code)}
+                    className="eb-profile-menu-item"
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      padding: '8px 10px',
+                      fontSize: '0.82rem',
+                      borderRadius: '8px',
+                      background: isActive ? 'var(--gold-pale)' : 'transparent',
+                      color: isActive ? T.gold : 'var(--text)',
+                      border: 'none',
+                      textAlign: 'left',
+                      cursor: 'pointer',
+                      width: '100%',
+                      transition: 'background 0.2s, color 0.2s'
+                    }}
+                  >
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ fontSize: '1.05rem' }}>{lang.flag}</span>
+                      <span>{lang.name} <span style={{ fontSize: '0.74rem', opacity: 0.6 }}>({lang.native})</span></span>
+                    </span>
+                    {isActive && <Check size={12} style={{ color: T.gold }} />}
+                  </button>
+                );
+              })}
             </motion.div>
           )}
         </AnimatePresence>
@@ -231,34 +244,37 @@ export function LanguageSelector() {
                 </h3>
                 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                  {LANGUAGES.map(lang => (
-                    <button
-                      key={lang.code}
-                      onClick={() => selectLanguage(lang.code)}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        padding: '16px',
-                        fontSize: '0.95rem',
-                        fontWeight: currentLanguage === lang.code ? 700 : 500,
-                        background: currentLanguage === lang.code ? 'var(--gold-pale)' : 'transparent',
-                        color: currentLanguage === lang.code ? T.gold : 'var(--text)',
-                        border: 'none',
-                        borderBottom: '1px solid var(--border-light)',
-                        borderRadius: '12px',
-                        cursor: 'pointer',
-                        width: '100%',
-                        textAlign: 'left'
-                      }}
-                    >
-                      <span style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        <span style={{ fontSize: '1.2rem' }}>{lang.flag}</span>
-                        <span>{lang.native}</span>
-                      </span>
-                      {currentLanguage === lang.code && <Check size={18} style={{ color: T.gold }} />}
-                    </button>
-                  ))}
+                  {LANGUAGES.map(lang => {
+                    const isActive = currentLanguage === lang.code;
+                    return (
+                      <button
+                        key={lang.code}
+                        onClick={() => selectLanguage(lang.code)}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          padding: '14px 16px',
+                          fontSize: '0.92rem',
+                          fontWeight: isActive ? 700 : 500,
+                          background: isActive ? 'var(--gold-pale)' : 'transparent',
+                          color: isActive ? T.gold : 'var(--text)',
+                          border: 'none',
+                          borderBottom: '1px solid var(--border-light)',
+                          borderRadius: '12px',
+                          cursor: 'pointer',
+                          width: '100%',
+                          textAlign: 'left'
+                        }}
+                      >
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                          <span style={{ fontSize: '1.2rem' }}>{lang.flag}</span>
+                          <span>{lang.name} <span style={{ fontSize: '0.78rem', opacity: 0.6 }}>({lang.native})</span></span>
+                        </span>
+                        {isActive && <Check size={18} style={{ color: T.gold }} />}
+                      </button>
+                    );
+                  })}
                 </div>
               </motion.div>
             </>

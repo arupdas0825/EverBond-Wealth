@@ -5,6 +5,7 @@ import { T } from '../../theme/tokens';
 import { Card } from '../common/Card';
 import { useToast } from '../common/Toast';
 import { auth } from '../../utils/firebase';
+import { useTranslation } from '../../utils/i18n';
 import { 
   Sun, Moon, Laptop, Bell, Shield, Lock, Smartphone, LaptopIcon, 
   Trash2, FileText, ChevronRight, Eye, RefreshCw, Key, Globe, EyeOff,
@@ -15,6 +16,7 @@ export function SettingsPage({ setActivePolicyDoc, setPage }) {
   const store = useFinanceStore();
   const toast = useToast();
   const { theme, setTheme, reset } = store;
+  const { t } = useTranslation();
 
   // Notification states
   const [pushNotif, setPushNotif] = useState(true);
@@ -34,19 +36,19 @@ export function SettingsPage({ setActivePolicyDoc, setPage }) {
 
   const handleRevokeSession = (id, device) => {
     setSessions(sessions.filter(s => s.id !== id));
-    toast.success(`Session for ${device} revoked.`);
+    toast.success(`${t('session_revoked', 'Session for {device} revoked.').replace('{device}', device)}`);
   };
 
   const handleThemeChange = (mode) => {
     setTheme(mode);
-    toast.success(`Theme set to ${mode.toUpperCase()} mode.`);
+    toast.success(`${t('theme_set_success', 'Theme set to {mode} mode.').replace('{mode}', mode.toUpperCase())}`);
   };
 
   const handleExportData = () => {
     try {
       const rawData = localStorage.getItem('eb_v6');
       if (!rawData) {
-        toast.error("No local data found to export.");
+        toast.error(t('no_local_data', "No local data found to export."));
         return;
       }
       const dataObj = JSON.parse(rawData);
@@ -57,14 +59,14 @@ export function SettingsPage({ setActivePolicyDoc, setPage }) {
       document.body.appendChild(downloadAnchor);
       downloadAnchor.click();
       downloadAnchor.remove();
-      toast.success("Financial ledger exported successfully.");
+      toast.success(t('data_exported_success', "Financial ledger exported successfully."));
     } catch (err) {
-      toast.error("Failed to export data: " + err.message);
+      toast.error(t('export_failed', "Failed to export data: ") + err.message);
     }
   };
 
   const handleDeleteAccount = async () => {
-    const confirmWipe = window.confirm("Are you absolutely sure you want to delete your EverBond Account? This will permanently delete your Firestore database document, delete your login profile, and wipe all local storage. This action is irreversible.");
+    const confirmWipe = window.confirm(t('confirm_delete_account', "Are you absolutely sure you want to delete your EverBond Account? This will permanently delete your Firestore database document, delete your login profile, and wipe all local storage. This action is irreversible."));
     if (!confirmWipe) return;
 
     try {
@@ -77,13 +79,13 @@ export function SettingsPage({ setActivePolicyDoc, setPage }) {
       reset();
       localStorage.removeItem('eb_v6');
       
-      toast.success("Account and data deleted successfully.");
+      toast.success(t('account_deleted_success', "Account and data deleted successfully."));
       setTimeout(() => {
         window.location.reload();
       }, 1500);
     } catch (err) {
       console.error("Account deletion failed:", err);
-      toast.error(`Account deletion failed: ${err.message}. Please re-authenticate and try again.`);
+      toast.error(`${t('account_delete_failed', 'Account deletion failed: {error}. Please re-authenticate and try again.').replace('{error}', err.message)}`);
     }
   };
 
@@ -113,9 +115,9 @@ export function SettingsPage({ setActivePolicyDoc, setPage }) {
       {/* Page Header */}
       <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px', marginBottom: '32px' }}>
         <div>
-          <div className="page-eyebrow">Platform Calibration</div>
-          <h1 className="page-title">Platform <em>Settings</em></h1>
-          <p className="page-desc">Configure visual theme engines, notification centers, data privacy, and session keys.</p>
+          <div className="page-eyebrow">{t('platform_calibration', 'Platform Calibration')}</div>
+          <h1 className="page-title">{t('platform', 'Platform')} <em>{t('settings', 'Settings')}</em></h1>
+          <p className="page-desc">{t('settings_desc', 'Configure visual theme engines, notification centers, data privacy, and session keys.')}</p>
         </div>
       </div>
 
@@ -130,9 +132,9 @@ export function SettingsPage({ setActivePolicyDoc, setPage }) {
         <motion.div variants={itemVariants} className="span-6">
           <Card style={{ height: '100%', display: 'flex', flexDirection: 'column', justify: 'space-between' }}>
             <div>
-              <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.gold, display: 'block', marginBottom: '16px' }}>Appearance Mode</span>
-              <h3 style={{ fontFamily: T.fontDisplay, fontSize: '1.25rem', fontWeight: 700, color: 'var(--text)', margin: '0 0 12px' }}>Theme Configuration</h3>
-              <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginBottom: '24px' }}>Choose a theme or adapt to your system color scheme automatically.</p>
+              <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.gold, display: 'block', marginBottom: '16px' }}>{t('appearance_mode', 'Appearance Mode')}</span>
+              <h3 style={{ fontFamily: T.fontDisplay, fontSize: '1.25rem', fontWeight: 700, color: 'var(--text)', margin: '0 0 12px' }}>{t('theme_configuration', 'Theme Configuration')}</h3>
+              <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginBottom: '24px' }}>{t('theme_desc', 'Choose a theme or adapt to your system color scheme automatically.')}</p>
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
@@ -147,7 +149,7 @@ export function SettingsPage({ setActivePolicyDoc, setPage }) {
                 }}
               >
                 <Sun size={18} />
-                <span>Light</span>
+                <span>{t('light', 'Light')}</span>
               </button>
 
               <button 
@@ -161,7 +163,7 @@ export function SettingsPage({ setActivePolicyDoc, setPage }) {
                 }}
               >
                 <Moon size={18} />
-                <span>Dark</span>
+                <span>{t('dark', 'Dark')}</span>
               </button>
 
               <button 
@@ -174,7 +176,7 @@ export function SettingsPage({ setActivePolicyDoc, setPage }) {
                 }}
               >
                 <Laptop size={18} />
-                <span>Auto</span>
+                <span>{t('auto', 'Auto')}</span>
               </button>
             </div>
           </Card>
@@ -184,16 +186,16 @@ export function SettingsPage({ setActivePolicyDoc, setPage }) {
         <motion.div variants={itemVariants} className="span-6">
           <Card style={{ height: '100%', display: 'flex', flexDirection: 'column', justify: 'space-between' }}>
             <div>
-              <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.gold, display: 'block', marginBottom: '16px' }}>Notification Center</span>
-              <h3 style={{ fontFamily: T.fontDisplay, fontSize: '1.25rem', fontWeight: 700, color: 'var(--text)', margin: '0 0 16px' }}>Alert Channels</h3>
+              <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.gold, display: 'block', marginBottom: '16px' }}>{t('notification_center', 'Notification Center')}</span>
+              <h3 style={{ fontFamily: T.fontDisplay, fontSize: '1.25rem', fontWeight: 700, color: 'var(--text)', margin: '0 0 16px' }}>{t('alert_channels', 'Alert Channels')}</h3>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               {[
-                { label: 'Push Notifications', desc: 'Alerts on browser window status', state: pushNotif, setter: setPushNotif },
-                { label: 'Couple Notifications', desc: 'Sync events and partner changes', state: coupleNotif, setter: setCoupleNotif },
-                { label: 'Goal Notifications', desc: 'Target reach rates and alerts', state: goalNotif, setter: setGoalNotif },
-                { label: 'Milestone Alerts', desc: 'Milestone updates and targets', state: milestoneAlerts, setter: setMilestoneAlerts }
+                { label: t('push_notifications', 'Push Notifications'), desc: t('push_desc', 'Alerts on browser window status'), state: pushNotif, setter: setPushNotif },
+                { label: t('couple_notifications', 'Couple Notifications'), desc: t('couple_notif_desc', 'Sync events and partner changes'), state: coupleNotif, setter: setCoupleNotif },
+                { label: t('goal_notifications', 'Goal Notifications'), desc: t('goal_notif_desc', 'Target reach rates and alerts'), state: goalNotif, setter: setGoalNotif },
+                { label: t('milestone_alerts', 'Milestone Alerts'), desc: t('milestone_notif_desc', 'Milestone updates and targets'), state: milestoneAlerts, setter: setMilestoneAlerts }
               ].map((notif, idx) => (
                 <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div>
@@ -228,24 +230,24 @@ export function SettingsPage({ setActivePolicyDoc, setPage }) {
         <motion.div variants={itemVariants} className="span-6">
           <Card style={{ height: '100%', display: 'flex', flexDirection: 'column', justify: 'space-between' }}>
             <div>
-              <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.gold, display: 'block', marginBottom: '16px' }}>Data Visibility</span>
-              <h3 style={{ fontFamily: T.fontDisplay, fontSize: '1.25rem', fontWeight: 700, color: 'var(--text)', margin: '0 0 16px' }}>Privacy Parameters</h3>
+              <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.gold, display: 'block', marginBottom: '16px' }}>{t('data_visibility', 'Data Visibility')}</span>
+              <h3 style={{ fontFamily: T.fontDisplay, fontSize: '1.25rem', fontWeight: 700, color: 'var(--text)', margin: '0 0 16px' }}>{t('privacy_parameters', 'Privacy Parameters')}</h3>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
               <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', fontWeight: 700, color: 'var(--text)', marginBottom: '8px' }}>
-                  <span>Ecosystem Privacy Node</span>
+                  <span>{t('ecosystem_privacy_node', 'Ecosystem Privacy Node')}</span>
                   <span style={{ color: T.gold, textTransform: 'uppercase', fontSize: '0.7rem' }}>
-                    {dataVisibility === 'shared' ? 'Shared Ledger' : dataVisibility === 'private' ? 'Private Node' : 'Public'}
+                    {dataVisibility === 'shared' ? t('shared_ledger', 'Shared Ledger') : dataVisibility === 'private' ? t('private_node', 'Private Node') : t('public_label', 'Public')}
                   </span>
                 </div>
                 
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
                   {[
-                    { id: 'public', label: 'Public', icon: <Globe size={14} /> },
-                    { id: 'shared', label: 'Shared', icon: <Eye size={14} /> },
-                    { id: 'private', label: 'Private', icon: <EyeOff size={14} /> }
+                    { id: 'public', label: t('public_label', 'Public'), icon: <Globe size={14} /> },
+                    { id: 'shared', label: t('shared_ledger', 'Shared'), icon: <Eye size={14} /> },
+                    { id: 'private', label: t('private_node', 'Private'), icon: <EyeOff size={14} /> }
                   ].map(v => (
                     <button
                       key={v.id}
@@ -268,8 +270,8 @@ export function SettingsPage({ setActivePolicyDoc, setPage }) {
 
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--border-mid)', paddingTop: '14px', marginTop: '4px' }}>
                 <div>
-                  <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text)' }}>Couple Sharing Permissions</div>
-                  <div style={{ fontSize: '0.72rem', color: 'var(--text-faint)' }}>Allow partner to query allocation history</div>
+                  <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text)' }}>{t('couple_sharing_permissions', 'Couple Sharing Permissions')}</div>
+                  <div style={{ fontSize: '0.72rem', color: 'var(--text-faint)' }}>{t('couple_sharing_desc', 'Allow partner to query allocation history')}</div>
                 </div>
                 <div 
                   onClick={() => setSharingPermissions(!sharingPermissions)}
@@ -296,25 +298,25 @@ export function SettingsPage({ setActivePolicyDoc, setPage }) {
         <motion.div variants={itemVariants} className="span-6">
           <Card style={{ height: '100%', display: 'flex', flexDirection: 'column', justify: 'space-between' }}>
             <div>
-              <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.gold, display: 'block', marginBottom: '16px' }}>Device telemetry</span>
-              <h3 style={{ fontFamily: T.fontDisplay, fontSize: '1.25rem', fontWeight: 700, color: 'var(--text)', margin: '0 0 16px' }}>Security &amp; Encryption</h3>
+              <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.gold, display: 'block', marginBottom: '16px' }}>{t('device_telemetry', 'Device telemetry')}</span>
+              <h3 style={{ fontFamily: T.fontDisplay, fontSize: '1.25rem', fontWeight: 700, color: 'var(--text)', margin: '0 0 16px' }}>{t('security_encryption', 'Security & Encryption')}</h3>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', background: 'var(--bg-warm)', borderRadius: T.radiusSm, padding: '14px', border: '1px solid var(--border-mid)' }}>
               <div style={{ display: 'flex', justify: 'space-between', fontSize: '0.78rem' }}>
-                <span style={{ color: 'var(--text-faint)' }}>Host OS:</span>
+                <span style={{ color: 'var(--text-faint)' }}>{t('host_os', 'Host OS:')}</span>
                 <strong style={{ color: 'var(--text)' }}>{deviceInfo.os}</strong>
               </div>
               <div style={{ display: 'flex', justify: 'space-between', fontSize: '0.78rem' }}>
-                <span style={{ color: 'var(--text-faint)' }}>Host browser:</span>
+                <span style={{ color: 'var(--text-faint)' }}>{t('host_browser', 'Host browser:')}</span>
                 <strong style={{ color: 'var(--text)' }}>{deviceInfo.browser}</strong>
               </div>
               <div style={{ display: 'flex', justify: 'space-between', fontSize: '0.78rem' }}>
-                <span style={{ color: 'var(--text-faint)' }}>Node IP:</span>
+                <span style={{ color: 'var(--text-faint)' }}>{t('node_ip', 'Node IP:')}</span>
                 <strong style={{ color: 'var(--text)' }}>{deviceInfo.ip}</strong>
               </div>
               <div style={{ display: 'flex', justify: 'space-between', fontSize: '0.78rem', borderTop: '1px dashed var(--border-mid)', paddingTop: '6px', marginTop: '2px' }}>
-                <span style={{ color: 'var(--text-faint)' }}>Encryption:</span>
+                <span style={{ color: 'var(--text-faint)' }}>{t('encryption', 'Encryption:')}</span>
                 <strong style={{ color: T.sage }}>{deviceInfo.network}</strong>
               </div>
             </div>
@@ -325,8 +327,8 @@ export function SettingsPage({ setActivePolicyDoc, setPage }) {
         <motion.div variants={itemVariants} className="span-6">
           <Card style={{ height: '100%', display: 'flex', flexDirection: 'column', justify: 'space-between' }}>
             <div>
-              <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.gold, display: 'block', marginBottom: '16px' }}>Sovereign ledger</span>
-              <h3 style={{ fontFamily: T.fontDisplay, fontSize: '1.25rem', fontWeight: 700, color: 'var(--text)', margin: '0 0 16px' }}>Active Sessions</h3>
+              <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.gold, display: 'block', marginBottom: '16px' }}>{t('sovereign_ledger', 'Sovereign ledger')}</span>
+              <h3 style={{ fontFamily: T.fontDisplay, fontSize: '1.25rem', fontWeight: 700, color: 'var(--text)', margin: '0 0 16px' }}>{t('active_sessions', 'Active Sessions')}</h3>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -348,7 +350,7 @@ export function SettingsPage({ setActivePolicyDoc, setPage }) {
                         border: 'none', background: 'transparent', cursor: 'pointer', fontWeight: 700
                       }}
                     >
-                      Revoke
+                      {t('revoke', 'Revoke')}
                     </button>
                   )}
                 </div>
@@ -361,9 +363,9 @@ export function SettingsPage({ setActivePolicyDoc, setPage }) {
         <motion.div variants={itemVariants} className="span-6">
           <Card style={{ height: '100%', display: 'flex', flexDirection: 'column', justify: 'space-between' }}>
             <div>
-              <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.gold, display: 'block', marginBottom: '16px' }}>Resources</span>
-              <h3 style={{ fontFamily: T.fontDisplay, fontSize: '1.25rem', fontWeight: 700, color: 'var(--text)', margin: '0 0 8px' }}>User Manuals &amp; APIs</h3>
-              <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginBottom: '20px' }}>Open our scrollable document center to learn about relationship models, trust locks, and investment compounding curves.</p>
+              <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.gold, display: 'block', marginBottom: '16px' }}>{t('resources', 'Resources')}</span>
+              <h3 style={{ fontFamily: T.fontDisplay, fontSize: '1.25rem', fontWeight: 700, color: 'var(--text)', margin: '0 0 8px' }}>{t('manuals_apis', 'User Manuals & APIs')}</h3>
+              <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginBottom: '20px' }}>{t('documentation_settings_desc', 'Open our scrollable document center to learn about relationship models, trust locks, and investment compounding curves.')}</p>
             </div>
 
             <button
@@ -376,7 +378,7 @@ export function SettingsPage({ setActivePolicyDoc, setPage }) {
                 padding: '12px', width: '100%', borderRadius: '12px'
               }}
             >
-              <FileText size={16} /> Open Platform Documentation <ChevronRight size={16} />
+              <FileText size={16} /> {t('open_documentation', 'Open Platform Documentation')} <ChevronRight size={16} />
             </button>
           </Card>
         </motion.div>
@@ -392,13 +394,13 @@ export function SettingsPage({ setActivePolicyDoc, setPage }) {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
               <div>
                 <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.gold, display: 'block', marginBottom: '8px' }}>
-                  Your Data Belongs To You
+                  {t('data_belongs_to_you', 'Your Data Belongs To You')}
                 </span>
                 <h3 style={{ fontFamily: T.fontDisplay, fontSize: '1.45rem', fontWeight: 700, color: 'var(--text)', margin: '0 0 8px' }}>
-                  Data Sovereignty & Privacy Controls
+                  {t('data_sovereignty_title', 'Data Sovereignty & Privacy Controls')}
                 </h3>
                 <p style={{ fontSize: '0.84rem', color: 'var(--text-muted)', margin: 0, lineHeight: 1.5 }}>
-                  At EverBond Wealth, we believe your financial numbers are sacred. We protect your data using enterprise-grade encryption and give you full control over your privacy keys, including exporting or permanently purging your records at any time.
+                  {t('data_sovereignty_desc', 'At EverBond Wealth, we believe your financial numbers are sacred. We protect your data using enterprise-grade encryption and give you full control over your privacy records, including exporting or permanently purging your records at any time.')}
                 </p>
               </div>
 
@@ -411,22 +413,22 @@ export function SettingsPage({ setActivePolicyDoc, setPage }) {
                 <div style={{ display: 'flex', gap: '12px', alignItems: 'center', padding: '14px', background: 'var(--bg-warm)', borderRadius: '12px', border: '1px solid var(--border)' }}>
                   <div style={{ color: T.gold }}><Lock size={20} /></div>
                   <div>
-                    <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text)' }}>AES-256 Encryption</div>
-                    <div style={{ fontSize: '0.66rem', color: 'var(--text-faint)' }}>Secure client-side caching</div>
+                    <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text)' }}>{t('aes_encryption', 'AES-256 Encryption')}</div>
+                    <div style={{ fontSize: '0.66rem', color: 'var(--text-faint)' }}>{t('client_caching', 'Secure client-side caching')}</div>
                   </div>
                 </div>
                 <div style={{ display: 'flex', gap: '12px', alignItems: 'center', padding: '14px', background: 'var(--bg-warm)', borderRadius: '12px', border: '1px solid var(--border)' }}>
                   <div style={{ color: T.sage }}><Shield size={20} /></div>
                   <div>
-                    <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text)' }}>Firebase Auth</div>
-                    <div style={{ fontSize: '0.66rem', color: 'var(--text-faint)' }}>Federated identity tokens</div>
+                    <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text)' }}>{t('firebase_auth', 'Firebase Auth')}</div>
+                    <div style={{ fontSize: '0.66rem', color: 'var(--text-faint)' }}>{t('identity_tokens', 'Federated identity tokens')}</div>
                   </div>
                 </div>
                 <div style={{ display: 'flex', gap: '12px', alignItems: 'center', padding: '14px', background: 'var(--bg-warm)', borderRadius: '12px', border: '1px solid var(--border)' }}>
                   <div style={{ color: T.sky }}><Database size={20} /></div>
                   <div>
-                    <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text)' }}>Secure Cloud</div>
-                    <div style={{ fontSize: '0.66rem', color: 'var(--text-faint)' }}>Encrypted infrastructure</div>
+                    <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text)' }}>{t('secure_cloud', 'Secure Cloud')}</div>
+                    <div style={{ fontSize: '0.66rem', color: 'var(--text-faint)' }}>{t('encrypted_infra', 'Encrypted infrastructure')}</div>
                   </div>
                 </div>
               </div>
@@ -446,7 +448,7 @@ export function SettingsPage({ setActivePolicyDoc, setPage }) {
                     onClick={() => setActivePolicyDoc('data-handling')}
                     style={{ background: 'none', border: 'none', padding: 0, color: T.gold, fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer', textDecoration: 'underline' }}
                   >
-                    View google profiles accessed details &gt;
+                    {t('view_accessed_details', 'View google profiles accessed details >')}
                   </button>
                 </div>
                 <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
@@ -466,7 +468,7 @@ export function SettingsPage({ setActivePolicyDoc, setPage }) {
                     onMouseEnter={e => e.currentTarget.style.borderColor = T.gold}
                     onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border-mid)'}
                   >
-                    Export My Data
+                    {t('export_my_data', 'Export My Data')}
                   </button>
                   <button 
                     onClick={handleDeleteAccount}
@@ -484,7 +486,7 @@ export function SettingsPage({ setActivePolicyDoc, setPage }) {
                     onMouseEnter={e => e.currentTarget.style.background = T.rose}
                     onMouseLeave={e => e.currentTarget.style.background = 'rgba(217, 102, 122, 0.1)'}
                   >
-                    Delete Account &amp; Data
+                    {t('delete_account_and_data', 'Delete Account & Data')}
                   </button>
                 </div>
               </div>
@@ -496,19 +498,19 @@ export function SettingsPage({ setActivePolicyDoc, setPage }) {
         <motion.div variants={itemVariants} className="span-12">
           <Card style={{ border: '1px solid rgba(217, 102, 122, 0.25)', background: 'linear-gradient(135deg, rgba(217, 102, 122, 0.02) 0%, rgba(217, 102, 122, 0.0) 100%)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
             <div>
-              <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.rose, display: 'block', marginBottom: '14px' }}>Danger Zone</span>
-              <h3 style={{ fontFamily: T.fontDisplay, fontSize: '1.3rem', fontWeight: 700, color: 'var(--text)', margin: '0 0 6px' }}>Reset Platform Core</h3>
-              <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginBottom: '20px' }}>Wipe all local ledger files, target indices, milestones, notes, and partner handshakes. This action is irreversible.</p>
+              <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.rose, display: 'block', marginBottom: '14px' }}>{t('danger_zone', 'Danger Zone')}</span>
+              <h3 style={{ fontFamily: T.fontDisplay, fontSize: '1.3rem', fontWeight: 700, color: 'var(--text)', margin: '0 0 6px' }}>{t('reset_platform_core', 'Reset Platform Core')}</h3>
+              <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginBottom: '20px' }}>{t('wipe_database_desc', 'Wipe all local ledger files, target indices, milestones, notes, and partner handshakes. This action is irreversible.')}</p>
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
               <button 
                 onClick={() => {
-                  const resetConfirm = window.confirm("Are you absolutely sure you want to reset the entire database? This will clear all allocations, notes, and profile settings.");
+                  const resetConfirm = window.confirm(t('confirm_wipe_db', "Are you absolutely sure you want to reset the entire database? This will clear all allocations, notes, and profile settings."));
                   if (resetConfirm) {
                     reset();
                     localStorage.removeItem('eb_v6');
-                    toast.success("Database fully wiped. Reloading...");
+                    toast.success(t('db_wiped_success', "Database fully wiped. Reloading..."));
                     setTimeout(() => window.location.reload(), 1500);
                   }
                 }}
@@ -519,7 +521,7 @@ export function SettingsPage({ setActivePolicyDoc, setPage }) {
                   fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 14px rgba(217, 102, 122, 0.25)'
                 }}
               >
-                <Trash2 size={16} /> Wipe Sovereign Database
+                <Trash2 size={16} /> {t('wipe_database_btn', 'Wipe Sovereign Database')}
               </button>
             </div>
           </Card>

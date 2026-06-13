@@ -6,6 +6,7 @@ import {
 } from '../../utils/finance';
 import { T } from '../../theme/tokens';
 import { Lock, Crown } from 'lucide-react';
+import { useTranslation } from '../../utils/i18n';
 
 const GOAL_DEFS = [
   { key:'child',      icon:'🎓', name:'Child Education',   color:T.goldMid, retPct:10, tag:'Education Fund', lockedAt: 'Committed' },
@@ -14,23 +15,27 @@ const GOAL_DEFS = [
   { key:'vacation',   icon:'✈️',  name:'Vacation / Travel', color:T.rose,    retPct:6,  tag:'Lifestyle Goal' },
 ];
 
-function fmtEta(months) {
-  if (!isFinite(months)) return '∞ — Set a target';
-  if (months <= 0)        return '✓ Achieved!';
-  if (months < 12)        return `${months} month${months>1?'s':''}`;
+function fmtEta(months, t) {
+  if (!isFinite(months)) return '∞ — ' + t('set_a_target_action', 'Set a target');
+  if (months <= 0)        return '✓ ' + t('achieved', 'Achieved!');
+  if (months < 12)        return `${months} ${months > 1 ? t('months', 'months') : t('month', 'month')}`;
   const y = Math.floor(months/12), m = months%12;
-  return m > 0 ? `${y}y ${m}m` : `${y} years`;
+  if (m > 0) {
+    return `${y}${t('y_short', 'y')} ${m}${t('m_short', 'm')}`;
+  }
+  return `${y} ${y > 1 ? t('years', 'years') : t('year', 'year')}`;
 }
 
 export function GoalsPage() {
   const { mode, currency, goalTargets, setGoalTargets, getTotalSalary, stage, setStage, partner1, partner2, setProfile } = useFinanceStore();
+  const { t } = useTranslation();
   const total = getTotalSalary();
   const snap  = useMemo(()=>calculateFinancialSnapshot(total,mode),[total,mode]);
   const fmt   = a => formatCurrency(a, currency);
   const cmpct = a => formatCompact(a, currency);
 
   const handleUpgradeMarried = () => {
-    if (window.confirm('💍 Upgrade to Married Stage? This will unlock Family Dynasty Planning, children education funds, and family estate reserves.')) {
+    if (window.confirm(t('upgrade_confirm', '💍 Upgrade to Married Stage? This will unlock Family Dynasty Planning, children education funds, and family estate reserves.'))) {
       setStage('Married');
       setProfile({
         partner1,
@@ -46,10 +51,10 @@ export function GoalsPage() {
     <div className="fade-in">
       <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
         <div>
-          <div className="page-eyebrow">Dream Planner</div>
-          <h1 className="page-title">Life <em>Goals</em></h1>
+          <div className="page-eyebrow">{t('dream_planner', 'Dream Planner')}</div>
+          <h1 className="page-title">{t('life', 'Life')} <em>{t('goals', 'Goals')}</em></h1>
           <p className="page-desc">
-            Set your targets. Monthly allocations are auto-calculated from the Excel engine based on your current life stage.
+            {t('goals_desc', 'Set your targets. Monthly allocations are auto-calculated from the Excel engine based on your current life stage.')}
           </p>
         </div>
       </div>
@@ -70,12 +75,12 @@ export function GoalsPage() {
               <div className="goal-header">
                 <div>
                   <div className="goal-icon">{g.icon}</div>
-                  <div className="goal-name">{g.name}</div>
-                  <div className="goal-tag">{g.tag}</div>
+                  <div className="goal-name">{t('goal_name_' + g.key, g.name)}</div>
+                  <div className="goal-tag">{t('goal_tag_' + g.key, g.tag)}</div>
                 </div>
                 <div style={{textAlign:'right',flexShrink:0}}>
                   <div className="goal-monthly-amount" style={{color:g.color}}>{fmt(monthly)}</div>
-                  <div className="goal-eta">{fmtEta(months)}</div>
+                  <div className="goal-eta">{fmtEta(months, t)}</div>
                 </div>
               </div>
 
@@ -86,18 +91,18 @@ export function GoalsPage() {
                 background:`${g.color}14`,border:`1px solid ${g.color}30`,
                 fontSize:'.68rem',fontWeight:700,color:g.color,marginBottom:14,
               }}>
-                Expected Return · {g.retPct}% p.a.
+                {t('expected_return_label', 'Expected Return')} · {g.retPct}% {t('per_annum', 'p.a.')}
               </div>
 
               {/* Target input */}
               <div className="goal-target-row">
-                <span className="goal-target-label">Target Amount</span>
+                <span className="goal-target-label">{t('target_amount', 'Target Amount')}</span>
                 <span className="goal-target-val">{target > 0 ? fmt(target) : '—'}</span>
               </div>
               <input
                 className="goal-input"
                 type="number" min={0}
-                placeholder={`Set ${g.name} target…`}
+                placeholder={t('set_target_placeholder', 'Set {name} target…').replace('{name}', t('goal_name_' + g.key, g.name))}
                 value={target||''}
                 disabled={isGoalLocked}
                 onChange={e => {
@@ -114,7 +119,7 @@ export function GoalsPage() {
 
               {/* Projection row */}
               <div className="goal-projection">
-                <span>20-yr corpus @ {g.retPct}% p.a.</span>
+                <span>{t('yearly_projection_label', '20-yr corpus @ {pct}% p.a.').replace('{pct}', g.retPct)}</span>
                 <span style={{color:g.color, fontWeight:700, fontFamily:'var(--fd)', fontSize:'1rem'}}>
                   {cmpct(corpus20)}
                 </span>
@@ -129,7 +134,7 @@ export function GoalsPage() {
                     <div key={y} style={{textAlign:'center',flex:1,minWidth:60}}>
                       <div style={{fontSize:'.65rem',fontWeight:700,textTransform:'uppercase',
                         letterSpacing:'.07em',color:'var(--text-faint)',marginBottom:3}}>
-                        {y}Y Corpus
+                        {t('yearly_corpus', '{years}Y Corpus').replace('{years}', y)}
                       </div>
                       <div style={{fontFamily:'var(--fd)',fontSize:'.9rem',fontWeight:700,color:'var(--text)'}}>
                         {cmpct(r.fv)}
@@ -146,14 +151,14 @@ export function GoalsPage() {
                     <div className="lock-icon-glow" style={{ color: T.gold, background: 'var(--gold-pale)' }}>
                       <Crown size={20} />
                     </div>
-                    <h4 className="lock-title">Family Dynasty Plan</h4>
-                    <p className="lock-desc">Child education indexes and family legacy building are unlocked in the Married Dynasty stage.</p>
+                    <h4 className="lock-title">{t('family_dynasty_plan_title', 'Family Dynasty Plan')}</h4>
+                    <p className="lock-desc">{t('family_dynasty_plan_desc', 'Child education indexes and family legacy building are unlocked in the Married Dynasty stage.')}</p>
                     <button 
                       className="btn-primary" 
                       style={{ background: T.gold, fontSize: '0.78rem', padding: '8px 16px', width: 'auto' }}
                       onClick={handleUpgradeMarried}
                     >
-                      💍 Upgrade to Married Stage
+                      💍 {t('upgrade_married', 'Upgrade to Married Stage')}
                     </button>
                   </div>
                 </div>

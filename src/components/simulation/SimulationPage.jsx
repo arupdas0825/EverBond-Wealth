@@ -9,7 +9,7 @@ import {
 } from '../../utils/finance';
 import { T } from '../../theme/tokens';
 import { Card } from '../common/Card';
-
+import { useTranslation } from '../../utils/i18n';
 import { Lock } from 'lucide-react';
 
 const YEARS     = [1, 5, 10, 20, 30];
@@ -27,6 +27,7 @@ const TT = {
 
 export function SimulationPage() {
   const { mode, currency, simYears=10, simReturn, setSimYears, setSimReturn, getTotalSalary, stage, partnerAccepted } = useFinanceStore();
+  const { t } = useTranslation();
   const [inflAdj, setInflAdj] = useState(false);
 
   const total  = getTotalSalary();
@@ -43,7 +44,7 @@ export function SimulationPage() {
   const multi    = (result.fv / Math.max(invested,1)).toFixed(2);
 
   const chartData = result.dataPoints.map(p=>({
-    name: p.year===0 ? 'Now' : `Yr ${p.year}`,
+    name: p.year===0 ? t('now', 'Now') : `${t('yr_short', 'Yr')} ${p.year}`,
     'Wealth Corpus': p.corpus,
     'Total Invested': p.invested,
   }));
@@ -52,10 +53,10 @@ export function SimulationPage() {
     <div className="fade-in">
       <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
         <div>
-          <div className="page-eyebrow">Wealth Engine</div>
-          <h1 className="page-title">Future <em>Simulation</em></h1>
+          <div className="page-eyebrow">{t('wealth_engine', 'Wealth Engine')}</div>
+          <h1 className="page-title">{t('future', 'Future')} <em>{t('simulation', 'Simulation')}</em></h1>
           <p className="page-desc">
-            High-fidelity SIP projection using the Excel formula:
+            {t('simulation_desc', 'High-fidelity SIP projection using the Excel formula:')}
             <strong style={{color:T.goldMid}}> FV = PMT × [((1+r)ⁿ − 1) / r] × (1+r)</strong>
           </p>
         </div>
@@ -63,16 +64,16 @@ export function SimulationPage() {
 
       {/* Config */}
       <Card className="mb-20">
-        <div className="card-title">Projection Settings</div>
-        <div className="card-heading mb-20">Configure Horizon &amp; Return Rate</div>
+        <div className="card-title">{t('projection_settings', 'Projection Settings')}</div>
+        <div className="card-heading mb-20">{t('configure_horizon_return', 'Configure Horizon & Return Rate')}</div>
 
-        <div className="section-label" style={{marginBottom:10}}>Time Horizon</div>
+        <div className="section-label" style={{marginBottom:10}}>{t('time_horizon', 'Time Horizon')}</div>
         <div className="sim-yr-grid mb-24">
           {YEARS.map(y=>(
             <button key={y} className={`sim-yr-btn ${simYears===y?'active':''}`}
               onClick={()=>setSimYears(y)}>
               <span className="sim-yr-num">{y}</span>
-              <span className="sim-yr-label">{y===1?'Year':'Years'}</span>
+              <span className="sim-yr-label">{y===1?t('year', 'Year'):t('years', 'Years')}</span>
             </button>
           ))}
         </div>
@@ -80,9 +81,9 @@ export function SimulationPage() {
         <div style={{display:'flex',gap:20,alignItems:'flex-end',flexWrap:'wrap'}}>
           <div style={{flex:1,minWidth:200}}>
             <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:10}}>
-              <div className="section-label" style={{marginBottom:0}}>Expected Annual Return</div>
+              <div className="section-label" style={{marginBottom:0}}>{t('expected_annual_return', 'Expected Annual Return')}</div>
               <span style={{fontSize:'.76rem',color:T.textFaint,fontWeight:600}}>
-                Blended Index:&nbsp;
+                {t('blended_index', 'Blended Index')}:&nbsp;
                 <span style={{color:T.sage,fontWeight:800}}>{blended.toFixed(1)}%</span>
               </span>
             </div>
@@ -98,8 +99,8 @@ export function SimulationPage() {
               <div className="toggle-thumb"/>
             </div>
             <div>
-              <div className="toggle-label">Inflation Adjust</div>
-              <div className="toggle-sub">{inflAdj ? 'Real returns (−6% p.a.)' : 'Nominal returns'}</div>
+              <div className="toggle-label">{t('inflation_adjust', 'Inflation Adjust')}</div>
+              <div className="toggle-sub">{inflAdj ? t('real_returns_sub', 'Real returns (−6% p.a.)') : t('nominal_returns', 'Nominal returns')}</div>
             </div>
           </div>
         </div>
@@ -108,30 +109,30 @@ export function SimulationPage() {
       {/* Result cards */}
       <div className="sim-results mb-20">
         <div className="sim-result-card primary">
-          <div className="sim-result-label">🏦 {stage === 'Single' ? 'Final Solo Corpus' : 'Final Shared Corpus'}</div>
+          <div className="sim-result-label">🏦 {stage === 'Single' ? t('final_solo_corpus', 'Final Solo Corpus') : t('final_shared_corpus', 'Final Shared Corpus')}</div>
           <div className="sim-result-value" style={{color:T.goldMid}}>{cmpct(result.fv)}</div>
         </div>
         <div className="sim-result-card">
-          <div className="sim-result-label">💰 Total Contributed</div>
+          <div className="sim-result-label">💰 {t('total_contributed', 'Total Contributed')}</div>
           <div className="sim-result-value">{cmpct(invested)}</div>
         </div>
         <div className="sim-result-card">
-          <div className="sim-result-label">✨ Net Wealth Gains</div>
+          <div className="sim-result-label">✨ {t('net_wealth_gains', 'Net Wealth Gains')}</div>
           <div className="sim-result-value" style={{color:T.sage}}>{cmpct(Math.max(0,gains))}</div>
         </div>
         <div className="sim-result-card">
-          <div className="sim-result-label">📈 Wealth Multiplier</div>
+          <div className="sim-result-label">📈 {t('wealth_multiplier', 'Wealth Multiplier')}</div>
           <div className="sim-result-value" style={{color:T.goldMid}}>{multi}×</div>
         </div>
       </div>
 
       {/* Chart */}
       <Card className="mb-20">
-        <div className="card-title">Growth Trajectory</div>
-        <div className="card-heading mb-4">{stage === 'Single' ? 'Solo' : 'Shared'} Wealth Compounding Curve</div>
+        <div className="card-title">{t('growth_trajectory', 'Growth Trajectory')}</div>
+        <div className="card-heading mb-4">{stage === 'Single' ? t('solo_compounding_curve', 'Solo Wealth Compounding Curve') : t('shared_compounding_curve', 'Shared Wealth Compounding Curve')}</div>
         <p className="card-sub">
-          Monthly SIP of {cmpct(snap.budget.investments)} at {ret.toFixed(1)}% p.a. over {simYears} year{simYears>1?'s':''}.
-          {inflAdj && ' Inflation-adjusted (real returns).'}
+          {t('sip_compounding_desc', 'Monthly SIP of {amount} at {pct}% p.a. over {years} years.').replace('{amount}', cmpct(snap.budget.investments)).replace('{pct}', ret.toFixed(1)).replace('{years}', simYears)}
+          {inflAdj && t('inflation_adjusted_note', ' Inflation-adjusted (real returns).')}
         </p>
         <div className="chart-wrap-lg">
           <ResponsiveContainer width="100%" height="100%">
@@ -151,7 +152,7 @@ export function SimulationPage() {
                 tick={{fontSize:11,fill:'var(--text-faint)',fontWeight:600}} dy={7}/>
               <YAxis hide domain={['auto','auto']}/>
               <Tooltip contentStyle={TT}
-                formatter={(v,name)=>[cmpct(v),name]}
+                formatter={(v,name)=>[cmpct(v),t(name.toLowerCase().replace(' ', '_'), name)]}
                 labelStyle={{fontWeight:700,color:'var(--text)',marginBottom:6}}/>
               <Area name="Wealth Corpus" type="monotone" dataKey="Wealth Corpus"
                 stroke={T.goldMid} strokeWidth={2.8}
@@ -166,26 +167,26 @@ export function SimulationPage() {
         </div>
         <div className="chart-legend mt-16">
           <div className="legend-item">
-            <div className="legend-dot" style={{background:T.goldMid}}/>Wealth Corpus (Compounded)
+            <div className="legend-dot" style={{background:T.goldMid}}/>{t('wealth_corpus_compounded', 'Wealth Corpus (Compounded)')}
           </div>
           <div className="legend-item">
-            <div className="legend-dot" style={{background:T.sky}}/>Total Amount Invested
+            <div className="legend-dot" style={{background:T.sky}}/>{t('total_amount_invested', 'Total Amount Invested')}
           </div>
         </div>
       </Card>
 
       {/* Projection table */}
       <Card>
-        <div className="card-title">Projection Table</div>
-        <div className="card-heading mb-16">Wealth at Key Milestones</div>
+        <div className="card-title">{t('projection_table', 'Projection Table')}</div>
+        <div className="card-heading mb-16">{t('wealth_at_milestones', 'Wealth at Key Milestones')}</div>
         <div className="table-scroll">
           <table className="wealth-table">
             <thead>
               <tr>
-                <th>Period</th>
-                <th>Invested</th>
-                <th>Net Gains</th>
-                <th>Wealth Corpus</th>
+                <th>{t('period', 'Period')}</th>
+                <th>{t('invested', 'Invested')}</th>
+                <th>{t('net_gains', 'Net Gains')}</th>
+                <th>{t('wealth_corpus', 'Wealth Corpus')}</th>
               </tr>
             </thead>
             <tbody>
@@ -195,7 +196,7 @@ export function SimulationPage() {
                 const g   = Math.max(0,r.fv-inv);
                 return (
                   <tr key={y}>
-                    <td>{y} {y===1?'Year':'Years'}</td>
+                    <td>{y} {y===1?t('year', 'Year'):t('years', 'Years')}</td>
                     <td>{cmpct(inv)}</td>
                     <td style={{color:T.sage}}>{cmpct(g)}</td>
                     <td>{cmpct(r.fv)}</td>
@@ -210,12 +211,12 @@ export function SimulationPage() {
       {/* Joint Wealth Simulations locked preview */}
       {stage !== 'Single' && !partnerAccepted && (
         <Card style={{ position: 'relative', marginTop: '20px' }}>
-          <div className="card-title">Joint Compounding</div>
-          <div className="card-heading">🔒 Joint Wealth Simulations</div>
-          <div className="card-sub">Simulate combined dual-income compound trajectories over multiple risk parameters.</div>
+          <div className="card-title">{t('joint_compounding', 'Joint Compounding')}</div>
+          <div className="card-heading">🔒 {t('joint_simulations', 'Joint Wealth Simulations')}</div>
+          <div className="card-sub">{t('joint_simulations_desc', 'Simulate combined dual-income compound trajectories over multiple risk parameters.')}</div>
           
           <div style={{ height: '140px', background: 'var(--bg-muted)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-faint)' }}>
-            Interactive joint trajectory curve visualization
+            {t('interactive_trajectory_vis', 'Interactive joint trajectory curve visualization')}
           </div>
 
           <div className="glass-lock-screen">
@@ -223,14 +224,14 @@ export function SimulationPage() {
               <div className="lock-icon-glow" style={{ color: stage === 'Married' ? T.gold : T.rose, background: stage === 'Married' ? 'var(--gold-pale)' : 'var(--rose-lt)' }}>
                 <Lock size={20} />
               </div>
-              <h4 className="lock-title">🔒 Joint Wealth Simulations</h4>
-              <p className="lock-desc">Invite your partner to sync combined projection parameters and plan together.</p>
+              <h4 className="lock-title">🔒 {t('joint_simulations', 'Joint Wealth Simulations')}</h4>
+              <p className="lock-desc">{t('invite_partner_sim_desc', 'Invite your partner to sync combined projection parameters and plan together.')}</p>
               <button 
                 className="btn-primary" 
                 style={{ background: stage === 'Married' ? T.gold : T.rose, fontSize: '0.78rem', padding: '8px 16px', width: 'auto' }} 
-                onClick={() => alert("🔗 Go to the Dashboard and use the Partner Connection status widget to invite your partner!")}
+                onClick={() => alert(t('sync_income_alert', "To sync, go to the Dashboard and use the Partner Connection widget!"))}
               >
-                Connect Partner
+                {t('connect_partner', 'Connect Partner')}
               </button>
             </div>
           </div>

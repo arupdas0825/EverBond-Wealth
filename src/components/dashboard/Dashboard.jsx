@@ -71,8 +71,14 @@ export function Dashboard({ setPage }) {
   // Health Score
   const health = useMemo(() => {
     if (!hasData) return null;
-    return calculateHealthScore(snap);
-  }, [snap, hasData]);
+    const rawHealth = calculateHealthScore(snap);
+    if (!rawHealth) return null;
+    return {
+      value: rawHealth.value,
+      label: t('health_label_' + rawHealth.label.toLowerCase().replace(' ', '_'), rawHealth.label),
+      tips: rawHealth.tips.map((tip, index) => t(`health_tip_${rawHealth.label.toLowerCase().replace(' ', '_')}_${index}`, tip))
+    };
+  }, [snap, hasData, t]);
 
   // Savings rate
   const savingsRatePct = useMemo(() => {
@@ -84,25 +90,25 @@ export function Dashboard({ setPage }) {
   const cashflowData = useMemo(() => {
     if (!hasData) return [];
     return [
-      { name: 'Income', amount: totalSalary, color: T.sky },
-      { name: 'Expenses', amount: snap.budget.needs, color: T.rose },
-      { name: 'Investments', amount: snap.budget.investments, color: T.goldMid },
-      { name: 'Savings', amount: snap.budget.emergency, color: T.sage }
+      { name: t('income', 'Income'), amount: totalSalary, color: T.sky },
+      { name: t('expenses', 'Expenses'), amount: snap.budget.needs, color: T.rose },
+      { name: t('investments', 'Investments'), amount: snap.budget.investments, color: T.goldMid },
+      { name: t('savings', 'Savings'), amount: snap.budget.emergency, color: T.sage }
     ];
-  }, [hasData, totalSalary, snap]);
+  }, [hasData, totalSalary, snap, t]);
 
   // Asset Allocation Data
   const allocationData = useMemo(() => {
     if (!hasData) return [];
     return [
-      { name: 'Equity', value: snap.investmentSplit.equity, color: T.sky },
-      { name: 'Debt', value: snap.investmentSplit.debt, color: T.goldMid },
-      { name: 'Gold', value: snap.commoditiesBreakdown.gold, color: T.gold },
-      { name: 'Cash', value: snap.budget.emergency, color: T.sage },
-      { name: 'Crypto', value: snap.investmentSplit.crypto, color: T.rose },
-      { name: 'Other', value: snap.commoditiesBreakdown.silver, color: '#a5f3fc' }
+      { name: t('equity', 'Equity'), value: snap.investmentSplit.equity, color: T.sky },
+      { name: t('debt', 'Debt'), value: snap.investmentSplit.debt, color: T.goldMid },
+      { name: t('gold', 'Gold'), value: snap.commoditiesBreakdown.gold, color: T.gold },
+      { name: t('cash', 'Cash'), value: snap.budget.emergency, color: T.sage },
+      { name: t('crypto', 'Crypto'), value: snap.investmentSplit.crypto, color: T.rose },
+      { name: t('other', 'Other'), value: snap.commoditiesBreakdown.silver, color: '#a5f3fc' }
     ].filter(item => item.value > 0);
-  }, [hasData, snap]);
+  }, [hasData, snap, t]);
 
   const totalPortfolioValue = useMemo(() => {
     return allocationData.reduce((sum, item) => sum + item.value, 0);
@@ -117,15 +123,15 @@ export function Dashboard({ setPage }) {
     if (savingsRatePct >= 35) {
       list.push({
         id: 'sr',
-        title: 'Savings rate is improving',
-        desc: `Your savings rate is healthy at ${savingsRatePct}%. Capital splits are highly optimized for compounding.`,
+        title: t('savings_rate_improving', 'Savings rate is improving'),
+        desc: t('savings_rate_healthy_desc', 'Your savings rate is healthy at {pct}%. Capital splits are highly optimized for compounding.').replace('{pct}', savingsRatePct),
         type: 'success'
       });
     } else {
       list.push({
         id: 'sr',
-        title: 'Savings rate below target',
-        desc: `Currently at ${savingsRatePct}% (optimal target: 35%+). Try reducing non-essential expenses to raise investment splits.`,
+        title: t('savings_rate_below_target', 'Savings rate below target'),
+        desc: t('savings_rate_low_desc', 'Currently at {pct}% (optimal target: 35%+). Try reducing non-essential expenses to raise investment splits.').replace('{pct}', savingsRatePct),
         type: 'warning'
       });
     }
@@ -137,23 +143,23 @@ export function Dashboard({ setPage }) {
       if (pct >= 100) {
         list.push({
           id: 'ef',
-          title: 'Emergency reserve secured',
-          desc: 'Your liquid locker is fully funded. Excellent capital safety margin.',
+          title: t('emergency_reserve_secured', 'Emergency reserve secured'),
+          desc: t('emergency_secured_desc', 'Your liquid locker is fully funded. Excellent capital safety margin.'),
           type: 'success'
         });
       } else {
         list.push({
           id: 'ef',
-          title: 'Emergency reserve below target',
-          desc: `Liquid reserve is at ${pct}% of target. Recommend top-ups to secure a safe 6-month buffer.`,
+          title: t('emergency_reserve_below_target', 'Emergency reserve below target'),
+          desc: t('emergency_low_desc', 'Liquid reserve is at {pct}% of target. Recommend top-ups to secure a safe 6-month buffer.').replace('{pct}', pct),
           type: 'warning'
         });
       }
     } else {
       list.push({
         id: 'ef',
-        title: 'Emergency reserve below target',
-        desc: 'No dedicated emergency milestone set yet. Recommend creating a buffer locker to protect investments.',
+        title: t('emergency_reserve_below_target', 'Emergency reserve below target'),
+        desc: t('emergency_not_set_desc', 'No dedicated emergency milestone set yet. Recommend creating a buffer locker to protect investments.'),
         type: 'info'
       });
     }
@@ -163,14 +169,14 @@ export function Dashboard({ setPage }) {
     if (cryptoExposure > 0.05) {
       list.push({
         id: 'cr',
-        title: 'High crypto exposure warning',
-        desc: `Digital assets make up ${(cryptoExposure * 100).toFixed(1)}% of investments. Consider keeping within 5% safe limit.`,
+        title: t('high_crypto_exposure', 'High crypto exposure warning'),
+        desc: t('crypto_high_desc', 'Digital assets make up {pct}% of investments. Consider keeping within 5% safe limit.').replace('{pct}', (cryptoExposure * 100).toFixed(1)),
         type: 'danger'
       });
     }
 
     return list;
-  }, [hasData, savingsRatePct, milestones, snap]);
+  }, [hasData, savingsRatePct, milestones, snap, t]);
 
   // Filter out default placeholder timeline items if matching data isn't configured
   const actualActivities = useMemo(() => {
@@ -182,119 +188,20 @@ export function Dashboard({ setPage }) {
     }).slice(0, 5);
   }, [timelineEvents, p1Salary, milestones, connectionStatus]);
 
-  // Calculate display exchange rates relative to USD and EUR
-  const liveRatesContent = useMemo(() => {
-    const activeRates = exchangeRates || { USD: 1.0, EUR: 0.92, INR: 83.5, GBP: 0.78 };
-    const cur = currency || 'INR';
-    
-    // Find rates
-    const usdInCur = getExchangeRate('USD', cur, activeRates);
-    const eurInCur = getExchangeRate('EUR', cur, activeRates);
-    const gbpInCur = getExchangeRate('GBP', cur, activeRates);
-
-    // Formatted time
-    let timeText = 'just now';
-    if (ratesLastUpdated) {
-      const diffMs = Date.now() - new Date(ratesLastUpdated).getTime();
-      const diffMins = Math.floor(diffMs / 60000);
-      if (diffMins > 0) {
-        timeText = `${diffMins}m ago`;
-      }
-    }
-
-    // Trend simulator: steady, up, down
-    // Seed it by current date hour to keep it stable but changing
-    const seed = new Date().getHours() % 3;
-    const trendText = seed === 0 ? '+0.12%' : seed === 1 ? '-0.08%' : '+0.04%';
-    const trendColor = seed === 1 ? T.rose : T.sage;
-
-    const list = [];
-    if (cur !== 'USD') {
-      list.push({ text: `1 USD = ${usdInCur.toFixed(2)} ${cur}` });
-    }
-    if (cur !== 'EUR') {
-      list.push({ text: `1 EUR = ${eurInCur.toFixed(2)} ${cur}` });
-    }
-    if (cur !== 'GBP' && cur !== 'INR') {
-      list.push({ text: `1 GBP = ${gbpInCur.toFixed(2)} ${cur}` });
-    } else if (cur === 'GBP') {
-      const inrInCur = getExchangeRate('INR', cur, activeRates);
-      list.push({ text: `100 INR = ${(inrInCur * 100).toFixed(2)} ${cur}` });
-    }
-
-    return {
-      list,
-      trendText,
-      trendColor,
-      timeText
-    };
-  }, [currency, exchangeRates, ratesLastUpdated]);
-
   return (
     <div className="fade-in" style={{ paddingBottom: '60px' }}>
       
-      {/* SECTION 1: WELCOME HEADER WITH CURRENCY INTELLIGENCE */}
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'space-between', 
-        alignItems: 'flex-start', 
-        gap: '24px', 
-        flexWrap: 'wrap', 
-        marginBottom: '28px' 
-      }}>
-        {/* Left Column: Greeting */}
-        <div style={{ flex: '1 1 350px' }}>
-          <span style={{ fontSize: '0.72rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.10em', color: T.gold }}>
-            {t('greeting_' + getGreeting().toLowerCase().replace(' ', '_'), getGreeting())}, {partner1 || 'Arup'}
-          </span>
-          <h1 className="page-title" style={{ marginTop: '8px', fontSize: '2.1rem', fontWeight: 800 }}>
-            {t('dashboard_title', 'Financial Command Center')}
-          </h1>
-          <p className="page-desc" style={{ color: 'var(--text-muted)', fontSize: '0.92rem', marginTop: '6px', maxWidth: '600px' }}>
-            {t('dashboard_desc', 'Track income, investments, savings and long-term financial goals in one focused workspace.')}
-          </p>
-        </div>
-
-        {/* Right Column: Market & Currency Overview Widget */}
-        <div 
-          className="liquid-glass" 
-          style={{ 
-            flex: isMobile ? '1 1 100%' : '0 0 320px', 
-            padding: '16px 20px', 
-            borderRadius: '20px',
-            border: '1px solid var(--border-mid)',
-            boxShadow: '0 8px 32px rgba(0,0,0,0.04)',
-            background: 'var(--bg-card)'
-          }}
-        >
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-            <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', color: T.gold, letterSpacing: '0.08em' }}>
-              {t('market_overview', 'Market & Currency Overview')}
-            </span>
-            <span style={{ fontSize: '0.75rem', fontWeight: 800, color: liveRatesContent.trendColor, background: 'rgba(255,255,255,0.05)', padding: '2px 6px', borderRadius: '6px' }}>
-              {liveRatesContent.trendText}
-            </span>
-          </div>
-          
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>{t('currency', 'Currency')}</span>
-              <span style={{ fontSize: '0.88rem', fontWeight: 800, color: 'var(--text)' }}>
-                {currency || 'INR'}
-              </span>
-            </div>
-            {liveRatesContent.list.map((rate, i) => (
-              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>Rate</span>
-                <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text)' }}>{rate.text}</span>
-              </div>
-            ))}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--border-light)', paddingTop: '6px', marginTop: '4px' }}>
-              <span style={{ fontSize: '0.68rem', color: 'var(--text-faint)' }}>Last updated</span>
-              <span style={{ fontSize: '0.68rem', color: 'var(--text-faint)' }}>{liveRatesContent.timeText}</span>
-            </div>
-          </div>
-        </div>
+      {/* SECTION 1: WELCOME HEADER */}
+      <div style={{ marginBottom: '28px' }}>
+        <span style={{ fontSize: '0.72rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.10em', color: T.gold }}>
+          {t('greeting_' + getGreeting().toLowerCase().replace(' ', '_'), getGreeting())}, {partner1 || 'User'}
+        </span>
+        <h1 className="page-title" style={{ marginTop: '8px', fontSize: '2.1rem', fontWeight: 800 }}>
+          {t('dashboard_title', 'Financial Command Center')}
+        </h1>
+        <p className="page-desc" style={{ color: 'var(--text-muted)', fontSize: '0.92rem', marginTop: '6px', maxWidth: '600px' }}>
+          {t('dashboard_desc', 'Track income, investments, savings and long-term financial goals in one focused workspace.')}
+        </p>
       </div>
 
       {/* SECTION 2: CORE FINANCIAL SNAPSHOT */}
@@ -315,7 +222,7 @@ export function Dashboard({ setPage }) {
             <Wallet size={16} style={{ color: T.sky }} />
           </div>
           <div style={{ fontSize: '1.45rem', fontWeight: 800, color: 'var(--text)', fontFamily: 'var(--fn)' }}>
-            {hasData ? fmt(totalSalary) : 'Not Added'}
+            {hasData ? fmt(totalSalary) : t('not_added', 'Not Added')}
           </div>
         </div>
 
@@ -328,7 +235,7 @@ export function Dashboard({ setPage }) {
             <TrendingUp size={16} style={{ color: T.gold }} />
           </div>
           <div style={{ fontSize: '1.45rem', fontWeight: 800, color: 'var(--text)', fontFamily: 'var(--fn)' }}>
-            {hasData ? fmt(snap.budget.investments) : 'Not Added'}
+            {hasData ? fmt(snap.budget.investments) : t('not_added', 'Not Added')}
           </div>
         </div>
 
@@ -341,7 +248,7 @@ export function Dashboard({ setPage }) {
             <Shield size={16} style={{ color: T.rose }} />
           </div>
           <div style={{ fontSize: '1.45rem', fontWeight: 800, color: 'var(--text)', fontFamily: 'var(--fn)' }}>
-            {hasData ? fmt(snap.budget.emergency) : 'Not Added'}
+            {hasData ? fmt(snap.budget.emergency) : t('not_added', 'Not Added')}
           </div>
         </div>
 
@@ -354,7 +261,7 @@ export function Dashboard({ setPage }) {
             <Activity size={16} style={{ color: T.sage }} />
           </div>
           <div style={{ fontSize: '1.45rem', fontWeight: 800, color: 'var(--text)', fontFamily: 'var(--fn)' }}>
-            {hasData ? `${savingsRatePct}%` : 'Not Added'}
+            {hasData ? `${savingsRatePct}%` : t('not_added', 'Not Added')}
           </div>
         </div>
       </div>
@@ -376,10 +283,10 @@ export function Dashboard({ setPage }) {
           <div className="apple-card" style={{ padding: '24px' }}>
             <div style={{ marginBottom: '16px' }}>
               <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', color: T.gold, letterSpacing: '0.05em' }}>
-                Flow of Capital
+                {t('flow_of_capital', 'Flow of Capital')}
               </span>
               <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--text)', marginTop: '2px' }}>
-                Monthly Cashflow
+                {t('monthly_cashflow', 'Monthly Cashflow')}
               </h3>
             </div>
             
@@ -401,8 +308,8 @@ export function Dashboard({ setPage }) {
             ) : (
               <div style={{ height: '220px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}>
                 <span style={{ fontSize: '1.8rem', marginBottom: '8px' }}>📊</span>
-                <strong style={{ fontSize: '0.85rem' }}>No Cashflow Data</strong>
-                <p style={{ fontSize: '0.72rem', marginTop: '4px' }}>Add income to visualize cashflow splits.</p>
+                <strong style={{ fontSize: '0.85rem' }}>{t('no_cashflow_data', 'No Cashflow Data')}</strong>
+                <p style={{ fontSize: '0.72rem', marginTop: '4px' }}>{t('add_income_to_visualize', 'Add income to visualize cashflow splits.')}</p>
               </div>
             )}
           </div>
@@ -412,10 +319,10 @@ export function Dashboard({ setPage }) {
             <div className="apple-card" style={{ padding: '24px' }}>
               <div style={{ marginBottom: '16px' }}>
                 <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', color: T.gold, letterSpacing: '0.05em' }}>
-                  Asset command
+                  {t('asset_command', 'Asset command')}
                 </span>
                 <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--text)', marginTop: '2px' }}>
-                  Asset Allocation
+                  {t('asset_allocation', 'Asset Allocation')}
                 </h3>
               </div>
 
@@ -471,10 +378,10 @@ export function Dashboard({ setPage }) {
           <div className="apple-card" style={{ padding: '24px' }}>
             <div style={{ marginBottom: '16px' }}>
               <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', color: T.gold, letterSpacing: '0.05em' }}>
-                System diagnostic
+                {t('system_diagnostic', 'System diagnostic')}
               </span>
               <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--text)', marginTop: '2px' }}>
-                Financial Health Score
+                {t('financial_health_score', 'Financial Health Score')}
               </h3>
             </div>
 
@@ -489,7 +396,7 @@ export function Dashboard({ setPage }) {
                       strokeLinecap="round"
                     />
                   </svg>
-                  <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifycontent: 'center', justifyContent: 'center', fontSize: '1.25rem', fontWeight: 800, fontFamily: 'var(--fn)' }}>
+                  <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.25rem', fontWeight: 800, fontFamily: 'var(--fn)' }}>
                     {health.value}
                   </div>
                 </div>
@@ -506,14 +413,14 @@ export function Dashboard({ setPage }) {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 <div style={{ background: 'var(--bg-muted)', padding: '12px 16px', borderRadius: '16px', border: '1px solid var(--border)' }}>
                   <span style={{ fontSize: '0.68rem', fontWeight: 800, textTransform: 'uppercase', color: T.rose, letterSpacing: '0.05em' }}>
-                    Diagnostic status
+                    {t('diagnostic_status', 'Diagnostic status')}
                   </span>
                   <div style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text)', marginTop: '2px' }}>
-                    Incomplete
+                    {t('incomplete', 'Incomplete')}
                   </div>
                 </div>
                 <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', lineHeight: 1.4 }}>
-                  Complete your profile to unlock score generation. Do not generate fake score.
+                  {t('incomplete_diagnostic_desc', 'Complete your profile to unlock score generation. Do not generate fake score.')}
                 </p>
               </div>
             )}
@@ -524,15 +431,15 @@ export function Dashboard({ setPage }) {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
               <div>
                 <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', color: T.gold, letterSpacing: '0.05em' }}>
-                  Target milestones
+                  {t('target_milestones', 'Target milestones')}
                 </span>
                 <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--text)', marginTop: '2px' }}>
-                  Active Goals
+                  {t('active_goals', 'Active Goals')}
                 </h3>
               </div>
               {milestones.length > 0 && (
                 <button onClick={() => setPage('milestones')} style={{ background: 'none', border: 'none', color: T.gold, fontSize: '0.72rem', fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  <Plus size={14} /> Add
+                  <Plus size={14} /> {t('add', 'Add')}
                 </button>
               )}
             </div>
@@ -554,8 +461,8 @@ export function Dashboard({ setPage }) {
                       </div>
 
                       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.68rem', color: 'var(--text-muted)' }}>
-                        <span>Saved: {fmt(m.monthlySaved)}</span>
-                        <span>Target: {fmt(m.targetCost)}</span>
+                        <span>{t('saved_label', 'Saved')}: {fmt(m.monthlySaved)}</span>
+                        <span>{t('target_label', 'Target')}: {fmt(m.targetCost)}</span>
                       </div>
                     </div>
                   );
@@ -563,16 +470,16 @@ export function Dashboard({ setPage }) {
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '20px 0', textAlign: 'center' }}>
-                <strong style={{ fontSize: '0.85rem', color: 'var(--text)' }}>No Active Goals</strong>
+                <strong style={{ fontSize: '0.85rem', color: 'var(--text)' }}>{t('no_active_goals', 'No Active Goals')}</strong>
                 <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '4px', maxWidth: '240px', lineHeight: 1.4, marginBottom: '16px' }}>
-                  Create your first financial goal to start tracking progress.
+                  {t('create_first_goal_desc', 'Create your first financial goal to start tracking progress.')}
                 </p>
                 <button 
                   className="btn-primary" 
                   style={{ background: T.gold, width: 'auto', padding: '8px 20px', borderRadius: '10px', fontSize: '0.78rem' }}
                   onClick={() => setPage('milestones')}
                 >
-                  Add Goal
+                  {t('add_goal', 'Add Goal')}
                 </button>
               </div>
             )}
@@ -594,10 +501,10 @@ export function Dashboard({ setPage }) {
         <div className="apple-card" style={{ padding: '24px' }}>
           <div style={{ marginBottom: '16px' }}>
             <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', color: T.gold, letterSpacing: '0.05em' }}>
-              Actionable advice
+              {t('actionable_advice', 'Actionable advice')}
             </span>
             <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--text)', marginTop: '2px' }}>
-              Smart Insights
+              {t('smart_insights', 'Smart Insights')}
             </h3>
           </div>
 
@@ -619,7 +526,7 @@ export function Dashboard({ setPage }) {
             <div style={{ background: 'var(--bg-muted)', padding: '16px', borderRadius: '16px', border: '1px solid var(--border)', display: 'flex', gap: '10px', alignItems: 'center' }}>
               <AlertCircle size={16} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
               <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', lineHeight: 1.4 }}>
-                Add more financial information to unlock insights. Do not generate fake advice.
+                {t('insights_empty_desc', 'Add more financial information to unlock insights. Do not generate fake advice.')}
               </p>
             </div>
           )}
@@ -629,10 +536,10 @@ export function Dashboard({ setPage }) {
         <div className="apple-card" style={{ padding: '24px' }}>
           <div style={{ marginBottom: '16px' }}>
             <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', color: T.gold, letterSpacing: '0.05em' }}>
-              Ledger telemetry
+              {t('ledger_telemetry', 'Ledger telemetry')}
             </span>
             <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--text)', marginTop: '2px' }}>
-              Recent Activity
+              {t('recent_activity', 'Recent Activity')}
             </h3>
           </div>
 
@@ -652,8 +559,8 @@ export function Dashboard({ setPage }) {
                   </div>
 
                   <div>
-                    <strong style={{ fontSize: '0.78rem', color: 'var(--text)' }}>{act.title}</strong>
-                    <p style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '1px' }}>{act.description}</p>
+                    <strong style={{ fontSize: '0.78rem', color: 'var(--text)' }}>{t(act.eventId + '_title', act.title)}</strong>
+                    <p style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '1px' }}>{t(act.eventId + '_desc', act.description)}</p>
                   </div>
                 </div>
               ))}
@@ -661,7 +568,7 @@ export function Dashboard({ setPage }) {
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '20px 0', color: 'var(--text-muted)' }}>
               <span style={{ fontSize: '1.5rem', marginBottom: '6px' }}>🕒</span>
-              <p style={{ fontSize: '0.72rem' }}>No recent activity recorded.</p>
+              <p style={{ fontSize: '0.72rem' }}>{t('no_recent_activity', 'No recent activity recorded.')}</p>
             </div>
           )}
         </div>

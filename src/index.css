@@ -3317,3 +3317,18 @@ input,select{font-family:var(--fb)}
     flex-direction: column-reverse !important;
   }
 }
+
+/* ── PWA INSTALL BUTTON RESPONSIVENESS ── */
+@media (max-width: 580px) {
+  .lp-header-install-btn {
+    padding: 8px !important;
+    min-width: 38px;
+    height: 38px;
+    display: flex;
+    alignItems: center;
+    justifyContent: center;
+  }
+  .lp-header-install-btn .install-btn-text {
+    display: none !important;
+  }
+}

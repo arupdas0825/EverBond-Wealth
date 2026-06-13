@@ -5,18 +5,20 @@ import { T } from '../../theme/tokens';
 import { Card } from '../common/Card';
 import { Heart, Sparkles, CheckSquare, ShieldCheck, Compass, Info, Lock } from 'lucide-react';
 import { formatCurrency } from '../../utils/finance';
+import { useTranslation } from '../../utils/i18n';
 
 export function CouplePlanningPage() {
   const { partner1, partner2, currency, getTotalSalary, partnerAccepted } = useFinanceStore();
+  const { t } = useTranslation();
   const total = getTotalSalary();
   
   // Consensus Compromise Indices
   const [p1Weight, setP1Weight] = useState(50);
   const [checklist, setChecklist] = useState([
-    { id: 1, text: 'Consolidate distributed bank ledger API nodes', done: true },
-    { id: 2, text: 'Upload couple portrait to biometric encryption keys', done: true },
-    { id: 3, text: 'Confirm consensus allocation profile (Balanced Mode)', done: false },
-    { id: 4, text: 'Set anniversary date & couple holiday milestones', done: false },
+    { id: 1, text: t('consolidate_bank_ledgers', 'Consolidate distributed bank ledger API nodes'), done: true },
+    { id: 2, text: t('upload_couple_portrait', 'Upload couple portrait to biometric encryption keys'), done: true },
+    { id: 3, text: t('confirm_consensus_profile', 'Confirm consensus allocation profile (Balanced Mode)'), done: false },
+    { id: 4, text: t('set_anniversary_milestones', 'Set anniversary date & couple holiday milestones'), done: false },
   ]);
 
   const toggleCheck = (id) => {
@@ -31,12 +33,12 @@ export function CouplePlanningPage() {
       <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
         <div>
           <div className="page-eyebrow" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-            <span className="stage-badge committed">Committed Workspace</span>
-            <span>· Dynamic Shared Ledger</span>
+            <span className="stage-badge committed">{t('committed_workspace', 'Committed Workspace')}</span>
+            <span>· {t('dynamic_shared_ledger', 'Dynamic Shared Ledger')}</span>
           </div>
-          <h1 className="page-title">Couple <em>Planning</em></h1>
+          <h1 className="page-title">{t('couple', 'Couple')} <em>{t('planning', 'Planning')}</em></h1>
           <p className="page-desc">
-            Collaborative financial planner. Track consensus splits and joint lifestyle targets live.
+            {t('couple_planning_desc', 'Collaborative financial planner. Track consensus splits and joint lifestyle targets live.')}
           </p>
         </div>
       </div>
@@ -57,10 +59,10 @@ export function CouplePlanningPage() {
             <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: T.rose, boxShadow: `0 0 10px ${T.rose}` }} />
             <div>
               <span style={{ fontSize: '0.68rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.rose }}>
-                Shared Workspace Preview
+                {t('shared_workspace_preview', 'Shared Workspace Preview')}
               </span>
               <h4 style={{ fontSize: '0.88rem', fontWeight: 700, color: 'var(--text)', marginTop: '2px' }}>
-                🔒 Collaborative Features Locked · Connect your partner to activate
+                🔒 {t('collaborative_features_locked', 'Collaborative Features Locked · Connect your partner to activate')}
               </h4>
             </div>
           </div>
@@ -70,9 +72,9 @@ export function CouplePlanningPage() {
       <div className="grid-2 mb-20">
         {/* Consensus compromise index */}
         <Card gold style={{ position: 'relative' }}>
-          <div className="card-title">Decision Matrix</div>
-          <div className="card-heading">Allocation Consensus Index</div>
-          <div className="card-sub">Balance financial control weight between partners dynamically.</div>
+          <div className="card-title">{t('decision_matrix', 'Decision Matrix')}</div>
+          <div className="card-heading">{t('allocation_consensus_index', 'Allocation Consensus Index')}</div>
+          <div className="card-sub">{t('consensus_index_desc', 'Balance financial control weight between partners dynamically.')}</div>
           
           <div style={{ padding: '24px 0 12px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '0.88rem', fontWeight: 600 }}>
@@ -106,7 +108,7 @@ export function CouplePlanningPage() {
           }}>
             <Info size={14} style={{ color: T.goldMid, flexShrink: 0, marginTop: '2px' }} />
             <div>
-              Consensus Index calculated at <strong>{(100 - Math.abs(50 - p1Weight) * 2)}% compatibility</strong>. Adjusting controls blends risk tolerances dynamically.
+              {t('consensus_compatibility_msg', 'Consensus Index calculated at {compatibility}% compatibility. Adjusting controls blends risk tolerances dynamically.').replace('{compatibility}', 100 - Math.abs(50 - p1Weight) * 2)}
             </div>
           </div>
 
@@ -117,14 +119,14 @@ export function CouplePlanningPage() {
                 <div className="lock-icon-glow" style={{ color: T.rose, background: 'var(--rose-lt)' }}>
                   <Lock size={20} />
                 </div>
-                <h4 className="lock-title">🔒 Shared Couple Dashboard</h4>
-                <p className="lock-desc">Connect your partner to unlock consensus adjustments and combined budgeting features.</p>
+                <h4 className="lock-title">🔒 {t('shared_couple_dashboard', 'Shared Couple Dashboard')}</h4>
+                <p className="lock-desc">{t('unlock_consensus_desc', 'Connect your partner to unlock consensus adjustments and combined budgeting features.')}</p>
                 <button 
                   className="btn-primary" 
                   style={{ background: T.rose, fontSize: '0.78rem', padding: '8px 16px', width: 'auto' }}
-                  onClick={() => alert("🔗 Go to the Dashboard and use the Partner Connection status widget to invite your partner!")}
+                  onClick={() => alert(t('invite_partner_alert', "Go to the Dashboard and use the Partner Connection status widget to invite your partner!"))}
                 >
-                  Invite Partner
+                  {t('invite_partner_btn', 'Invite Partner')}
                 </button>
               </div>
             </div>
@@ -133,20 +135,20 @@ export function CouplePlanningPage() {
 
         {/* Shared holiday builder */}
         <Card style={{ position: 'relative' }}>
-          <div className="card-title">Lifestyle Target</div>
-          <div className="card-heading">Romantic Getaway Vault</div>
-          <div className="card-sub">Automated monthly earmarks dedicated to lifestyle milestones.</div>
+          <div className="card-title">{t('lifestyle_target', 'Lifestyle Target')}</div>
+          <div className="card-heading">{t('romantic_getaway_vault', 'Romantic Getaway Vault')}</div>
+          <div className="card-sub">{t('romantic_getaway_desc', 'Automated monthly earmarks dedicated to lifestyle milestones.')}</div>
           
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid var(--border)' }}>
-            <span style={{ fontSize: '0.85rem', fontWeight: 500 }}>Maldives Anniversary Cruise</span>
+            <span style={{ fontSize: '0.85rem', fontWeight: 500 }}>{t('maldives_cruise', 'Maldives Anniversary Cruise')}</span>
             <span style={{ fontFamily: 'var(--fn)', fontWeight: 600, color: T.rose }}>{fmt(350000)}</span>
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid var(--border)' }}>
-            <span style={{ fontSize: '0.85rem', fontWeight: 500 }}>Target Date</span>
+            <span style={{ fontSize: '0.85rem', fontWeight: 500 }}>{t('target_date', 'Target Date')}</span>
             <span style={{ fontSize: '0.82rem', color: 'var(--text-faint)', fontWeight: 600 }}>18-Dec-2027</span>
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0' }}>
-            <span style={{ fontSize: '0.85rem', fontWeight: 500 }}>Required Monthly SIP</span>
+            <span style={{ fontSize: '0.85rem', fontWeight: 500 }}>{t('required_monthly_sip', 'Required Monthly SIP')}</span>
             <span style={{ fontFamily: 'var(--fn)', fontWeight: 700, color: T.sage }}>{fmt(18500)}</span>
           </div>
 
@@ -157,14 +159,14 @@ export function CouplePlanningPage() {
                 <div className="lock-icon-glow" style={{ color: T.rose, background: 'var(--rose-lt)' }}>
                   <Lock size={20} />
                 </div>
-                <h4 className="lock-title">🔒 Joint Financial Goals</h4>
-                <p className="lock-desc">Invite your partner to plan together for future romantic getaways and milestones.</p>
+                <h4 className="lock-title">🔒 {t('joint_financial_goals', 'Joint Financial Goals')}</h4>
+                <p className="lock-desc">{t('invite_partner_goals_desc', 'Invite your partner to plan together for future romantic getaways and milestones.')}</p>
                 <button 
                   className="btn-primary" 
                   style={{ background: T.rose, fontSize: '0.78rem', padding: '8px 16px', width: 'auto' }}
-                  onClick={() => alert("🔗 Go to the Dashboard and use the Partner Connection status widget to invite your partner!")}
+                  onClick={() => alert(t('invite_partner_alert', "Go to the Dashboard and use the Partner Connection status widget to invite your partner!"))}
                 >
-                  Connect Partner
+                  {t('connect_partner_btn', 'Connect Partner')}
                 </button>
               </div>
             </div>
@@ -174,9 +176,9 @@ export function CouplePlanningPage() {
 
       {/* Collaborative Checklist */}
       <Card style={{ position: 'relative' }}>
-        <div className="card-title">Shared Milestones</div>
-        <div className="card-heading mb-4">Partnership Integration Tasks</div>
-        <p className="card-sub">Tasks that must be completed to maintain absolute financial cohesion.</p>
+        <div className="card-title">{t('shared_milestones', 'Shared Milestones')}</div>
+        <div className="card-heading mb-4">{t('partnership_integration_tasks', 'Partnership Integration Tasks')}</div>
+        <p className="card-sub">{t('partnership_tasks_desc', 'Tasks that must be completed to maintain absolute financial cohesion.')}</p>
         
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '16px' }}>
           {checklist.map(item => (
@@ -230,14 +232,14 @@ export function CouplePlanningPage() {
               <div className="lock-icon-glow" style={{ color: T.rose, background: 'var(--rose-lt)' }}>
                 <Lock size={20} />
               </div>
-              <h4 className="lock-title">🔒 Relationship Timeline</h4>
-              <p className="lock-desc">Decrypt shared milestones and verify partnership checklist tasks together.</p>
+              <h4 className="lock-title">🔒 {t('relationship_timeline_locked', 'Relationship Timeline')}</h4>
+              <p className="lock-desc">{t('decrypt_milestones_desc', 'Decrypt shared milestones and verify partnership checklist tasks together.')}</p>
               <button 
                 className="btn-primary" 
                 style={{ background: T.rose, fontSize: '0.78rem', padding: '8px 16px', width: 'auto' }}
-                onClick={() => alert("🔗 Go to the Dashboard and use the Partner Connection status widget to invite your partner!")}
+                onClick={() => alert(t('invite_partner_alert', "Go to the Dashboard and use the Partner Connection status widget to invite your partner!"))}
               >
-                Connect Partner
+                {t('connect_partner_btn', 'Connect Partner')}
               </button>
             </div>
           </div>

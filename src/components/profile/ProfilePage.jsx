@@ -4,6 +4,7 @@ import { useFinanceStore } from '../../store/useFinanceStore';
 import { T } from '../../theme/tokens';
 import { Card } from '../common/Card';
 import { ProfileEditModal } from './ProfileEditModal';
+import { useTranslation } from '../../utils/i18n';
 import { 
   User, Shield, MapPin, DollarSign, Calendar, Edit3, 
   Mail, Globe, Clock, Laptop, Check, Lock, Smartphone, 
@@ -14,6 +15,7 @@ import { doc, getDoc } from 'firebase/firestore';
 
 export function ProfilePage() {
   const store = useFinanceStore();
+  const { t } = useTranslation();
   const { 
     partner1, userName, email, user, stage, country, currency, joinDate, bio, profilePhoto,
     everBondId, connectionStatus, familyWorkspaceId, language, timezone, provider, lastLogin, verificationStatus
@@ -59,7 +61,7 @@ export function ProfilePage() {
 
   // Format date safely
   const formatDateTime = (isoString) => {
-    if (!isoString) return 'Not available';
+    if (!isoString) return t('not_available', 'Not available');
     try {
       return new Date(isoString).toLocaleString('en-US', {
         month: 'short',
@@ -95,9 +97,9 @@ export function ProfilePage() {
       {/* Page Header */}
       <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px', marginBottom: '32px' }}>
         <div>
-          <div className="page-eyebrow">Identity Workspace</div>
-          <h1 className="page-title">Personal <em>Profile</em></h1>
-          <p className="page-desc">Manage your digital EverBond node, personal parameters, and security tokens.</p>
+          <div className="page-eyebrow">{t('identity_workspace', 'Identity Workspace')}</div>
+          <h1 className="page-title">{t('personal', 'Personal')} <em>{t('profile', 'Profile')}</em></h1>
+          <p className="page-desc">{t('profile_desc', 'Manage your digital EverBond node, personal parameters, and security tokens.')}</p>
         </div>
         <button 
           className="btn-primary" 
@@ -113,7 +115,7 @@ export function ProfilePage() {
           }}
           onClick={() => setIsEditModalOpen(true)}
         >
-          <Edit3 size={15} /> Edit Profile
+          <Edit3 size={15} /> {t('edit_profile', 'Edit Profile')}
         </button>
       </div>
 
@@ -200,12 +202,12 @@ export function ProfilePage() {
 
             <div style={{ width: '100%', borderTop: '1px solid var(--border)', paddingTop: '20px', display: 'flex', flexDirection: 'column', gap: '14px', textAlign: 'left' }}>
               <div>
-                <span style={{ fontSize: '0.65rem', color: 'var(--text-faint)', textTransform: 'uppercase', fontWeight: 800, display: 'block', marginBottom: '2px' }}>Email Address</span>
+                <span style={{ fontSize: '0.65rem', color: 'var(--text-faint)', textTransform: 'uppercase', fontWeight: 800, display: 'block', marginBottom: '2px' }}>{t('email_address', 'Email Address')}</span>
                 <span style={{ fontSize: '0.88rem', color: 'var(--text-muted)', fontWeight: 600 }}>{email || user?.email || 'N/A'}</span>
               </div>
               
               <div>
-                <span style={{ fontSize: '0.65rem', color: 'var(--text-faint)', textTransform: 'uppercase', fontWeight: 800, display: 'block', marginBottom: '2px' }}>Relationship Mode</span>
+                <span style={{ fontSize: '0.65rem', color: 'var(--text-faint)', textTransform: 'uppercase', fontWeight: 800, display: 'block', marginBottom: '2px' }}>{t('relationship_mode', 'Relationship Mode')}</span>
                 <span style={{ 
                   fontSize: '0.72rem', 
                   background: stage === 'Married' ? 'rgba(184, 144, 42, 0.12)' : stage === 'Committed' ? 'rgba(208, 92, 114, 0.12)' : 'rgba(74, 140, 196, 0.12)', 
@@ -215,17 +217,17 @@ export function ProfilePage() {
                   fontWeight: 700,
                   display: 'inline-block'
                 }}>
-                  {stage === 'Married' ? 'Family Dynasty' : (stage === 'Committed' ? 'Partner Mode' : 'Single Mode')}
+                  {stage === 'Married' ? t('family_dynasty', 'Family Dynasty') : (stage === 'Committed' ? t('partner_mode', 'Partner Mode') : t('single_mode', 'Single Mode'))}
                 </span>
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
-                  <span style={{ fontSize: '0.65rem', color: 'var(--text-faint)', textTransform: 'uppercase', fontWeight: 800, display: 'block', marginBottom: '2px' }}>Member Since</span>
+                  <span style={{ fontSize: '0.65rem', color: 'var(--text-faint)', textTransform: 'uppercase', fontWeight: 800, display: 'block', marginBottom: '2px' }}>{t('member_since', 'Member Since')}</span>
                   <span style={{ fontSize: '0.88rem', color: 'var(--text)', fontWeight: 700 }}>{joinDate || 'June 2026'}</span>
                 </div>
                 <div>
-                  <span style={{ fontSize: '0.65rem', color: 'var(--text-faint)', textTransform: 'uppercase', fontWeight: 800, display: 'block', marginBottom: '2px', textAlign: 'right' }}>Verification</span>
+                  <span style={{ fontSize: '0.65rem', color: 'var(--text-faint)', textTransform: 'uppercase', fontWeight: 800, display: 'block', marginBottom: '2px', textAlign: 'right' }}>{t('verification', 'Verification')}</span>
                   <span style={{ 
                     fontSize: '0.74rem', 
                     color: verificationStatus === 'Verified' ? T.sage : T.gold, 
@@ -235,7 +237,7 @@ export function ProfilePage() {
                     gap: '4px' 
                   }}>
                     <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: verificationStatus === 'Verified' ? T.sage : T.gold }} />
-                    {verificationStatus || 'Pending'}
+                    {verificationStatus === 'Verified' ? t('verified', 'Verified') : t('pending', 'Pending')}
                   </span>
                 </div>
               </div>
@@ -250,7 +252,7 @@ export function ProfilePage() {
           <Card>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px', borderBottom: '1px solid var(--border)', paddingBottom: '12px' }}>
               <User size={18} style={{ color: T.gold }} />
-              <h3 style={{ fontSize: '1.05rem', fontWeight: 700, margin: 0, color: 'var(--text)', fontFamily: T.fontDisplay }}>Personal Information</h3>
+              <h3 style={{ fontSize: '1.05rem', fontWeight: 700, margin: 0, color: 'var(--text)', fontFamily: T.fontDisplay }}>{t('personal_information', 'Personal Information')}</h3>
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: isDesktop ? '1fr 1fr' : '1fr', gap: '20px', marginBottom: '16px' }}>
@@ -259,8 +261,8 @@ export function ProfilePage() {
                   <MapPin size={16} />
                 </div>
                 <div>
-                  <div style={{ fontSize: '0.68rem', color: 'var(--text-faint)', textTransform: 'uppercase', fontWeight: 800 }}>Country</div>
-                  <div style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text)' }}>{country || 'Not Set'}</div>
+                  <div style={{ fontSize: '0.68rem', color: 'var(--text-faint)', textTransform: 'uppercase', fontWeight: 800 }}>{t('country', 'Country')}</div>
+                  <div style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text)' }}>{country || t('not_set', 'Not Set')}</div>
                 </div>
               </div>
 
@@ -269,7 +271,7 @@ export function ProfilePage() {
                   <DollarSign size={16} />
                 </div>
                 <div>
-                  <div style={{ fontSize: '0.68rem', color: 'var(--text-faint)', textTransform: 'uppercase', fontWeight: 800 }}>Preferred Currency</div>
+                  <div style={{ fontSize: '0.68rem', color: 'var(--text-faint)', textTransform: 'uppercase', fontWeight: 800 }}>{t('preferred_currency', 'Preferred Currency')}</div>
                   <div style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text)' }}>{currency || 'INR'} ({currency === 'USD' ? '$' : '₹'})</div>
                 </div>
               </div>
@@ -279,7 +281,7 @@ export function ProfilePage() {
                   <Globe size={16} />
                 </div>
                 <div>
-                  <div style={{ fontSize: '0.68rem', color: 'var(--text-faint)', textTransform: 'uppercase', fontWeight: 800 }}>Language</div>
+                  <div style={{ fontSize: '0.68rem', color: 'var(--text-faint)', textTransform: 'uppercase', fontWeight: 800 }}>{t('language', 'Language')}</div>
                   <div style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text)' }}>{language || 'English'}</div>
                 </div>
               </div>
@@ -289,21 +291,21 @@ export function ProfilePage() {
                   <Clock size={16} />
                 </div>
                 <div>
-                  <div style={{ fontSize: '0.68rem', color: 'var(--text-faint)', textTransform: 'uppercase', fontWeight: 800 }}>Timezone</div>
+                  <div style={{ fontSize: '0.68rem', color: 'var(--text-faint)', textTransform: 'uppercase', fontWeight: 800 }}>{t('timezone', 'Timezone')}</div>
                   <div style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text)' }}>{timezone || 'GMT+5:30'}</div>
                 </div>
               </div>
             </div>
 
             <div style={{ borderTop: '1px solid var(--border)', paddingTop: '16px', marginTop: '16px' }}>
-              <span style={{ fontSize: '0.68rem', color: 'var(--text-faint)', textTransform: 'uppercase', fontWeight: 800, display: 'block', marginBottom: '6px' }}>Bio</span>
+              <span style={{ fontSize: '0.68rem', color: 'var(--text-faint)', textTransform: 'uppercase', fontWeight: 800, display: 'block', marginBottom: '6px' }}>{t('bio', 'Bio')}</span>
               {bio ? (
                 <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', lineHeight: 1.5, margin: 0, fontStyle: 'italic' }}>
                   "{bio}"
                 </p>
               ) : (
                 <p style={{ color: 'var(--text-faint)', fontSize: '0.86rem', margin: 0 }}>
-                  No biography written. Click edit to add a personal bio.
+                  {t('no_bio_written', 'No biography written. Click edit to add a personal bio.')}
                 </p>
               )}
             </div>
@@ -313,7 +315,7 @@ export function ProfilePage() {
           <Card>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px', borderBottom: '1px solid var(--border)', paddingBottom: '12px' }}>
               <Shield size={18} style={{ color: T.gold }} />
-              <h3 style={{ fontSize: '1.05rem', fontWeight: 700, margin: 0, color: 'var(--text)', fontFamily: T.fontDisplay }}>Security & Access</h3>
+              <h3 style={{ fontSize: '1.05rem', fontWeight: 700, margin: 0, color: 'var(--text)', fontFamily: T.fontDisplay }}>{t('security_access', 'Security & Access')}</h3>
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: isDesktop ? '1fr 1fr' : '1fr', gap: '20px' }}>
@@ -322,7 +324,7 @@ export function ProfilePage() {
                   <Lock size={16} />
                 </div>
                 <div>
-                  <div style={{ fontSize: '0.68rem', color: 'var(--text-faint)', textTransform: 'uppercase', fontWeight: 800 }}>Login Provider</div>
+                  <div style={{ fontSize: '0.68rem', color: 'var(--text-faint)', textTransform: 'uppercase', fontWeight: 800 }}>{t('login_provider', 'Login Provider')}</div>
                   <div style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text)' }}>{provider || 'Google'}</div>
                 </div>
               </div>
@@ -332,8 +334,8 @@ export function ProfilePage() {
                   <Smartphone size={16} />
                 </div>
                 <div>
-                  <div style={{ fontSize: '0.68rem', color: 'var(--text-faint)', textTransform: 'uppercase', fontWeight: 800 }}>Connected Devices</div>
-                  <div style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text)' }}>2 Active Sessions</div>
+                  <div style={{ fontSize: '0.68rem', color: 'var(--text-faint)', textTransform: 'uppercase', fontWeight: 800 }}>{t('connected_devices', 'Connected Devices')}</div>
+                  <div style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text)' }}>{t('active_sessions_count', '2 Active Sessions')}</div>
                 </div>
               </div>
 
@@ -342,7 +344,7 @@ export function ProfilePage() {
                   <Calendar size={16} />
                 </div>
                 <div>
-                  <div style={{ fontSize: '0.68rem', color: 'var(--text-faint)', textTransform: 'uppercase', fontWeight: 800 }}>Last Login Time</div>
+                  <div style={{ fontSize: '0.68rem', color: 'var(--text-faint)', textTransform: 'uppercase', fontWeight: 800 }}>{t('last_login_time', 'Last Login Time')}</div>
                   <div style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text)' }}>{formatDateTime(lastLogin)}</div>
                 </div>
               </div>
@@ -352,7 +354,7 @@ export function ProfilePage() {
                   <ShieldCheck size={16} />
                 </div>
                 <div>
-                  <div style={{ fontSize: '0.68rem', color: 'var(--text-faint)', textTransform: 'uppercase', fontWeight: 800 }}>Security Status</div>
+                  <div style={{ fontSize: '0.68rem', color: 'var(--text-faint)', textTransform: 'uppercase', fontWeight: 800 }}>{t('security_status', 'Security Status')}</div>
                   <div style={{ 
                     fontSize: '0.82rem', 
                     color: T.sage, 
@@ -361,7 +363,7 @@ export function ProfilePage() {
                     alignItems: 'center',
                     gap: '4px'
                   }}>
-                    ● Guard Active
+                    {t('guard_active', '● Guard Active')}
                   </div>
                 </div>
               </div>
@@ -372,7 +374,7 @@ export function ProfilePage() {
           <Card>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px', borderBottom: '1px solid var(--border)', paddingBottom: '12px' }}>
               <Laptop size={18} style={{ color: T.gold }} />
-              <h3 style={{ fontSize: '1.05rem', fontWeight: 700, margin: 0, color: 'var(--text)', fontFamily: T.fontDisplay }}>Workspace Information</h3>
+              <h3 style={{ fontSize: '1.05rem', fontWeight: 700, margin: 0, color: 'var(--text)', fontFamily: T.fontDisplay }}>{t('workspace_information', 'Workspace Information')}</h3>
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: isDesktop ? '1fr 1fr' : '1fr', gap: '20px' }}>
@@ -381,9 +383,9 @@ export function ProfilePage() {
                   <Activity size={16} />
                 </div>
                 <div>
-                  <div style={{ fontSize: '0.68rem', color: 'var(--text-faint)', textTransform: 'uppercase', fontWeight: 800 }}>Current Workspace</div>
+                  <div style={{ fontSize: '0.68rem', color: 'var(--text-faint)', textTransform: 'uppercase', fontWeight: 800 }}>{t('current_workspace', 'Current Workspace')}</div>
                   <div style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text)' }}>
-                    {stage === 'Married' ? 'Family Dynasty' : (stage === 'Committed' ? 'Partner Mode' : 'Single Mode')}
+                    {stage === 'Married' ? t('family_dynasty', 'Family Dynasty') : (stage === 'Committed' ? t('partner_mode', 'Partner Mode') : t('single_mode', 'Single Mode'))}
                   </div>
                 </div>
               </div>
@@ -393,9 +395,9 @@ export function ProfilePage() {
                   <Heart size={16} />
                 </div>
                 <div>
-                  <div style={{ fontSize: '0.68rem', color: 'var(--text-faint)', textTransform: 'uppercase', fontWeight: 800 }}>Partner Status</div>
+                  <div style={{ fontSize: '0.68rem', color: 'var(--text-faint)', textTransform: 'uppercase', fontWeight: 800 }}>{t('partner_status', 'Partner Status')}</div>
                   <div style={{ fontSize: '0.9rem', fontWeight: 700, color: connectionStatus === 'connected' ? T.gold : 'var(--text-muted)' }}>
-                    {connectionStatus === 'connected' ? 'Connected' : 'Disconnected'}
+                    {connectionStatus === 'connected' ? t('connected', 'Connected') : t('disconnected', 'Disconnected')}
                   </div>
                 </div>
               </div>
@@ -405,9 +407,9 @@ export function ProfilePage() {
                   <Users size={16} />
                 </div>
                 <div>
-                  <div style={{ fontSize: '0.68rem', color: 'var(--text-faint)', textTransform: 'uppercase', fontWeight: 800 }}>Family Members</div>
+                  <div style={{ fontSize: '0.68rem', color: 'var(--text-faint)', textTransform: 'uppercase', fontWeight: 800 }}>{t('family_members', 'Family Members')}</div>
                   <div style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text)' }}>
-                    {stage === 'Married' ? `${familyMembersCount} Members` : 'N/A (Requires Family Mode)'}
+                    {stage === 'Married' ? t('family_members_count', '{count} Members').replace('{count}', familyMembersCount) : t('requires_family_mode', 'N/A (Requires Family Mode)')}
                   </div>
                 </div>
               </div>

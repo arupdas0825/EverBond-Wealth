@@ -4,12 +4,13 @@ import {
   Sparkles, ArrowRight, Lock, Shield, Heart, Check, X, 
   ChevronRight, Calendar, Users, DollarSign, Award, Compass, 
   TrendingUp, LayoutDashboard, Target, Milestone, RefreshCw,
-  UserCheck, HelpCircle, Layers, Info
+  UserCheck, HelpCircle, Layers, Info, Download
 } from 'lucide-react';
 import { Logo } from '../common/Logo';
 import { ThemeToggle } from '../common/ThemeToggle';
 import { T } from '../../theme/tokens';
 import { useFinanceStore } from '../../store/useFinanceStore';
+import { usePWA } from './usePWA';
 
 // Premium luxury animation variants for landing page
 const titleContainerVariants = {
@@ -92,6 +93,16 @@ export function LandingPage({ onStartJourney, onLoginClick, onOpenPolicy }) {
   const [activeStage, setActiveStage] = useState('Single');
   const [imgFailed, setImgFailed] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+
+  const {
+    isInstalled,
+    isInstallable,
+    showPopup,
+    setShowPopup,
+    showMobileSuggest,
+    dismissMobileSuggest,
+    triggerInstallFlow,
+  } = usePWA();
 
   // Setup Framer Motion scroll hook for Hero parallax (reduced by 80% for scroll performance)
   const { scrollY } = useScroll();
@@ -307,6 +318,61 @@ export function LandingPage({ onStartJourney, onLoginClick, onOpenPolicy }) {
           }}
           className="lp-header"
         >
+          {isInstalled ? (
+            <button
+              disabled
+              style={{
+                padding: '8px 20px',
+                borderRadius: '100px',
+                border: '1.5px solid var(--border-mid)',
+                background: 'transparent',
+                color: 'var(--text-faint)',
+                fontSize: '0.82rem',
+                fontWeight: 700,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                cursor: 'not-allowed',
+                opacity: 0.6
+              }}
+              className="lp-header-install-btn"
+            >
+              <Check size={14} />
+              <span className="install-btn-text">Installed</span>
+            </button>
+          ) : isInstallable ? (
+            <motion.button
+              whileHover={{ 
+                scale: 1.02,
+                borderColor: T.gold,
+                boxShadow: '0 0 10px rgba(184, 144, 42, 0.15)'
+              }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => setShowPopup(true)}
+              style={{
+                padding: '8px 20px',
+                borderRadius: '100px',
+                border: `1.5px solid ${T.goldMid}`,
+                background: 'transparent',
+                color: T.gold,
+                fontSize: '0.82rem',
+                fontWeight: 700,
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                boxShadow: 'var(--sh-xs)'
+              }}
+              className="lp-header-install-btn"
+            >
+              <Download size={14} />
+              <span className="install-btn-text">Install App</span>
+            </motion.button>
+          ) : null}
+
           <ThemeToggle />
           
           <motion.button
@@ -564,6 +630,69 @@ export function LandingPage({ onStartJourney, onLoginClick, onOpenPolicy }) {
           >
             Explore Features
           </motion.a>
+
+          {isInstalled ? (
+            <button
+              disabled
+              style={{
+                padding: '16px 32px',
+                fontSize: '0.95rem',
+                borderRadius: '12px',
+                height: '54px',
+                boxSizing: 'border-box',
+                fontWeight: 600,
+                border: '1.5px solid var(--border-mid)',
+                background: 'transparent',
+                color: 'var(--text-faint)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                cursor: 'not-allowed',
+                opacity: 0.6
+              }}
+              className="btn-secondary"
+            >
+              <Check size={18} />
+              Installed
+            </button>
+          ) : isInstallable ? (
+            <motion.button 
+              onClick={() => setShowPopup(true)}
+              className="btn-secondary"
+              initial={{ opacity: 0, y: 12 }}
+              animate={!isLoading ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
+              transition={{ duration: 0.5, ease: 'easeOut', delay: 1.3 }}
+              whileHover={{
+                scale: 1.02,
+                borderColor: T.goldMid,
+                boxShadow: '0 4px 10px rgba(184, 144, 42, 0.1)',
+                background: 'var(--bg-warm)'
+              }}
+              whileTap={{ scale: 0.98 }}
+              style={{
+                padding: '16px 32px',
+                fontSize: '0.95rem',
+                borderRadius: '12px',
+                height: '54px',
+                boxSizing: 'border-box',
+                fontWeight: 600,
+                border: '1.5px solid var(--border-mid)',
+                background: 'var(--bg-card)',
+                color: 'var(--text)',
+                transition: 'background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                cursor: 'pointer',
+                boxShadow: 'var(--sh-xs)'
+              }}
+            >
+              <Download size={18} />
+              Install App
+            </motion.button>
+          ) : null}
         </div>
 
         {/* Animated Scroll Indicator (↓ Explore More with Luxury Pulse) */}
@@ -1634,6 +1763,239 @@ export function LandingPage({ onStartJourney, onLoginClick, onOpenPolicy }) {
 
         </div>
       </footer>
+
+      {/* Custom PWA Mini Install Prompt Popup */}
+      <AnimatePresence>
+        {showPopup && (
+          <div 
+            style={{
+              position: 'fixed',
+              inset: 0,
+              zIndex: 99999,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '24px',
+              background: 'rgba(18, 17, 14, 0.4)',
+              backdropFilter: 'blur(8px)',
+              WebkitBackdropFilter: 'blur(8px)'
+            }}
+          >
+            {/* Backdrop click closer */}
+            <div 
+              style={{ position: 'absolute', inset: 0 }} 
+              onClick={() => setShowPopup(false)} 
+            />
+
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 15 }}
+              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              style={{
+                position: 'relative',
+                zIndex: 1,
+                width: '100%',
+                maxWidth: '400px',
+                background: 'var(--bg-card)',
+                border: '1px solid var(--border-mid)',
+                borderRadius: '24px',
+                padding: '32px',
+                boxShadow: 'var(--sh-lg)',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                textAlign: 'center',
+              }}
+            >
+              {/* Logo container */}
+              <div 
+                style={{
+                  width: '56px',
+                  height: '56px',
+                  borderRadius: '16px',
+                  background: 'var(--gold-pale)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginBottom: '20px',
+                  border: '1px solid var(--gold-border)'
+                }}
+              >
+                <Logo size={32} showText={false} />
+              </div>
+
+              <h3 
+                style={{
+                  fontFamily: T.fontDisplay,
+                  fontSize: '1.5rem',
+                  fontWeight: 700,
+                  color: 'var(--text)',
+                  marginBottom: '8px'
+                }}
+              >
+                Install EverBond Wealth?
+              </h3>
+
+              <p 
+                style={{
+                  fontSize: '0.88rem',
+                  color: 'var(--text-muted)',
+                  lineHeight: 1.5,
+                  marginBottom: '28px',
+                }}
+              >
+                Access your financial workspace directly from your desktop and mobile device.
+              </p>
+
+              <div 
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '12px',
+                  width: '100%'
+                }}
+              >
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={triggerInstallFlow}
+                  style={{
+                    width: '100%',
+                    padding: '14px',
+                    borderRadius: '12px',
+                    background: `linear-gradient(135deg, ${T.goldMid} 0%, ${T.gold} 100%)`,
+                    color: '#fff',
+                    fontSize: '0.9rem',
+                    fontWeight: 700,
+                    border: 'none',
+                    cursor: 'pointer',
+                    boxShadow: 'var(--sh-gold)'
+                  }}
+                >
+                  Install
+                </motion.button>
+
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => setShowPopup(false)}
+                  style={{
+                    width: '100%',
+                    padding: '14px',
+                    borderRadius: '12px',
+                    background: 'transparent',
+                    color: 'var(--text-muted)',
+                    fontSize: '0.9rem',
+                    fontWeight: 600,
+                    border: '1.5px solid var(--border-mid)',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Not Now
+                </motion.button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Mobile Floating Install Suggestion */}
+      <AnimatePresence>
+        {showMobileSuggest && (
+          <motion.div
+            initial={{ opacity: 0, y: 50, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 30, scale: 0.95 }}
+            transition={{ type: 'spring', stiffness: 350, damping: 25 }}
+            style={{
+              position: 'fixed',
+              bottom: '24px',
+              left: '16px',
+              right: '16px',
+              zIndex: 9999,
+              background: 'var(--bg-card)',
+              border: '1.5px solid var(--gold-border)',
+              borderRadius: '18px',
+              padding: '16px',
+              boxShadow: 'var(--sh-lg)',
+              backdropFilter: 'blur(20px)',
+              WebkitBackdropFilter: 'blur(20px)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              pointerEvents: 'auto'
+            }}
+          >
+            {/* App Mini Logo */}
+            <div 
+              style={{
+                width: '36px',
+                height: '36px',
+                borderRadius: '10px',
+                background: 'var(--gold-pale)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                border: '1px solid var(--gold-border)',
+                flexShrink: 0
+              }}
+            >
+              <Logo size={20} showText={false} />
+            </div>
+
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '2px' }}>
+              <h4 style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text)', margin: 0 }}>
+                EverBond App
+              </h4>
+              <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', margin: 0 }}>
+                Install for quick standalone access.
+              </p>
+            </div>
+
+            {/* Action Button */}
+            <motion.button
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+              onClick={() => {
+                setShowPopup(true);
+                dismissMobileSuggest();
+              }}
+              style={{
+                padding: '6px 14px',
+                fontSize: '0.75rem',
+                fontWeight: 700,
+                borderRadius: '100px',
+                background: `linear-gradient(135deg, ${T.goldMid} 0%, ${T.gold} 100%)`,
+                color: '#fff',
+                border: 'none',
+                cursor: 'pointer',
+                whiteSpace: 'nowrap'
+              }}
+            >
+              Install
+            </motion.button>
+
+            {/* Close Button */}
+            <button
+              onClick={dismissMobileSuggest}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: 'var(--text-faint)',
+                cursor: 'pointer',
+                padding: '4px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginLeft: '4px'
+              }}
+            >
+              <X size={16} />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
     </motion.div>
     </>

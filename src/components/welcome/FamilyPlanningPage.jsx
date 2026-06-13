@@ -10,6 +10,7 @@ import {
   Users, Shield, Heart, UserCheck, RefreshCw, X, ArrowRight
 } from 'lucide-react';
 import { formatCurrency, formatCompact } from '../../utils/finance';
+import { useTranslation } from '../../utils/i18n';
 import * as QRCodeModule from 'react-qr-code';
 import { db } from '../../utils/firebase';
 import {
@@ -34,6 +35,7 @@ export function FamilyPlanningPage({ setPage, joinCode }) {
     partner1, 
     partner2, 
     currency, 
+    theme,
     getTotalSalary, 
     partnerAccepted,
     relationshipStage,
@@ -41,6 +43,8 @@ export function FamilyPlanningPage({ setPage, joinCode }) {
     partnerLinked,
     familyWorkspaceId
   } = useFinanceStore();
+  
+  const { t } = useTranslation();
   
   const total = getTotalSalary();
   const isLinked = partnerLinked || partnerAccepted;
@@ -116,14 +120,14 @@ export function FamilyPlanningPage({ setPage, joinCode }) {
     }
   }, [joinCode]);
 
-  // Establish Family Dynasty Workspace (Step 6)
+  // Establish {t('family_dynasty', 'Family Dynasty')} Workspace (Step 6)
   const handleActivateDynasty = async () => {
     if (!user?.uid) {
-      toast.error("User session not found. Please log in again.");
+      toast.error(t('user_session_not_found', 'User session not found. Please log in again.'));
       return;
     }
     if (!dynastyName.trim()) {
-      toast.error("Please provide a name for your Dynasty.");
+      toast.error(t('please_provide_dynasty_name', 'Please provide a name for your Dynasty.'));
       return;
     }
     setIsActivating(true);
@@ -172,10 +176,10 @@ export function FamilyPlanningPage({ setPage, joinCode }) {
       });
 
       setHasCreatedWorkspace(true);
-      toast.success("Family Dynasty Workspace activated!");
+      toast.success(t('dynasty_activated_success', 'Family Dynasty Workspace activated!'));
     } catch (err) {
       console.error("Dynasty activation error:", err);
-      toast.error("Failed to activate Dynasty Workspace.");
+      toast.error(t('failed_activate_dynasty', 'Failed to activate Dynasty Workspace.'));
     } finally {
       setIsActivating(false);
     }
@@ -220,10 +224,10 @@ export function FamilyPlanningPage({ setPage, joinCode }) {
       });
 
       setJoinStep(2);
-      toast.success("Successfully joined Family Dynasty!");
+      toast.success(t('joined_dynasty_success', 'Successfully joined Family Dynasty!'));
     } catch (err) {
       console.error("Error joining Family Dynasty:", err);
-      toast.error("Failed to join Dynasty workspace.");
+      toast.error(t('failed_join_dynasty', 'Failed to join Dynasty workspace.'));
     } finally {
       setIsJoining(false);
     }
@@ -241,11 +245,11 @@ export function FamilyPlanningPage({ setPage, joinCode }) {
   };
 
   const rolesConfig = [
-    { id: 'Founder', title: 'Founder', desc: 'Creator & primary trustee. Complete control over governance & heir allocations.' },
-    { id: 'Parent', title: 'Parent', desc: 'Joint manager of the asset pool. Coordinate milestone planning and projections.' },
-    { id: 'Spouse', title: 'Spouse', desc: 'Joint co-trustee. Unified portfolio tracking & dual signatures.' },
-    { id: 'Child', title: 'Child', desc: 'Heir & beneficiary. View-only access to trust fund release conditions.' },
-    { id: 'Advisor', title: 'Advisor', desc: 'Wealth consultant or legal manager. View-only planning access.' }
+    { id: 'Founder', title: t('role_founder_title', 'Founder'), desc: t('role_founder_desc', 'Creator & primary trustee. Complete control over governance & heir allocations.') },
+    { id: 'Parent', title: t('role_parent_title', 'Parent'), desc: t('role_parent_desc', 'Joint manager of the asset pool. Coordinate milestone planning and projections.') },
+    { id: 'Spouse', title: t('role_spouse_title', 'Spouse'), desc: t('role_spouse_desc', 'Joint co-trustee. Unified portfolio tracking & dual signatures.') },
+    { id: 'Child', title: t('role_child_title', 'Child'), desc: t('role_child_desc', 'Heir & beneficiary. View-only access to trust fund release conditions.') },
+    { id: 'Advisor', title: t('role_advisor_title', 'Advisor'), desc: t('role_advisor_desc', 'Wealth consultant or legal manager. View-only planning access.') }
   ];
 
   // ────────────────────────────────────────────────────────────────
@@ -257,7 +261,7 @@ export function FamilyPlanningPage({ setPage, joinCode }) {
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '80vh', padding: '16px' }}>
           <Card style={{ textAlign: 'center', padding: '48px 24px', maxWidth: '440px', width: '100%' }}>
             <RefreshCw size={36} className="skeleton-pulse" style={{ color: T.gold, margin: '0 auto 16px', animation: 'spin 2s linear infinite' }} />
-            <h3 style={{ margin: 0, fontSize: '1.2rem', color: 'var(--text)' }}>Loading Dynasty Invitation...</h3>
+            <h3 style={{ margin: 0, fontSize: '1.2rem', color: 'var(--text)' }}>{t('loading_dynasty_invitation', 'Loading Dynasty Invitation...')}</h3>
           </Card>
         </div>
       );
@@ -268,10 +272,10 @@ export function FamilyPlanningPage({ setPage, joinCode }) {
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '80vh', padding: '16px' }}>
           <Card style={{ textAlign: 'center', padding: '40px 24px', maxWidth: '440px', width: '100%', border: '1px solid var(--rose-border)' }}>
             <Lock size={36} style={{ color: 'var(--rose)', margin: '0 auto 16px' }} />
-            <h3 style={{ margin: '0 0 10px', fontSize: '1.25rem', color: 'var(--text)' }}>Invalid Invitation</h3>
+            <h3 style={{ margin: '0 0 10px', fontSize: '1.25rem', color: 'var(--text)' }}>{t('invalid_invitation', 'Invalid Invitation')}</h3>
             <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginBottom: '24px' }}>{fetchError}</p>
             <button onClick={() => setPage('dashboard')} className="onb-btn-back" style={{ width: '100%', padding: '12px' }}>
-              Back to Dashboard
+              {t('back_to_dashboard', 'Back to Dashboard')}
             </button>
           </Card>
         </div>
@@ -292,10 +296,10 @@ export function FamilyPlanningPage({ setPage, joinCode }) {
             </div>
             
             <h2 style={{ fontFamily: T.fontDisplay, fontSize: '1.8rem', fontWeight: 700, margin: '0 0 10px', color: 'var(--text)' }}>
-              Joined Dynasty
+              {t('joined_dynasty', 'Joined Dynasty')}
             </h2>
             <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: '32px' }}>
-              You have successfully linked your profile with the <strong>{fetchedWorkspace?.name}</strong> Dynasty.
+              {t('joined_dynasty_desc_before', 'You have successfully linked your profile with the')} <strong>{fetchedWorkspace?.name}</strong> {t('joined_dynasty_desc_after', 'Dynasty.')}
             </p>
 
             <button
@@ -306,7 +310,7 @@ export function FamilyPlanningPage({ setPage, joinCode }) {
               className="onb-btn-continue"
               style={{ width: '100%', padding: '12px 20px', borderRadius: '12px' }}
             >
-              Open Dynasty Command
+              {t('open_dynasty_command', 'Open Dynasty Command')}
             </button>
           </Card>
         </div>
@@ -326,32 +330,32 @@ export function FamilyPlanningPage({ setPage, joinCode }) {
               <Crown size={24} />
             </div>
             <h2 style={{ fontFamily: T.fontDisplay, fontSize: '1.5rem', fontWeight: 700, margin: '0 0 6px', color: 'var(--text)' }}>
-              Join Family Dynasty
+              {t('join_family_dynasty', 'Join Family Dynasty')}
             </h2>
             <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', margin: 0 }}>
-              You are invited to join a secure multi-generational workspace.
+              {t('invited_join_dynasty_desc', 'You are invited to join a secure multi-generational workspace.')}
             </p>
           </div>
 
           <div style={{ background: 'var(--bg-warm)', border: '1px solid var(--border)', borderRadius: '12px', padding: '16px', marginBottom: '24px' }}>
             <span style={{ fontSize: '0.62rem', fontWeight: 800, textTransform: 'uppercase', color: T.gold, letterSpacing: '0.05em', display: 'block', marginBottom: '10px' }}>
-              Dynasty Parameters
+              {t('dynasty_parameters', 'Dynasty Parameters')}
             </span>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.82rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ color: 'var(--text-muted)' }}>Dynasty Name:</span>
+                <span style={{ color: 'var(--text-muted)' }}>{t('dynasty_name_label', 'Dynasty Name')}:</span>
                 <strong style={{ color: 'var(--text)' }}>{fetchedWorkspace?.name}</strong>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ color: 'var(--text-muted)' }}>Founder Name:</span>
+                <span style={{ color: 'var(--text-muted)' }}>{t('founder_name_label', 'Founder Name:')}</span>
                 <strong style={{ color: 'var(--text)' }}>{fetchedWorkspace?.ownerName}</strong>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ color: 'var(--text-muted)' }}>Founder Email:</span>
+                <span style={{ color: 'var(--text-muted)' }}>{t('founder_email_label', 'Founder Email:')}</span>
                 <strong style={{ color: 'var(--text)' }}>{maskEmail(fetchedWorkspace?.ownerEmail)}</strong>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ color: 'var(--text-muted)' }}>Current Members:</span>
+                <span style={{ color: 'var(--text-muted)' }}>{t('current_members_label', 'Current Members:')}</span>
                 <strong style={{ color: 'var(--text)' }}>{fetchedWorkspace?.members?.length || 0}</strong>
               </div>
             </div>
@@ -360,7 +364,7 @@ export function FamilyPlanningPage({ setPage, joinCode }) {
           {/* Role selection inside join flow */}
           <div style={{ marginBottom: '24px' }}>
             <label style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)', display: 'block', marginBottom: '8px', textTransform: 'uppercase' }}>
-              Select Your Role in the Dynasty
+              {t('select_role_in_dynasty', 'Select Your Role in the Dynasty')}
             </label>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {rolesConfig.filter(r => r.id !== 'Founder').map(role => (
@@ -392,7 +396,7 @@ export function FamilyPlanningPage({ setPage, joinCode }) {
               style={{ marginTop: '3px', accentColor: T.gold }}
             />
             <label htmlFor="join-consent" style={{ fontSize: '0.74rem', color: 'var(--text-muted)', lineHeight: 1.45, cursor: 'pointer' }}>
-              I agree to synchronize my allocations and asset ledger with this Dynasty workspace.
+              {t('join_consent_label', 'I agree to synchronize my allocations and asset ledger with this Dynasty workspace.')}
             </label>
           </div>
 
@@ -403,14 +407,14 @@ export function FamilyPlanningPage({ setPage, joinCode }) {
               className="onb-btn-continue"
               style={{ flex: 2, padding: '12px', borderRadius: '100px', fontSize: '0.85rem', opacity: (joinConsentChecked && !isJoining) ? 1 : 0.6 }}
             >
-              {isJoining ? 'Joining...' : 'Join Workspace'}
+              {isJoining ? t('joining_status', 'Joining...') : t('join_workspace_btn', 'Join Workspace')}
             </button>
             <button
               onClick={() => setPage('dashboard')}
               className="onb-btn-back"
               style={{ flex: 1, padding: '12px', borderRadius: '100px', fontSize: '0.85rem' }}
             >
-              Cancel
+              {t('cancel', 'Cancel')}
             </button>
           </div>
         </Card>
@@ -436,10 +440,10 @@ export function FamilyPlanningPage({ setPage, joinCode }) {
             </div>
             
             <h2 style={{ fontFamily: T.fontDisplay, fontSize: '1.8rem', fontWeight: 700, margin: '0 0 10px', color: 'var(--text)' }}>
-              Dynasty Established
+              {t('dynasty_established', 'Dynasty Established')}
             </h2>
             <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: '32px' }}>
-              Your secure Family Dynasty workspace is now live. Invite trusted members and start tracking multi-generational wealth.
+              {t('dynasty_established_desc', 'Your secure Family Dynasty workspace is now live. Invite trusted members and start tracking multi-generational wealth.')}
             </p>
 
             <button
@@ -450,7 +454,7 @@ export function FamilyPlanningPage({ setPage, joinCode }) {
               className="onb-btn-continue"
               style={{ width: '100%', padding: '12px 20px', borderRadius: '12px' }}
             >
-              Open Workspace
+              {t('open_workspace', 'Open Workspace')}
             </button>
           </Card>
         </div>
@@ -463,7 +467,7 @@ export function FamilyPlanningPage({ setPage, joinCode }) {
         {/* Progress Tracker */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
           <span style={{ fontSize: '0.72rem', color: T.gold, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-            Dynasty Setup (Step {onbStep} of 6)
+            {t('dynasty_setup_step', 'Dynasty Setup (Step {step} of 6)').replace('{step}', onbStep)}
           </span>
           <div style={{ display: 'flex', gap: '4px' }}>
             {[1, 2, 3, 4, 5, 6].map(stepNum => (
@@ -498,19 +502,19 @@ export function FamilyPlanningPage({ setPage, joinCode }) {
                   <Crown size={24} />
                 </div>
                 <h2 style={{ fontFamily: T.fontDisplay, fontSize: '1.6rem', fontWeight: 700, margin: '0 0 6px', color: 'var(--text)' }}>
-                  Family Dynasty
+                  {t('family_dynasty', 'Family Dynasty')}
                 </h2>
                 <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: 0, lineHeight: 1.45 }}>
-                  Coordinate multi-generational planning, distribute inheritance allocations, and lock secure trusts.
+                  {t('family_dynasty_intro_desc', 'Coordinate multi-generational planning, distribute inheritance allocations, and lock secure trusts.')}
                 </p>
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '32px' }}>
                 {[
-                  { title: "Shared Family Pool", desc: "Consolidate calculations and projection models across members." },
-                  { title: "Inheritance Allocations", desc: "Designate trust releases triggered by milestones or ages." },
-                  { title: "Sovereign Trust Vault", desc: "Dual-signature safety parameter rules for sensitive documentation." },
-                  { title: "Trusted Role Boundaries", desc: "Founder, Spouse, Parent, Child, and Advisor permissions." }
+                  { title: t('shared_family_pool', 'Shared Family Pool'), desc: t('shared_family_pool_desc', 'Consolidate calculations and projection models across members.') },
+                  { title: t('inheritance_allocations', 'Inheritance Allocations'), desc: t('inheritance_allocations_desc', 'Designate trust releases triggered by milestones or ages.') },
+                  { title: t('sovereign_trust_vault', 'Sovereign Trust Vault'), desc: t('sovereign_trust_vault_desc', 'Dual-signature safety parameter rules for sensitive documentation.') },
+                  { title: t('trusted_role_boundaries', 'Trusted Role Boundaries'), desc: t('trusted_role_boundaries_desc', 'Founder, Spouse, Parent, Child, and Advisor permissions.') }
                 ].map((item, i) => (
                   <div key={i} style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
                     <div style={{ width: '16px', height: '16px', borderRadius: '50%', background: 'rgba(184,144,42,0.1)', color: T.gold, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: '2px', fontSize: '0.65rem', fontWeight: 'bold' }}>✓</div>
@@ -528,41 +532,41 @@ export function FamilyPlanningPage({ setPage, joinCode }) {
                   className="onb-btn-continue"
                   style={{ flex: 2, padding: '12px', borderRadius: '100px', fontSize: '0.85rem' }}
                 >
-                  Create Dynasty
+                  {t('create_dynasty_btn', 'Create Dynasty')}
                 </button>
                 <button
                   onClick={() => setPage('dashboard')}
                   className="onb-btn-back"
                   style={{ flex: 1, padding: '12px', borderRadius: '100px', fontSize: '0.85rem' }}
                 >
-                  Back
+                  {t('back_btn', 'Back')}
                 </button>
               </div>
             </div>
           )}
 
-          {/* STEP 2: Create Dynasty Form */}
+          {/* STEP 2: {t('create_dynasty_btn', 'Create Dynasty')} Form */}
           {onbStep === 2 && (
             <div className="fade-in">
               <div style={{ textAlign: 'center', marginBottom: '28px' }}>
                 <h3 style={{ fontFamily: T.fontDisplay, fontSize: '1.4rem', fontWeight: 700, margin: '0 0 6px', color: 'var(--text)' }}>
-                  Name Your Dynasty
+                  {t('name_your_dynasty', 'Name Your Dynasty')}
                 </h3>
                 <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', margin: 0 }}>
-                  Establish the identity of your family planning pool.
+                  {t('establish_identity_pool', 'Establish the identity of your family planning pool.')}
                 </p>
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '32px' }}>
                 <div>
                   <label htmlFor="dynasty-name-input" style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)', display: 'block', marginBottom: '6px' }}>
-                    Dynasty Name
+                    {t('dynasty_name_label', 'Dynasty Name')}
                   </label>
                   <input
                     id="dynasty-name-input"
                     type="text"
                     className="onb-input-glow"
-                    placeholder="e.g. Skywalker, Rothschild"
+                    placeholder={t('dynasty_name_placeholder', 'e.g. Skywalker, Rothschild')}
                     value={dynastyName}
                     onChange={(e) => setDynastyName(e.target.value)}
                     style={{ width: '100%', padding: '10px 14px', fontSize: '0.88rem', boxSizing: 'border-box' }}
@@ -570,12 +574,12 @@ export function FamilyPlanningPage({ setPage, joinCode }) {
                 </div>
                 <div>
                   <label htmlFor="dynasty-desc-input" style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)', display: 'block', marginBottom: '6px' }}>
-                    Dynasty Description (Optional)
+                    {t('dynasty_description_label', 'Dynasty Description (Optional)')}
                   </label>
                   <textarea
                     id="dynasty-desc-input"
                     className="onb-input-glow"
-                    placeholder="e.g. Securing assets across generations and establishing family governance."
+                    placeholder={t('dynasty_description_placeholder', 'e.g. Securing assets across generations and establishing family governance.')}
                     value={dynastyDesc}
                     onChange={(e) => setDynastyDesc(e.target.value)}
                     style={{ width: '100%', height: '80px', padding: '10px 14px', fontSize: '0.88rem', boxSizing: 'border-box', resize: 'none' }}
@@ -587,7 +591,7 @@ export function FamilyPlanningPage({ setPage, joinCode }) {
                 <button
                   onClick={() => {
                     if (!dynastyName.trim()) {
-                      toast.error("Dynasty Name is required.");
+                      toast.error(t('dynasty_name_required', 'Dynasty Name is required.'));
                       return;
                     }
                     generateFamilyCode();
@@ -597,14 +601,14 @@ export function FamilyPlanningPage({ setPage, joinCode }) {
                   className="onb-btn-continue"
                   style={{ flex: 2, padding: '12px', borderRadius: '100px', fontSize: '0.85rem', opacity: dynastyName.trim() ? 1 : 0.6 }}
                 >
-                  Continue
+                  {t('continue_btn', 'Continue')}
                 </button>
                 <button
                   onClick={() => setOnbStep(1)}
                   className="onb-btn-back"
                   style={{ flex: 1, padding: '12px', borderRadius: '100px', fontSize: '0.85rem' }}
                 >
-                  Back
+                  {t('back_btn', 'Back')}
                 </button>
               </div>
             </div>
@@ -623,10 +627,10 @@ export function FamilyPlanningPage({ setPage, joinCode }) {
                   <Key size={24} />
                 </div>
                 <h3 style={{ fontFamily: T.fontDisplay, fontSize: '1.4rem', fontWeight: 700, margin: '0 0 6px', color: 'var(--text)' }}>
-                  Your Family Code
+                  {t('your_family_code', 'Your Family Code')}
                 </h3>
                 <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', margin: 0 }}>
-                  This unique key allows family members to search and connect.
+                  {t('family_code_desc', 'This unique key allows family members to search and connect.')}
                 </p>
               </div>
 
@@ -638,12 +642,12 @@ export function FamilyPlanningPage({ setPage, joinCode }) {
                   <button
                     onClick={() => {
                       navigator.clipboard.writeText(familyCode);
-                      toast.success("Code copied to clipboard!");
+                      toast.success(t('code_copied_clipboard', 'Code copied to clipboard!'));
                     }}
                     className="btn-secondary"
                     style={{ fontSize: '0.72rem', display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '6px 14px', borderRadius: '8px' }}
                   >
-                    <Copy size={12} /> Copy Family Code
+                    <Copy size={12} /> {t('copy_family_code_btn', 'Copy Family Code')}
                   </button>
                 </div>
               </div>
@@ -654,28 +658,28 @@ export function FamilyPlanningPage({ setPage, joinCode }) {
                   className="onb-btn-continue"
                   style={{ flex: 2, padding: '12px', borderRadius: '100px', fontSize: '0.85rem' }}
                 >
-                  Continue to Invites
+                  {t('continue_to_invites_btn', 'Continue to Invites')}
                 </button>
                 <button
                   onClick={() => setOnbStep(2)}
                   className="onb-btn-back"
                   style={{ flex: 1, padding: '12px', borderRadius: '100px', fontSize: '0.85rem' }}
                 >
-                  Back
+                  {t('back_btn', 'Back')}
                 </button>
               </div>
             </div>
           )}
 
-          {/* STEP 4: Invite Members */}
+          {/* STEP 4: {t('invite_members_title', 'Invite Members')} */}
           {onbStep === 4 && (
             <div className="fade-in">
               <div style={{ textAlign: 'center', marginBottom: '24px' }}>
                 <h3 style={{ fontFamily: T.fontDisplay, fontSize: '1.35rem', fontWeight: 700, margin: '0 0 6px', color: 'var(--text)' }}>
-                  Invite Members
+                  {t('invite_members_title', 'Invite Members')}
                 </h3>
                 <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: 0 }}>
-                  Select an invitation route below to add trusted members to your dynasty.
+                  {t('invite_members_desc', 'Select an invitation route below to add trusted members to your dynasty.')}
                 </p>
               </div>
 
@@ -688,12 +692,12 @@ export function FamilyPlanningPage({ setPage, joinCode }) {
                 }}>
                   <QRCode value={getJoinUrl()} size={140} fgColor="#12110E" bgColor="#FFFFFF" level="H" />
                 </div>
-                <span style={{ fontSize: '0.7rem', color: 'var(--text-faint)', display: 'block' }}>Scan to connect node</span>
+                <span style={{ fontSize: '0.7rem', color: 'var(--text-faint)', display: 'block' }}>{t('scan_connect_node', 'Scan to connect node')}</span>
               </div>
 
-              {/* Copy URL */}
+              {/* {t('copy_btn', 'Copy')} URL */}
               <div style={{ background: 'var(--bg-warm)', border: '1px solid var(--border)', borderRadius: '12px', padding: '10px 14px', marginBottom: '28px' }}>
-                <span style={{ fontSize: '0.65rem', color: 'var(--text-faint)', display: 'block', marginBottom: '4px' }}>Shareable Invite Link</span>
+                <span style={{ fontSize: '0.65rem', color: 'var(--text-faint)', display: 'block', marginBottom: '4px' }}>{t('shareable_invite_link', 'Shareable Invite Link')}</span>
                 <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                   <span style={{ fontSize: '0.76rem', color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flexGrow: 1, textAlign: 'left' }}>
                     {getJoinUrl()}
@@ -701,35 +705,35 @@ export function FamilyPlanningPage({ setPage, joinCode }) {
                   <button
                     onClick={() => {
                       navigator.clipboard.writeText(getJoinUrl());
-                      toast.success("Link copied!");
+                      toast.success(t('link_copied', 'Link copied!'));
                     }}
                     className="btn-secondary"
                     style={{ padding: '6px 12px', borderRadius: '8px', fontSize: '0.7rem', display: 'flex', alignItems: 'center', gap: '4px' }}
                   >
-                    <Copy size={11} /> Copy
+                    <Copy size={11} /> {t('copy_btn', 'Copy')}
                   </button>
                   <button
                     onClick={async () => {
                       if (navigator.share) {
                         try {
                           await navigator.share({
-                            title: 'EverBond Family Dynasty Invitation',
+                            title: t('everbond_family_dynasty_invitation', 'EverBond Family Dynasty Invitation'),
                             text: `Join the ${dynastyName || 'Family'} Dynasty workspace on EverBond.`,
                             url: getJoinUrl(),
                           });
-                          toast.success("Shared successfully!");
+                          toast.success(t('shared_successfully', 'Shared successfully!'));
                         } catch (err) {
                           console.log("Share API error:", err);
                         }
                       } else {
                         navigator.clipboard.writeText(getJoinUrl());
-                        toast.success("Link copied!");
+                        toast.success(t('link_copied', 'Link copied!'));
                       }
                     }}
                     className="btn-secondary"
                     style={{ padding: '6px 12px', borderRadius: '8px', fontSize: '0.7rem', display: 'flex', alignItems: 'center', gap: '4px' }}
                   >
-                    <Share2 size={11} /> Share
+                    <Share2 size={11} /> {t('share_btn', 'Share')}
                   </button>
                 </div>
               </div>
@@ -740,14 +744,14 @@ export function FamilyPlanningPage({ setPage, joinCode }) {
                   className="onb-btn-continue"
                   style={{ flex: 2, padding: '12px', borderRadius: '100px', fontSize: '0.85rem' }}
                 >
-                  Continue to Roles
+                  {t('continue_to_roles_btn', 'Continue to Roles')}
                 </button>
                 <button
                   onClick={() => setOnbStep(3)}
                   className="onb-btn-back"
                   style={{ flex: 1, padding: '12px', borderRadius: '100px', fontSize: '0.85rem' }}
                 >
-                  Back
+                  {t('back_btn', 'Back')}
                 </button>
               </div>
             </div>
@@ -758,10 +762,10 @@ export function FamilyPlanningPage({ setPage, joinCode }) {
             <div className="fade-in">
               <div style={{ textAlign: 'center', marginBottom: '24px' }}>
                 <h3 style={{ fontFamily: T.fontDisplay, fontSize: '1.35rem', fontWeight: 700, margin: '0 0 6px', color: 'var(--text)' }}>
-                  Your Dynasty Role
+                  {t('your_dynasty_role', 'Your Dynasty Role')}
                 </h3>
                 <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: 0 }}>
-                  Assign your role parameters in the family workspace.
+                  {t('assign_role_desc', 'Assign your role parameters in the family workspace.')}
                 </p>
               </div>
 
@@ -796,14 +800,14 @@ export function FamilyPlanningPage({ setPage, joinCode }) {
                   className="onb-btn-continue"
                   style={{ flex: 2, padding: '12px', borderRadius: '100px', fontSize: '0.85rem' }}
                 >
-                  Continue to Activation
+                  {t('continue_to_activation_btn', 'Continue to Activation')}
                 </button>
                 <button
                   onClick={() => setOnbStep(4)}
                   className="onb-btn-back"
                   style={{ flex: 1, padding: '12px', borderRadius: '100px', fontSize: '0.85rem' }}
                 >
-                  Back
+                  {t('back_btn', 'Back')}
                 </button>
               </div>
             </div>
@@ -822,29 +826,29 @@ export function FamilyPlanningPage({ setPage, joinCode }) {
                   <ShieldCheck size={24} />
                 </div>
                 <h3 style={{ fontFamily: T.fontDisplay, fontSize: '1.35rem', fontWeight: 700, margin: '0 0 6px', color: 'var(--text)' }}>
-                  Activate Dynasty Workspace
+                  {t('activate_dynasty_workspace', 'Activate Dynasty Workspace')}
                 </h3>
                 <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: 0 }}>
-                  Confirm Parameters to instantiate the multi-generation ledger on Firestore.
+                  {t('confirm_parameters_desc', 'Confirm Parameters to instantiate the multi-generation ledger on Firestore.')}
                 </p>
               </div>
 
               {/* Summary Card */}
               <div style={{ background: 'var(--bg-warm)', border: '1px solid var(--border)', borderRadius: '12px', padding: '16px', marginBottom: '24px' }}>
                 <span style={{ fontSize: '0.62rem', fontWeight: 800, textTransform: 'uppercase', color: T.gold, letterSpacing: '0.05em', display: 'block', marginBottom: '10px' }}>
-                  Confirmation Ledger
+                  {t('confirmation_ledger', 'Confirmation Ledger')}
                 </span>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.82rem' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <span style={{ color: 'var(--text-muted)' }}>Dynasty Name:</span>
+                    <span style={{ color: 'var(--text-muted)' }}>{t('dynasty_name_label', 'Dynasty Name')}:</span>
                     <strong style={{ color: 'var(--text)' }}>{dynastyName}</strong>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <span style={{ color: 'var(--text-muted)' }}>Your Assigned Role:</span>
-                    <strong style={{ color: T.gold }}>{selectedRole}</strong>
+                    <span style={{ color: 'var(--text-muted)' }}>{t('assigned_role_confirm', 'Your Assigned Role:')}</span>
+                    <strong style={{ color: T.gold }}>{t(selectedRole.toLowerCase(), selectedRole)}</strong>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <span style={{ color: 'var(--text-muted)' }}>Family Code:</span>
+                    <span style={{ color: 'var(--text-muted)' }}>{t('family_code_confirm', 'Family Code:')}</span>
                     <strong style={{ fontFamily: 'monospace', color: 'var(--text)' }}>{familyCode}</strong>
                   </div>
                 </div>
@@ -859,7 +863,7 @@ export function FamilyPlanningPage({ setPage, joinCode }) {
                   style={{ marginTop: '3px', accentColor: T.gold }}
                 />
                 <label htmlFor="activate-consent" style={{ fontSize: '0.76rem', color: 'var(--text-muted)', lineHeight: 1.45, cursor: 'pointer' }}>
-                  I agree to instantiate this Family Dynasty and link my financial planning node to this workspace.
+                  I agree to instantiate this {t('family_dynasty', 'Family Dynasty')} and link my financial planning node to this workspace.
                 </label>
               </div>
 
@@ -870,14 +874,14 @@ export function FamilyPlanningPage({ setPage, joinCode }) {
                   className="onb-btn-continue"
                   style={{ flex: 2, padding: '12px', borderRadius: '100px', fontSize: '0.85rem', opacity: (activationChecked && !isActivating) ? 1 : 0.6 }}
                 >
-                  {isActivating ? 'Activating Ledger...' : 'Activate Dynasty'}
+                  {isActivating ? t('activating_ledger', 'Activating Ledger...') : t('activate_dynasty_btn', 'Activate Dynasty')}
                 </button>
                 <button
                   onClick={() => setOnbStep(5)}
                   className="onb-btn-back"
                   style={{ flex: 1, padding: '12px', borderRadius: '100px', fontSize: '0.85rem' }}
                 >
-                  Back
+                  {t('back_btn', 'Back')}
                 </button>
               </div>
             </div>
@@ -1056,14 +1060,14 @@ export function FamilyPlanningPage({ setPage, joinCode }) {
       <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px', marginBottom: '24px' }}>
         <div>
           <div className="page-eyebrow" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-            <span className="stage-badge married" style={{ background: `linear-gradient(135deg, ${T.gold} 0%, #d4a017 100%)`, color: '#fff' }}>Family Dynasty</span>
-            <span style={{ color: 'var(--text-muted)' }}>· Multi-Generational Asset Command</span>
+            <span className="stage-badge married" style={{ background: `linear-gradient(135deg, ${T.gold} 0%, #d4a017 100%)`, color: '#fff' }}>{t('family_dynasty', 'Family Dynasty')}</span>
+            <span style={{ color: 'var(--text-muted)' }}>{t('multigen_asset_command', '· Multi-Generational Asset Command')}</span>
           </div>
           <h1 className="page-title" style={{ marginTop: '8px' }}>
-            {dynastyWorkspaceName ? `${dynastyWorkspaceName} Dynasty` : 'Dynasty'} <em>Command</em>
+            {dynastyWorkspaceName ? `${dynastyWorkspaceName} ${t('dynasty_label', 'Dynasty')}` : t('dynasty_label', 'Dynasty')} <em>{t('command_title', 'Command')}</em>
           </h1>
           <p className="page-desc" style={{ color: 'var(--text-muted)' }}>
-            Oversee trust fund allocations, successors inheritance metrics, secure vaults, and dynamic rule governance.
+            {t('dynasty_page_desc', 'Oversee trust fund allocations, successors inheritance metrics, secure vaults, and dynamic rule governance.')}
           </p>
         </div>
         
@@ -1077,7 +1081,7 @@ export function FamilyPlanningPage({ setPage, joinCode }) {
           borderRadius: '16px',
           border: '1px solid var(--border)'
         }}>
-          <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)' }}>Simulate Active Partner:</span>
+          <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)' }}>{t('simulate_active_partner', 'Simulate Active Partner:')}</span>
           <button 
             onClick={() => setIsSimulatedLinked(!isSimulatedLinked)}
             style={{
@@ -1105,10 +1109,10 @@ export function FamilyPlanningPage({ setPage, joinCode }) {
             <Lock size={20} style={{ color: T.gold }} />
             <div>
               <h4 style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text)' }}>
-                Collaborative Dynasty Dashboard Restricted
+                {t('dynasty_restricted_title', 'Collaborative Dynasty Dashboard Restricted')}
               </h4>
               <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '2px' }}>
-                Invite a co-trustee or partner to lock in multi-generational governance rules and verify asset ledger changes.
+                {t('dynasty_restricted_desc', 'Invite a co-trustee or partner to lock in multi-generational governance rules and verify asset ledger changes.')}
               </p>
             </div>
           </div>
@@ -1118,13 +1122,13 @@ export function FamilyPlanningPage({ setPage, joinCode }) {
               style={{ background: T.gold, fontSize: '0.75rem', padding: '8px 16px', width: 'auto', borderRadius: '12px' }}
               onClick={() => setShowQRModal(true)}
             >
-              <UserPlus size={14} style={{ marginRight: '6px' }} /> Invite Co-Trustee
+              <UserPlus size={14} style={{ marginRight: '6px' }} /> {t('invite_co_trustee_btn', 'Invite Co-Trustee')}
             </button>
             <button 
               style={{ background: 'transparent', border: '1px solid var(--border)', color: 'var(--text)', fontSize: '0.75rem', padding: '8px 16px', borderRadius: '12px', cursor: 'pointer' }}
               onClick={() => setIsSimulatedLinked(true)}
             >
-              Bypass Demo Lock
+              {t('bypass_demo_lock_btn', 'Bypass Demo Lock')}
             </button>
           </div>
         </div>
@@ -1138,20 +1142,20 @@ export function FamilyPlanningPage({ setPage, joinCode }) {
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
               <div className="card-title" style={{ color: T.gold, display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <Crown size={15} /> Dynastic Compounder
+                <Crown size={15} /> {t('dynastic_compounder_title', 'Dynastic Compounder')}
               </div>
               <span style={{ fontSize: '0.7rem', background: 'var(--gold-pale)', color: T.gold, padding: '3px 8px', borderRadius: '999px', fontWeight: 700 }}>
-                Projected Estate
+                {t('projected_estate_label', 'Projected Estate')}
               </span>
             </div>
-            <div className="card-heading" style={{ fontSize: '1.3rem' }}>Generational Wealth Vault Projections</div>
-            <div className="card-sub" style={{ marginBottom: '20px' }}>Compounding assets dedicated for family legacy inheritance.</div>
+            <div className="card-heading" style={{ fontSize: '1.3rem' }}>{t('generational_vault_projections', 'Generational Wealth Vault Projections')}</div>
+            <div className="card-sub" style={{ marginBottom: '20px' }}>{t('generational_vault_projections_desc', 'Compounding assets dedicated for family legacy inheritance.')}</div>
 
             {/* Projection Controls */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', margin: '20px 0' }}>
               <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', marginBottom: '6px', color: 'var(--text-muted)' }}>
-                  <span>Initial Trust Fund Corpus</span>
+                  <span>{t('initial_trust_corpus', 'Initial Trust Fund Corpus')}</span>
                   <span style={{ fontWeight: 600, color: 'var(--text)' }}>{fmt(initialCorpus)}</span>
                 </div>
                 <input 
@@ -1167,7 +1171,7 @@ export function FamilyPlanningPage({ setPage, joinCode }) {
 
               <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', marginBottom: '6px', color: 'var(--text-muted)' }}>
-                  <span>Monthly Contribution to Legacy Fund</span>
+                  <span>{t('monthly_contribution_legacy', 'Monthly Contribution to Legacy Fund')}</span>
                   <span style={{ fontWeight: 600, color: 'var(--text)' }}>{fmt(monthlyContribution)}/mo</span>
                 </div>
                 <input 
@@ -1184,8 +1188,8 @@ export function FamilyPlanningPage({ setPage, joinCode }) {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                 <div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', marginBottom: '6px', color: 'var(--text-muted)' }}>
-                    <span>Target Horizon</span>
-                    <span style={{ fontWeight: 600, color: 'var(--text)' }}>{compoundingYears} Yrs</span>
+                    <span>{t('target_horizon', 'Target Horizon')}</span>
+                    <span style={{ fontWeight: 600, color: 'var(--text)' }}>{compoundingYears} {t('years_unit', 'Yrs')}</span>
                   </div>
                   <input 
                     type="range" 
@@ -1200,7 +1204,7 @@ export function FamilyPlanningPage({ setPage, joinCode }) {
 
                 <div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', marginBottom: '6px', color: 'var(--text-muted)' }}>
-                    <span>Estimated Annual Yield</span>
+                    <span>{t('estimated_annual_yield', 'Estimated Annual Yield')}</span>
                     <span style={{ fontWeight: 600, color: 'var(--text)' }}>{expectedYield}%</span>
                   </div>
                   <input 
@@ -1227,13 +1231,13 @@ export function FamilyPlanningPage({ setPage, joinCode }) {
             marginTop: '10px'
           }}>
             <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', color: T.gold, letterSpacing: '0.08em' }}>
-              Projected Dynastic Wealth Corpus
+              {t('projected_dynastic_corpus', 'Projected Dynastic Wealth Corpus')}
             </span>
             <div style={{ fontFamily: 'var(--fn)', fontSize: '2.4rem', fontWeight: 700, color: T.gold, letterSpacing: '-0.03em', margin: '4px 0' }}>
               {fmt(projectedValue)}
             </div>
             <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
-              Monthly investment compounding at {expectedYield}% annually over {compoundingYears} years.
+              {t('projected_corpus_desc', 'Monthly investment compounding at {yield}% annually over {years} years.').replace('{yield}', expectedYield).replace('{years}', compoundingYears)}
             </p>
           </div>
 
@@ -1243,8 +1247,8 @@ export function FamilyPlanningPage({ setPage, joinCode }) {
                 <div className="lock-icon-glow" style={{ color: T.gold, background: 'var(--gold-pale)' }}>
                   <Lock size={20} />
                 </div>
-                <h4 className="lock-title">🔒 Dynastic Trust Calculator</h4>
-                <p className="lock-desc">Please simulate active partner link or verify status to enable trust compounding metrics.</p>
+                <h4 className="lock-title">{t('dynasty_trust_calc_lock', '🔒 Dynastic Trust Calculator')}</h4>
+                <p className="lock-desc">{t('dynasty_lock_desc', 'Please simulate active partner link or verify status to enable trust compounding metrics.')}</p>
               </div>
             </div>
           )}
@@ -1254,14 +1258,14 @@ export function FamilyPlanningPage({ setPage, joinCode }) {
         <Card style={{ position: 'relative', display: 'flex', flexDirection: 'column', minHeight: '420px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
             <div className="card-title" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Sparkles size={15} style={{ color: T.gold }} /> Visual Heir Mapping
+              <Sparkles size={15} style={{ color: T.gold }} /> {t('visual_heir_mapping', 'Visual Heir Mapping')}
             </div>
             <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
-              Total: {totalAllocation}%
+              {t('total_allocation_percent', 'Total: {percent}%').replace('{percent}', totalAllocation)}
             </span>
           </div>
-          <div className="card-heading" style={{ fontSize: '1.3rem' }}>Interactive Dynasty Tree</div>
-          <div className="card-sub" style={{ marginBottom: '16px' }}>Click nodes to define successor parameters or adjust split.</div>
+          <div className="card-heading" style={{ fontSize: '1.3rem' }}>{t('interactive_dynasty_tree', 'Interactive Dynasty Tree')}</div>
+          <div className="card-sub" style={{ marginBottom: '16px' }}>{t('interactive_dynasty_tree_desc', 'Click nodes to define successor parameters or adjust split.')}</div>
 
           {/* Visual Heir Nodes Canvas */}
           <div style={{
@@ -1291,10 +1295,10 @@ export function FamilyPlanningPage({ setPage, joinCode }) {
               zIndex: 2
             }}>
               <span style={{ fontSize: '0.58rem', fontWeight: 800, textTransform: 'uppercase', color: T.gold, letterSpacing: '0.05em' }}>
-                Co-Trustee Root Node
+                {t('co_trustee_root_node', 'Co-Trustee Root Node')}
               </span>
               <div style={{ fontSize: '0.85rem', fontWeight: 700, marginTop: '2px' }}>
-                {partner1?.name || 'You'} &amp; {isSimulatedLinked ? (partner2?.name || 'Sophia') : 'Sophia (Pending)'}
+                {partner1?.name || t('you_label', 'You')} &amp; {isSimulatedLinked ? (partner2?.name || 'Sophia') : t('sophia_pending_label', 'Sophia (Pending)')}
               </div>
             </div>
 
@@ -1339,10 +1343,10 @@ export function FamilyPlanningPage({ setPage, joinCode }) {
                   >
                     <GraduationCap size={15} style={{ color: isSelected ? T.gold : 'var(--text-faint)', marginBottom: '4px' }} />
                     <div style={{ fontSize: '0.75rem', fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', width: '100%' }}>
-                      {child.name}
+                      {child.name === 'Grandchildren Trust' ? t('grandchildren_trust', 'Grandchildren Trust') : child.name}
                     </div>
                     <div style={{ fontSize: '0.65rem', color: isSelected ? T.gold : 'var(--text-muted)', fontWeight: 600, marginTop: '2px' }}>
-                      {child.allocation}% Split
+                      {t('percent_split', '{percent}% Split').replace('{percent}', child.allocation)}
                     </div>
                   </div>
                 );
@@ -1356,7 +1360,7 @@ export function FamilyPlanningPage({ setPage, joinCode }) {
               className="goal-input" 
               style={{ marginBottom: 0, fontSize: '0.75rem' }} 
               type="text" 
-              placeholder="Name..." 
+              placeholder={t('heir_name_placeholder', 'Name...')} 
               value={newHeirName} 
               disabled={!isSimulatedLinked}
               onChange={e => setNewHeirName(e.target.value)}
@@ -1365,7 +1369,7 @@ export function FamilyPlanningPage({ setPage, joinCode }) {
               className="goal-input" 
               style={{ marginBottom: 0, fontSize: '0.75rem' }} 
               type="number" 
-              placeholder="Age" 
+              placeholder={t('heir_age_placeholder', 'Age')} 
               value={newHeirAge} 
               disabled={!isSimulatedLinked}
               onChange={e => setNewHeirAge(Number(e.target.value))}
@@ -1374,7 +1378,7 @@ export function FamilyPlanningPage({ setPage, joinCode }) {
               className="goal-input" 
               style={{ marginBottom: 0, fontSize: '0.75rem' }} 
               type="number" 
-              placeholder="%" 
+              placeholder={t('heir_percent_placeholder', '%')} 
               value={newHeirAllocation} 
               disabled={!isSimulatedLinked}
               onChange={e => setNewHeirAllocation(Number(e.target.value))}
@@ -1395,8 +1399,8 @@ export function FamilyPlanningPage({ setPage, joinCode }) {
                 <div className="lock-icon-glow" style={{ color: T.gold, background: 'var(--gold-pale)' }}>
                   <Lock size={20} />
                 </div>
-                <h4 className="lock-title">🔒 Family Heir Node Map</h4>
-                <p className="lock-desc">Please simulate active partner link or verify status to enable trust compounding metrics.</p>
+                <h4 className="lock-title">{t('family_heir_node_map_lock', '🔒 Family Heir Node Map')}</h4>
+                <p className="lock-desc">{t('dynasty_lock_desc', 'Please simulate active partner link or verify status to enable trust compounding metrics.')}</p>
               </div>
             </div>
           )}
@@ -1409,15 +1413,15 @@ export function FamilyPlanningPage({ setPage, joinCode }) {
         {/* SUCCESSOR PLANNING DETAILS */}
         <Card style={{ display: 'flex', flexDirection: 'column', minHeight: '380px' }}>
           <div className="card-title" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <Key size={15} style={{ color: T.gold }} /> Successor Legacy Parameters
+            <Key size={15} style={{ color: T.gold }} /> {t('successor_legacy_params', 'Successor Legacy Parameters')}
           </div>
-          <div className="card-heading" style={{ fontSize: '1.3rem' }}>Allocation for: {selectedChild.name}</div>
-          <div className="card-sub" style={{ marginBottom: '18px' }}>Manage locking thresholds and trust fund payouts.</div>
+          <div className="card-heading" style={{ fontSize: '1.3rem' }}>{t('allocation_for_name', 'Allocation for: {name}').replace('{name}', selectedChild.name === 'Grandchildren Trust' ? t('grandchildren_trust', 'Grandchildren Trust') : selectedChild.name)}</div>
+          <div className="card-sub" style={{ marginBottom: '18px' }}>{t('manage_locking_thresholds', 'Manage locking thresholds and trust fund payouts.')}</div>
 
           {/* Allocation control */}
           <div style={{ marginBottom: '20px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem', marginBottom: '8px' }}>
-              <span style={{ fontWeight: 600 }}>Estate Split Allocation</span>
+              <span style={{ fontWeight: 600 }}>{t('estate_split_allocation', 'Estate Split Allocation')}</span>
               <span style={{ fontWeight: 800, color: T.gold }}>{selectedChild.allocation}%</span>
             </div>
             <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
@@ -1430,7 +1434,7 @@ export function FamilyPlanningPage({ setPage, joinCode }) {
                 onChange={e => handleAllocationChange(selectedChild.id, e.target.value)}
                 style={{ flexGrow: 1, accentColor: T.gold }}
               />
-              <span style={{ fontSize: '0.72rem', color: 'var(--text-faint)' }}>Normalized (Total 100%)</span>
+              <span style={{ fontSize: '0.72rem', color: 'var(--text-faint)' }}>{t('normalized_total_100', 'Normalized (Total 100%)')}</span>
             </div>
           </div>
 
@@ -1444,8 +1448,8 @@ export function FamilyPlanningPage({ setPage, joinCode }) {
             }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
-                  <div style={{ fontSize: '0.8rem', fontWeight: 700 }}>Vesting Age Lock Trigger</div>
-                  <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>Release funds to heir upon reaching target age.</div>
+                  <div style={{ fontSize: '0.8rem', fontWeight: 700 }}>{t('vesting_age_lock_trigger', 'Vesting Age Lock Trigger')}</div>
+                  <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>{t('release_funds_desc', 'Release funds to heir upon reaching target age.')}</div>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <input 
@@ -1458,7 +1462,7 @@ export function FamilyPlanningPage({ setPage, joinCode }) {
                     }}
                     style={{ width: '45px', padding: '4px', borderRadius: '6px', border: '1px solid var(--border)', background: 'var(--bg)', fontSize: '0.75rem', textAlign: 'center', fontWeight: 600 }}
                   />
-                  <span style={{ fontSize: '0.75rem', fontWeight: 600 }}>Years Old</span>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 600 }}>{t('years_old_unit', 'Years Old')}</span>
                 </div>
               </div>
             </div>
@@ -1472,8 +1476,8 @@ export function FamilyPlanningPage({ setPage, joinCode }) {
             }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
-                  <div style={{ fontSize: '0.8rem', fontWeight: 700 }}>Milestone Payout Qualifier</div>
-                  <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>Additional trigger conditions for early partial releases.</div>
+                  <div style={{ fontSize: '0.8rem', fontWeight: 700 }}>{t('milestone_payout_qualifier', 'Milestone Payout Qualifier')}</div>
+                  <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>{t('milestone_conditions_desc', 'Additional trigger conditions for early partial releases.')}</div>
                 </div>
                 <select
                   value={selectedChild.milestone}
@@ -1486,10 +1490,10 @@ export function FamilyPlanningPage({ setPage, joinCode }) {
                     padding: '4px 8px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg)', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text)'
                   }}
                 >
-                  <option value="Graduation">Graduation Day</option>
-                  <option value="Marriage">Marriage Deed</option>
-                  <option value="First Home">First Home purchase</option>
-                  <option value="Age Threshold">Age Threshold Only</option>
+                  <option value="Graduation">{t('graduation_day_option', 'Graduation Day')}</option>
+                  <option value="Marriage">{t('marriage_deed_option', 'Marriage Deed')}</option>
+                  <option value="First Home">{t('first_home_option', 'First Home purchase')}</option>
+                  <option value="Age Threshold">{t('age_threshold_option', 'Age Threshold Only')}</option>
                 </select>
               </div>
             </div>
@@ -1498,7 +1502,7 @@ export function FamilyPlanningPage({ setPage, joinCode }) {
             {totalAllocation !== 100 && (
               <div style={{ display: 'flex', gap: '8px', alignItems: 'center', color: T.rose, fontSize: '0.72rem', marginTop: '4px' }}>
                 <Info size={12} />
-                <span>Legacy Distribution sum is currently {totalAllocation}%. We recommend balancing to 100%.</span>
+                <span>{t('legacy_distribution_warning', 'Legacy Distribution sum is currently {percent}%. We recommend balancing to 100%.').replace('{percent}', totalAllocation)}</span>
               </div>
             )}
           </div>
@@ -1507,10 +1511,10 @@ export function FamilyPlanningPage({ setPage, joinCode }) {
             <button 
               className="btn-primary" 
               style={{ background: T.gold, fontSize: '0.75rem', padding: '8px 16px', flexGrow: 1, borderRadius: '12px' }}
-              onClick={() => alert(`Locked estate instructions for ${selectedChild.name} updated. Triggers registered.`)}
+              onClick={() => alert(t('locked_instructions_alert', 'Locked estate instructions for {name} updated. Triggers registered.').replace('{name}', selectedChild.name === 'Grandchildren Trust' ? t('grandchildren_trust', 'Grandchildren Trust') : selectedChild.name))}
               disabled={!isSimulatedLinked}
             >
-              Lock Instructions
+              {t('lock_instructions_btn', 'Lock Instructions')}
             </button>
             <button 
               style={{ background: 'transparent', border: `1px solid var(--border)`, color: T.rose, fontSize: '0.75rem', padding: '8px 12px', borderRadius: '12px', cursor: isSimulatedLinked ? 'pointer' : 'default' }}
@@ -1525,17 +1529,17 @@ export function FamilyPlanningPage({ setPage, joinCode }) {
         {/* ESTATE VAULT & GOVERNANCE RULES */}
         <Card style={{ display: 'flex', flexDirection: 'column', minHeight: '380px' }}>
           <div className="card-title" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <ShieldCheck size={15} style={{ color: T.gold }} /> Trust Governance &amp; Estate Vault
+            <ShieldCheck size={15} style={{ color: T.gold }} /> {t('trust_governance_vault', 'Trust Governance & Estate Vault')}
           </div>
-          <div className="card-heading" style={{ fontSize: '1.3rem' }}>Dynamic Estate Ledger Rules</div>
-          <div className="card-sub" style={{ marginBottom: '16px' }}>Secure storage of verified documents with dual trustee approvals.</div>
+          <div className="card-heading" style={{ fontSize: '1.3rem' }}>{t('dynamic_estate_rules', 'Dynamic Estate Ledger Rules')}</div>
+          <div className="card-sub" style={{ marginBottom: '16px' }}>{t('secure_storage_documents_desc', 'Secure storage of verified documents with dual trustee approvals.')}</div>
 
           {/* Governance Rules Toggle */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.78rem', background: 'var(--bg-warm)', padding: '8px 12px', borderRadius: '10px', border: '1px solid var(--border)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <FileText size={14} style={{ color: T.gold }} />
-                <span>Require Dual-Parent Signatures</span>
+                <span>{t('require_dual_parent_signatures', 'Require Dual-Parent Signatures')}</span>
               </div>
               <button 
                 onClick={() => setRequireDualSignature(!requireDualSignature)}
@@ -1550,7 +1554,7 @@ export function FamilyPlanningPage({ setPage, joinCode }) {
           {/* Secure Document List */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', flexGrow: 1 }}>
             <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '0.05em', marginBottom: '2px' }}>
-              Encrypted Documents ({documents.length})
+              {t('encrypted_documents_count', 'Encrypted Documents ({count})').replace('{count}', documents.length)}
             </span>
             {documents.map(doc => (
               <div key={doc.id} style={{
@@ -1566,10 +1570,10 @@ export function FamilyPlanningPage({ setPage, joinCode }) {
                   <FileText size={16} style={{ color: 'var(--text-muted)' }} />
                   <div>
                     <div style={{ fontSize: '0.75rem', fontWeight: 700, maxWidth: '160px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {doc.name}
+                      {doc.name === 'Last Will & Testament.pdf' ? t('doc_will_pdf', 'Last Will & Testament.pdf') : doc.name === 'Family Living Trust Agreement.pdf' ? t('doc_trust_pdf', 'Family Living Trust Agreement.pdf') : doc.name === 'Asset Distribution Ledger.xlsx' ? t('doc_ledger_xlsx', 'Asset Distribution Ledger.xlsx') : doc.name === 'Multi-Gen Power of Attorney.pdf' ? t('doc_poa_pdf', 'Multi-Gen Power of Attorney.pdf') : doc.name}
                     </div>
                     <div style={{ fontSize: '0.62rem', color: 'var(--text-faint)' }}>
-                      {doc.size} · Saved {doc.date}
+                      {t('doc_size_saved_date', '{size} · Saved {date}').replace('{size}', doc.size).replace('{date}', doc.date)}
                     </div>
                   </div>
                 </div>
@@ -1593,7 +1597,7 @@ export function FamilyPlanningPage({ setPage, joinCode }) {
                     }}
                   >
                     {doc.signed ? <Check size={10} strokeWidth={3} /> : <Lock size={10} />}
-                    {doc.signed ? 'Signed' : 'Unlock'}
+                    {doc.signed ? t('signed_status', 'Signed') : t('unlock_status', 'Unlock')}
                   </button>
                 </div>
               </div>
@@ -1603,10 +1607,10 @@ export function FamilyPlanningPage({ setPage, joinCode }) {
           <button 
             className="btn-primary" 
             style={{ background: 'transparent', border: '1px solid var(--border)', color: 'var(--text)', fontSize: '0.75rem', padding: '10px', borderRadius: '12px', marginTop: '12px' }}
-            onClick={() => alert('Secure document upload initialized. Files will be locally encrypted.')}
+            onClick={() => alert(t('secure_upload_alert', 'Secure document upload initialized. Files will be locally encrypted.'))}
             disabled={!isSimulatedLinked}
           >
-            + Upload New Trust Agreement
+            {t('upload_new_trust_btn', '+ Upload New Trust Agreement')}
           </button>
         </Card>
       </div>
@@ -1615,10 +1619,10 @@ export function FamilyPlanningPage({ setPage, joinCode }) {
       <Card style={{ marginTop: '24px', padding: '24px', display: 'flex', flexWrap: 'wrap', gap: '20px', alignItems: 'center', justifyContent: 'space-between', background: 'linear-gradient(135deg, var(--bg-muted) 0%, var(--bg) 100%)', border: `1px solid var(--border)` }}>
         <div style={{ flex: '1 1 300px' }}>
           <h4 style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--text)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <QrCode size={18} style={{ color: T.gold }} /> Multi-Generation Dynasty Linking
+            <QrCode size={18} style={{ color: T.gold }} /> {t('multigen_dynasty_linking', 'Multi-Generation Dynasty Linking')}
           </h4>
           <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '6px' }}>
-            Provide immediate legacy access to direct beneficiaries, co-trustees, or generational financial advisors by generating secure pairing invites.
+            {t('multigen_linking_desc', 'Provide immediate legacy access to direct beneficiaries, co-trustees, or generational financial advisors by generating secure pairing invites.')}
           </p>
         </div>
         <div>
@@ -1627,7 +1631,7 @@ export function FamilyPlanningPage({ setPage, joinCode }) {
             style={{ background: T.gold, fontSize: '0.78rem', padding: '10px 20px', width: 'auto', borderRadius: '12px' }}
             onClick={() => setShowQRModal(true)}
           >
-            Launch Invite Interface
+            {t('launch_invite_interface_btn', 'Launch Invite Interface')}
           </button>
         </div>
       </Card>
@@ -1664,10 +1668,10 @@ export function FamilyPlanningPage({ setPage, joinCode }) {
             </button>
 
             <h4 style={{ fontSize: '1.1rem', fontWeight: 800, marginBottom: '4px', textAlign: 'center' }}>
-              Pair Legacy Node
+              {t('pair_legacy_node', 'Pair Legacy Node')}
             </h4>
             <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textAlign: 'center', marginBottom: '16px' }}>
-              Scan to authorize read-only ledger pairing or co-trustee signature credentials.
+              {t('scan_pairing_desc', 'Scan to authorize read-only ledger pairing or co-trustee signature credentials.')}
             </p>
 
             {/* Invite Role Picker */}
@@ -1681,7 +1685,7 @@ export function FamilyPlanningPage({ setPage, joinCode }) {
                   fontSize: '0.7rem', fontWeight: 700, cursor: 'pointer'
                 }}
               >
-                Heir / Successor
+                {t('heir_successor_btn', 'Heir / Successor')}
               </button>
               <button 
                 onClick={() => setQrInviteRole('co-trustee')}
@@ -1692,7 +1696,7 @@ export function FamilyPlanningPage({ setPage, joinCode }) {
                   fontSize: '0.7rem', fontWeight: 700, cursor: 'pointer'
                 }}
               >
-                Co-Trustee
+                {t('co_trustee_btn', 'Co-Trustee')}
               </button>
             </div>
 
@@ -1738,7 +1742,7 @@ export function FamilyPlanningPage({ setPage, joinCode }) {
             {/* Invite Info */}
             <div style={{ marginTop: '16px', width: '100%', textAlign: 'center' }}>
               <span style={{ fontSize: '0.62rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)' }}>
-                Invite Pairing Code
+                {t('invite_pairing_code', 'Invite Pairing Code')}
               </span>
               <div style={{ fontSize: '0.95rem', fontWeight: 800, fontFamily: 'monospace', color: T.gold, marginTop: '2px', background: 'var(--bg-muted)', padding: '6px', borderRadius: '8px', border: '1px solid var(--border)' }}>
                 {invitationCode}
@@ -1749,11 +1753,11 @@ export function FamilyPlanningPage({ setPage, joinCode }) {
               className="btn-primary" 
               style={{ background: T.gold, fontSize: '0.78rem', padding: '10px', width: '100%', borderRadius: '12px', marginTop: '16px' }}
               onClick={() => {
-                alert(`Invite pairing code copied to clipboard: ${invitationCode}`);
+                alert(t('pairing_code_copied_alert', 'Invite pairing code copied to clipboard: {code}').replace('{code}', invitationCode));
                 setShowQRModal(false);
               }}
             >
-              Copy Link &amp; Close
+              {t('copy_link_close_btn', 'Copy Link & Close')}
             </button>
           </div>
         </div>

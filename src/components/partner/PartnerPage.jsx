@@ -4,6 +4,7 @@ import { useFinanceStore } from '../../store/useFinanceStore';
 import { T } from '../../theme/tokens';
 import { useToast } from '../common/Toast';
 import { Card } from '../common/Card';
+import { useTranslation } from '../../utils/i18n';
 import {
   Users, Copy, Check, Heart, Key, Calendar, Link2, UserCheck,
   Sparkles, Lock, Shield, X, ArrowRight, Share2,
@@ -28,6 +29,7 @@ const QRCode = QRCodeModule.QRCode || QRCodeModule.default || QRCodeModule;
 
 export function PartnerPage({ setPage, connectCode }) {
   const toast = useToast();
+  const { t } = useTranslation();
   const user = useFinanceStore(s => s.user);
   const everBondId = useFinanceStore(s => s.everBondId);
   const partnerId = useFinanceStore(s => s.partnerId);
@@ -115,7 +117,7 @@ export function PartnerPage({ setPage, connectCode }) {
             relationshipStatus: 'Committed'
           });
 
-          toast.success("Partner connected successfully!");
+          toast.success(t('partner_connected_success', 'Partner connected successfully!'));
           setShowSuccessScreen(true);
         }
       }
@@ -127,7 +129,7 @@ export function PartnerPage({ setPage, connectCode }) {
   // 3. Generate invite code & Firestore document (Partner A)
   const handleCreateInvite = async (method) => {
     if (!user?.uid) {
-      toast.error("User session not found. Please log in again.");
+      toast.error(t('user_session_not_found', 'User session not found. Please log in again.'));
       return;
     }
     setSelectedMethod(method);
@@ -158,7 +160,7 @@ export function PartnerPage({ setPage, connectCode }) {
       setCreatedInviteId(inviteId);
     } catch (err) {
       console.error("Failed to create invite:", err);
-      toast.error("Failed to generate invitation. Please try again.");
+      toast.error(t('failed_generate_invite', 'Failed to generate invitation. Please try again.'));
       setSelectedMethod(null);
     } finally {
       setIsCreatingInvite(false);
@@ -173,7 +175,7 @@ export function PartnerPage({ setPage, connectCode }) {
 
     try {
       if (code === everBondId || code === user?.uid) {
-        toast.error("You cannot connect to yourself.");
+        toast.error(t('cannot_connect_self', 'You cannot connect to yourself.'));
         setIsValidatingCode(false);
         return;
       }
@@ -187,19 +189,19 @@ export function PartnerPage({ setPage, connectCode }) {
         const inviteData = inviteDoc.data();
 
         if (inviteData.status !== 'pending') {
-          toast.error(`This invitation has already been ${inviteData.status}.`);
+          toast.error(t('invite_already_status', 'This invitation has already been {status}.').replace('{status}', t(inviteData.status, inviteData.status)));
           setIsValidatingCode(false);
           return;
         }
 
         if (new Date(inviteData.expiresAt) < new Date()) {
-          toast.error("This invitation has expired.");
+          toast.error(t('invite_expired', 'This invitation has expired.'));
           setIsValidatingCode(false);
           return;
         }
 
         if (inviteData.createdBy === user?.uid) {
-          toast.error("You cannot accept your own invitation.");
+          toast.error(t('cannot_accept_own', 'You cannot accept your own invitation.'));
           setIsValidatingCode(false);
           return;
         }
@@ -215,7 +217,7 @@ export function PartnerPage({ setPage, connectCode }) {
         const querySnapUser = await getDocs(qUser);
         
         if (querySnapUser.empty) {
-          toast.error("Invitation code or Partner EverBond ID not found.");
+          toast.error(t('invite_code_not_found', 'Invitation code or Partner EverBond ID not found.'));
           setIsValidatingCode(false);
           return;
         }
@@ -224,13 +226,13 @@ export function PartnerPage({ setPage, connectCode }) {
         const partnerUserData = partnerUserDoc.data();
 
         if (partnerUserData.uid === user?.uid) {
-          toast.error("You cannot connect to yourself.");
+          toast.error(t('cannot_connect_self', 'You cannot connect to yourself.'));
           setIsValidatingCode(false);
           return;
         }
 
         if (partnerUserData.partnerId) {
-          toast.error("This partner is already connected to another user.");
+          toast.error(t('partner_already_connected', 'This partner is already connected to another user.'));
           setIsValidatingCode(false);
           return;
         }
@@ -246,7 +248,7 @@ export function PartnerPage({ setPage, connectCode }) {
       }
     } catch (err) {
       console.error("Code validation error:", err);
-      toast.error("Failed to validate code. Please try again.");
+      toast.error(t('failed_validate_code', 'Failed to validate code. Please try again.'));
     } finally {
       setIsValidatingCode(false);
     }
@@ -315,11 +317,11 @@ export function PartnerPage({ setPage, connectCode }) {
         relationshipStatus: 'Committed'
       });
 
-      toast.success("Workspace connected successfully!");
+      toast.success(t('workspace_connected_success', 'Workspace connected successfully!'));
       setShowSuccessScreen(true);
     } catch (err) {
       console.error("Connection establish error:", err);
-      toast.error("Failed to connect workspace. Please try again.");
+      toast.error(t('failed_connect_workspace', 'Failed to connect workspace. Please try again.'));
     } finally {
       setIsConnecting(false);
     }
@@ -376,12 +378,12 @@ export function PartnerPage({ setPage, connectCode }) {
         relationshipStatus: 'Single'
       });
 
-      toast.success("Workspace disconnected.");
+      toast.success(t('workspace_disconnected', 'Workspace disconnected.'));
       setShowDisconnectConfirm(false);
       setPage('dashboard');
     } catch (err) {
       console.error("Disconnect error:", err);
-      toast.error("Failed to disconnect workspace.");
+      toast.error(t('failed_disconnect_workspace', 'Failed to disconnect workspace.'));
     } finally {
       setIsDisconnecting(false);
     }
@@ -405,7 +407,7 @@ export function PartnerPage({ setPage, connectCode }) {
       })
       .catch(err => {
         console.error("Camera access failed:", err);
-        setScanError('Camera Access Denied: Please check permissions or type code manually.');
+        setScanError(t('camera_access_denied', 'Camera Access Denied: Please check permissions or type code manually.'));
         setIsScanning(false);
       });
   };
@@ -446,7 +448,7 @@ export function PartnerPage({ setPage, connectCode }) {
     const parsedCode = match ? match[1].toUpperCase() : null;
 
     if (!parsedCode) {
-      toast.error('Invalid EverBond invitation QR scanned.');
+      toast.error(t('invalid_qr_scanned', 'Invalid EverBond invitation QR scanned.'));
       return;
     }
 
@@ -477,7 +479,7 @@ export function PartnerPage({ setPage, connectCode }) {
   };
 
   const maskEmail = (emailStr) => {
-    if (!emailStr) return '***@gmail.com';
+    if (!emailStr) return t('mask_email_placeholder', '***@gmail.com');
     const [name, domain] = emailStr.split('@');
     if (name.length <= 2) return `${name}***@${domain}`;
     return `${name.substring(0, 2)}***@${domain}`;
@@ -507,10 +509,10 @@ export function PartnerPage({ setPage, connectCode }) {
           </motion.div>
           
           <h2 style={{ fontFamily: T.fontDisplay, fontSize: '1.8rem', fontWeight: 700, margin: '0 0 10px', color: 'var(--text)' }}>
-            Partner Workspace Activated
+            {t('partner_workspace_activated', 'Partner Workspace Activated')}
           </h2>
           <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: '32px' }}>
-            Your financial nodes have successfully established connection. You can now plan, save, and grow your dynastic wealth together.
+            {t('partner_activated_desc', 'Your financial nodes have successfully established connection. You can now plan, save, and grow your dynastic wealth together.')}
           </p>
 
           <button
@@ -521,7 +523,7 @@ export function PartnerPage({ setPage, connectCode }) {
             className="onb-btn-continue"
             style={{ width: '100%', padding: '12px 20px', borderRadius: '12px' }}
           >
-            Open Workspace
+            {t('open_workspace', 'Open Workspace')}
           </button>
         </Card>
       </div>
@@ -533,9 +535,9 @@ export function PartnerPage({ setPage, connectCode }) {
     return (
       <div className="fade-in" style={{ maxWidth: '640px', margin: '0 auto', paddingBottom: '60px' }}>
         <div className="page-header" style={{ marginBottom: '32px' }}>
-          <div className="page-eyebrow">Connection Workspace</div>
-          <h1 className="page-title">Active <em>Connection</em></h1>
-          <p className="page-desc">Your workspace is connected to your partner node in committed planning mode.</p>
+          <div className="page-eyebrow">{t('connection_workspace', 'Connection Workspace')}</div>
+          <h1 className="page-title">{t('active', 'Active')} <em>{t('connection', 'Connection')}</em></h1>
+          <p className="page-desc">{t('connection_active_desc', 'Your workspace is connected to your partner node in committed planning mode.')}</p>
         </div>
 
         <motion.div
@@ -545,23 +547,23 @@ export function PartnerPage({ setPage, connectCode }) {
         >
           <Card gold={true}>
             <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', color: T.gold, letterSpacing: '0.08em', display: 'block', marginBottom: '16px' }}>
-              Connection Parameters
+              {t('connection_parameters', 'Connection Parameters')}
             </span>
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                 <div style={{ background: 'var(--bg-warm)', border: '1px solid var(--border)', borderRadius: '12px', padding: '14px' }}>
-                  <span style={{ fontSize: '0.68rem', color: 'var(--text-faint)', display: 'block', marginBottom: '4px', fontWeight: 600 }}>Connected Stage</span>
-                  <strong style={{ fontSize: '0.9rem', color: T.gold }}>{stage} Planning</strong>
+                  <span style={{ fontSize: '0.68rem', color: 'var(--text-faint)', display: 'block', marginBottom: '4px', fontWeight: 600 }}>{t('connected_stage', 'Connected Stage')}</span>
+                  <strong style={{ fontSize: '0.9rem', color: T.gold }}>{t(stage.toLowerCase(), stage)} {t('planning', 'Planning')}</strong>
                 </div>
                 <div style={{ background: 'var(--bg-warm)', border: '1px solid var(--border)', borderRadius: '12px', padding: '14px' }}>
-                  <span style={{ fontSize: '0.68rem', color: 'var(--text-faint)', display: 'block', marginBottom: '4px', fontWeight: 600 }}>Workspace Status</span>
-                  <strong style={{ fontSize: '0.9rem', color: T.sage }}>● Active</strong>
+                  <span style={{ fontSize: '0.68rem', color: 'var(--text-faint)', display: 'block', marginBottom: '4px', fontWeight: 600 }}>{t('workspace_status', 'Workspace Status')}</span>
+                  <strong style={{ fontSize: '0.9rem', color: T.sage }}>● {t('active_status', 'Active')}</strong>
                 </div>
               </div>
 
               <div style={{ background: 'var(--bg-warm)', border: '1px solid var(--border)', borderRadius: '12px', padding: '14px' }}>
-                <span style={{ fontSize: '0.68rem', color: 'var(--text-faint)', display: 'block', marginBottom: '4px', fontWeight: 600 }}>Partner Node Identity</span>
+                <span style={{ fontSize: '0.68rem', color: 'var(--text-faint)', display: 'block', marginBottom: '4px', fontWeight: 600 }}>{t('partner_node_identity', 'Partner Node Identity')}</span>
                 <strong style={{ fontSize: '0.95rem', color: 'var(--text)', display: 'block', marginBottom: '2px' }}>{partnerName}</strong>
                 <span style={{ fontFamily: 'monospace', fontSize: '0.78rem', color: 'var(--text-muted)' }}>ID: {partnerEverBondId || 'EB-NODE'}</span>
               </div>
@@ -570,17 +572,17 @@ export function PartnerPage({ setPage, connectCode }) {
 
           <Card style={{ border: '1px solid var(--rose-border)', background: 'rgba(208, 92, 114, 0.02)' }}>
             <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--rose)', letterSpacing: '0.08em', display: 'block', marginBottom: '8px' }}>
-              Danger Zone
+              {t('danger_zone', 'Danger Zone')}
             </span>
             <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '16px', lineHeight: 1.45 }}>
-              Severing this node connection will immediately deactivate your shared workspace. Personal assets and targets will return to independent command.
+              {t('sever_connection_warning', 'Severing this node connection will immediately deactivate your shared workspace. Personal assets and targets will return to independent command.')}
             </p>
 
             {showDisconnectConfirm ? (
               <div style={{ background: 'var(--bg-muted)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border)' }}>
-                <strong style={{ fontSize: '0.85rem', color: 'var(--text)', display: 'block', marginBottom: '6px' }}>Are you absolutely sure?</strong>
+                <strong style={{ fontSize: '0.85rem', color: 'var(--text)', display: 'block', marginBottom: '6px' }}>{t('are_you_sure', 'Are you absolutely sure?')}</strong>
                 <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', margin: '0 0 16px' }}>
-                  Both nodes will immediately revert to Single stage workspaces. Shared ledgers will be locked.
+                  {t('sever_confirm_desc', 'Both nodes will immediately revert to Single stage workspaces. Shared ledgers will be locked.')}
                 </p>
                 <div style={{ display: 'flex', gap: '8px' }}>
                   <button
@@ -589,14 +591,14 @@ export function PartnerPage({ setPage, connectCode }) {
                     className="btn-primary"
                     style={{ background: 'var(--rose)', color: '#fff', fontSize: '0.75rem', padding: '8px 16px', width: 'auto', borderRadius: '8px', border: 'none', cursor: 'pointer' }}
                   >
-                    {isDisconnecting ? 'Disconnecting...' : 'Yes, Disconnect Node'}
+                    {isDisconnecting ? t('disconnecting', 'Disconnecting...') : t('confirm_disconnect', 'Yes, Disconnect Node')}
                   </button>
                   <button
                     onClick={() => setShowDisconnectConfirm(false)}
                     className="btn-secondary"
                     style={{ fontSize: '0.75rem', padding: '8px 16px', borderRadius: '8px' }}
                   >
-                    Cancel
+                    {t('cancel', 'Cancel')}
                   </button>
                 </div>
               </div>
@@ -609,7 +611,7 @@ export function PartnerPage({ setPage, connectCode }) {
                   fontSize: '0.8rem', padding: '10px 18px', width: 'auto', borderRadius: '100px'
                 }}
               >
-                <LogOut size={14} /> Disconnect Workspace
+                <LogOut size={14} /> {t('disconnect_workspace', 'Disconnect Workspace')}
               </button>
             )}
           </Card>
@@ -633,28 +635,28 @@ export function PartnerPage({ setPage, connectCode }) {
           </div>
           
           <h2 style={{ fontFamily: T.fontDisplay, fontSize: '1.5rem', fontWeight: 700, margin: '0 0 8px', color: 'var(--text)' }}>
-            Establish Node Connection
+            {t('establish_node_connection', 'Establish Node Connection')}
           </h2>
           <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: '24px' }}>
-            You are connecting with a partner workspace to unlock shared wealth management tools.
+            {t('establish_connection_desc', 'You are connecting with a partner workspace to unlock shared wealth management tools.')}
           </p>
 
           <div style={{ background: 'var(--bg-warm)', border: '1px solid var(--border)', borderRadius: '12px', padding: '16px', textAlign: 'left', marginBottom: '24px' }}>
             <span style={{ fontSize: '0.62rem', fontWeight: 800, textTransform: 'uppercase', color: T.gold, letterSpacing: '0.05em', display: 'block', marginBottom: '10px' }}>
-              Partner Node Profile
+              {t('partner_node_profile', 'Partner Node Profile')}
             </span>
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem' }}>
-                <span style={{ color: 'var(--text-muted)' }}>Name:</span>
+                <span style={{ color: 'var(--text-muted)' }}>{t('name_label', 'Name:')}</span>
                 <strong style={{ color: 'var(--text)' }}>{incomingInvite.creatorName}</strong>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem' }}>
-                <span style={{ color: 'var(--text-muted)' }}>Email:</span>
+                <span style={{ color: 'var(--text-muted)' }}>{t('email_label', 'Email:')}</span>
                 <strong style={{ color: 'var(--text)' }}>{maskEmail(incomingInvite.creatorEmail)}</strong>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem' }}>
-                <span style={{ color: 'var(--text-muted)' }}>Invite Code:</span>
+                <span style={{ color: 'var(--text-muted)' }}>{t('invite_code_label', 'Invite Code:')}</span>
                 <strong style={{ fontFamily: 'monospace', color: T.gold }}>{incomingInvite.inviteCode}</strong>
               </div>
             </div>
@@ -669,7 +671,7 @@ export function PartnerPage({ setPage, connectCode }) {
               style={{ marginTop: '3px', accentColor: T.gold }}
             />
             <label htmlFor="accept-consent" style={{ fontSize: '0.78rem', color: 'var(--text-muted)', lineHeight: 1.4, cursor: 'pointer' }}>
-              I agree to establish a shared partner workspace and understand that co-trustee allocations will be synchronized.
+              {t('establish_connection_consent', 'I agree to establish a shared partner workspace and understand that co-trustee allocations will be synchronized.')}
             </label>
           </div>
 
@@ -683,7 +685,7 @@ export function PartnerPage({ setPage, connectCode }) {
                 opacity: (acceptChecked && !isConnecting) ? 1 : 0.6
               }}
             >
-              {isConnecting ? 'Activating...' : 'Accept Connection'}
+              {isConnecting ? t('activating', 'Activating...') : t('accept_connection', 'Accept Connection')}
             </button>
             <button
               onClick={() => {
@@ -693,7 +695,7 @@ export function PartnerPage({ setPage, connectCode }) {
               className="onb-btn-back"
               style={{ flex: 1, padding: '12px', borderRadius: '100px', fontSize: '0.85rem' }}
             >
-              Cancel
+              {t('cancel', 'Cancel')}
             </button>
           </div>
         </Card>
@@ -721,20 +723,20 @@ export function PartnerPage({ setPage, connectCode }) {
               <Users size={24} />
             </div>
             <h2 style={{ fontFamily: T.fontDisplay, fontSize: '1.6rem', fontWeight: 700, margin: '0 0 6px', color: 'var(--text)' }}>
-              Connect Your Partner
+              {t('connect_your_partner', 'Connect Your Partner')}
             </h2>
             <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)', margin: 0 }}>
-              Create a shared financial workspace and align your future together.
+              {t('connect_partner_promo_desc', 'Create a shared financial workspace and align your future together.')}
             </p>
           </div>
 
           {/* Benefits Section */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '24px', position: 'relative', zIndex: 1 }}>
             {[
-              "Shared financial goals",
-              "Joint milestone planning",
-              "Shared insights and projections",
-              "Private partner workspace"
+              t('benefit_goals', 'Shared financial goals'),
+              t('benefit_milestones', 'Joint milestone planning'),
+              t('benefit_insights', 'Shared insights and projections'),
+              t('benefit_workspace', 'Private partner workspace')
             ].map((benefit, i) => (
               <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.85rem', color: 'var(--text)' }}>
                 <span style={{ color: T.gold, fontWeight: 'bold' }}>✓</span>
@@ -751,9 +753,9 @@ export function PartnerPage({ setPage, connectCode }) {
             <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
               <Shield size={16} style={{ color: T.gold, flexShrink: 0, marginTop: '2px' }} />
               <div>
-                <strong style={{ fontSize: '0.8rem', color: 'var(--text)', display: 'block', marginBottom: '4px' }}>Privacy & Sovereign Security</strong>
+                <strong style={{ fontSize: '0.8rem', color: 'var(--text)', display: 'block', marginBottom: '4px' }}>{t('privacy_security_title', 'Privacy & Sovereign Security')}</strong>
                 <p style={{ fontSize: '0.74rem', color: 'var(--text-muted)', margin: 0, lineHeight: 1.45 }}>
-                  Only the information you explicitly choose to share will be visible to your partner. Your personal credentials, passwords, and authentication data are never shared.
+                  {t('privacy_security_desc', 'Only the information you explicitly choose to share will be visible to your partner. Your personal credentials, passwords, and authentication data are never shared.')}
                 </p>
               </div>
             </div>
@@ -769,7 +771,7 @@ export function PartnerPage({ setPage, connectCode }) {
               style={{ marginTop: '3px', accentColor: T.gold }}
             />
             <label htmlFor="consent-check" style={{ fontSize: '0.8rem', color: 'var(--text-muted)', lineHeight: 1.4, cursor: 'pointer' }}>
-              I understand how partner workspaces function.
+              {t('understand_workspaces_consent', 'I understand how partner workspaces function.')}
             </label>
           </div>
 
@@ -784,14 +786,14 @@ export function PartnerPage({ setPage, connectCode }) {
                 opacity: consentChecked ? 1 : 0.6
               }}
             >
-              Continue
+              {t('continue_btn', 'Continue')}
             </button>
             <button
               onClick={() => setPage('dashboard')}
               className="onb-btn-back"
               style={{ flex: 1, padding: '12px', borderRadius: '100px', fontSize: '0.85rem' }}
             >
-              Back
+              {t('back_btn', 'Back')}
             </button>
           </div>
         </Card>
@@ -806,10 +808,10 @@ export function PartnerPage({ setPage, connectCode }) {
         <Card style={{ padding: '32px 24px' }}>
           <div style={{ textAlign: 'center', marginBottom: '28px' }}>
             <h2 style={{ fontFamily: T.fontDisplay, fontSize: '1.50rem', fontWeight: 700, margin: '0 0 6px', color: 'var(--text)' }}>
-              Choose Connection Method
+              {t('choose_connection_method', 'Choose Connection Method')}
             </h2>
             <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: 0 }}>
-              Select a method below to link workspaces with your partner.
+              {t('choose_method_desc', 'Select a method below to link workspaces with your partner.')}
             </p>
           </div>
 
@@ -830,8 +832,8 @@ export function PartnerPage({ setPage, connectCode }) {
                   <QrCodeIcon size={20} />
                 </div>
                 <div>
-                  <strong style={{ fontSize: '0.88rem', color: 'var(--text)', display: 'block' }}>QR Code</strong>
-                  <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>Scan and connect instantly.</span>
+                  <strong style={{ fontSize: '0.88rem', color: 'var(--text)', display: 'block' }}>{t('qr_code_title', 'QR Code')}</strong>
+                  <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>{t('qr_code_desc', 'Scan and connect instantly.')}</span>
                 </div>
               </div>
               <ArrowRight size={16} style={{ color: 'var(--text-faint)' }} />
@@ -853,8 +855,8 @@ export function PartnerPage({ setPage, connectCode }) {
                   <Link2 size={20} />
                 </div>
                 <div>
-                  <strong style={{ fontSize: '0.88rem', color: 'var(--text)', display: 'block' }}>Invitation Link</strong>
-                  <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>Share a secure invitation link.</span>
+                  <strong style={{ fontSize: '0.88rem', color: 'var(--text)', display: 'block' }}>{t('invitation_link_title', 'Invitation Link')}</strong>
+                  <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>{t('invitation_link_desc', 'Share a secure invitation link.')}</span>
                 </div>
               </div>
               <ArrowRight size={16} style={{ color: 'var(--text-faint)' }} />
@@ -876,8 +878,8 @@ export function PartnerPage({ setPage, connectCode }) {
                   <Key size={20} />
                 </div>
                 <div>
-                  <strong style={{ fontSize: '0.88rem', color: 'var(--text)', display: 'block' }}>Partner ID / Invite Code</strong>
-                  <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>Enter your partner's ID or invite code.</span>
+                  <strong style={{ fontSize: '0.88rem', color: 'var(--text)', display: 'block' }}>{t('partner_id_code_title', 'Partner ID / Invite Code')}</strong>
+                  <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>{t('partner_id_code_desc', "Enter your partner's ID or invite code.")}</span>
                 </div>
               </div>
               <ArrowRight size={16} style={{ color: 'var(--text-faint)' }} />
@@ -889,7 +891,7 @@ export function PartnerPage({ setPage, connectCode }) {
             className="onb-btn-back"
             style={{ width: '100%', padding: '12px', borderRadius: '100px', fontSize: '0.85rem' }}
           >
-            Back
+            {t('back_btn', 'Back')}
           </button>
         </Card>
       </div>
@@ -955,7 +957,7 @@ export function PartnerPage({ setPage, connectCode }) {
                 <button
                   onClick={() => {
                     navigator.clipboard.writeText(getInviteUrl());
-                    toast.success("Link copied to clipboard!");
+                    toast.success(t('link_copied', 'Link copied to clipboard!'));
                   }}
                   className="btn-secondary"
                   style={{ padding: '6px 12px', borderRadius: '8px', fontSize: '0.72rem', display: 'flex', alignItems: 'center', gap: '4px' }}
@@ -971,13 +973,13 @@ export function PartnerPage({ setPage, connectCode }) {
                           text: 'Join my shared committed partner workspace on EverBond Wealth.',
                           url: getInviteUrl(),
                         });
-                        toast.success("Shared successfully!");
+                        toast.success(t('shared_successfully', 'Shared successfully!'));
                       } catch (err) {
                         console.log("Share failed or cancelled:", err);
                       }
                     } else {
                       navigator.clipboard.writeText(getInviteUrl());
-                      toast.success("Link copied! Share API not supported on this device.");
+                      toast.success(t('link_copied_fallback', 'Link copied! Share API not supported on this device.'));
                     }
                   }}
                   className="btn-secondary"
@@ -1100,10 +1102,10 @@ export function PartnerPage({ setPage, connectCode }) {
             </button>
             
             <h3 style={{ fontFamily: T.fontDisplay, fontSize: '1.25rem', fontWeight: 800, margin: '0 0 6px', color: 'var(--text)' }}>
-              Scan Invitation QR
+              {t('scan_invitation_qr', 'Scan Invitation QR')}
             </h3>
             <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: '20px', lineHeight: 1.4 }}>
-              Align the QR code on your partner's screen within the viewfinder.
+              {t('align_qr_desc', "Align the QR code on your partner's screen within the viewfinder.")}
             </p>
 
             <div style={{
@@ -1118,7 +1120,7 @@ export function PartnerPage({ setPage, connectCode }) {
                 </>
               ) : (
                 <div style={{ color: 'var(--text-muted)', padding: '16px', fontSize: '0.8rem' }}>
-                  {scanError || 'Starting Camera stream...'}
+                  {scanError || t('starting_camera', 'Starting Camera stream...')}
                 </div>
               )}
             </div>
@@ -1128,7 +1130,7 @@ export function PartnerPage({ setPage, connectCode }) {
               className="btn-secondary"
               style={{ width: 'auto', padding: '8px 20px', borderRadius: '100px', fontSize: '0.78rem' }}
             >
-              Cancel
+              {t('cancel', 'Cancel')}
             </button>
           </div>
         </div>

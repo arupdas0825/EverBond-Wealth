@@ -766,8 +766,14 @@ export const useFinanceStore = create(
           const { doc, updateDoc } = await import('firebase/firestore');
           try {
             const userRef = doc(db, 'users', currentUser.uid);
+            const settingsMap = {
+              language: lang,
+              currency: get().currency || 'INR',
+              timezone: get().timezone || 'GMT+5:30'
+            };
             await updateDoc(userRef, {
               language: lang,
+              settings: settingsMap,
               'settings.language': lang
             });
             console.log("Firestore language preference saved.");
@@ -785,8 +791,14 @@ export const useFinanceStore = create(
           const { doc, updateDoc } = await import('firebase/firestore');
           try {
             const userRef = doc(db, 'users', currentUser.uid);
+            const settingsMap = {
+              language: get().language || 'English',
+              currency: get().currency || 'INR',
+              timezone: tz
+            };
             await updateDoc(userRef, {
               timezone: tz,
+              settings: settingsMap,
               'settings.timezone': tz
             });
             console.log("Firestore timezone preference saved.");
@@ -847,22 +859,75 @@ export const useFinanceStore = create(
         set({ mode: v, mindset: v });
         get().syncInsightsData();
       },
-      setCurrency: v => {
+      setCurrency: async v => {
         const old = get().currency;
-        if (v !== old) {
-          get().addNotification({
-            type: 'system',
-            title: 'Settings Saved',
-            description: `Currency preferences updated to ${v}.`
-          });
-          get().addTimelineEvent({
-            type: 'system',
-            title: 'Settings Updated',
-            description: `System presentation currency changed to "${v}".`
+        if (v === old) return;
+        
+        let rates = get().exchangeRates;
+        const { fetchExchangeRates, getExchangeRate } = await import('../utils/currency');
+        if (!rates) {
+          rates = await fetchExchangeRates();
+        }
+        
+        const multiplier = getExchangeRate(old, v, rates);
+        
+        const convertedP1 = Math.round(get().p1Salary * multiplier);
+        const convertedP2 = Math.round(get().p2Salary * multiplier);
+        
+        const convertedGoals = {};
+        if (get().goalTargets) {
+          Object.keys(get().goalTargets).forEach(key => {
+            convertedGoals[key] = Math.round(get().goalTargets[key] * multiplier);
           });
         }
-        set({ currency: v });
+        
+        const convertedMilestones = (get().milestones || []).map(m => ({
+          ...m,
+          targetCost: Math.round(m.targetCost * multiplier),
+          monthlySaved: Math.round(m.monthlySaved * multiplier)
+        }));
+        
+        get().addNotification({
+          type: 'system',
+          title: 'Settings Saved',
+          description: `Currency preferences updated to ${v}.`
+        });
+        get().addTimelineEvent({
+          type: 'system',
+          title: 'Settings Updated',
+          description: `System presentation currency changed to "${v}".`
+        });
+        
+        set({ 
+          currency: v,
+          p1Salary: convertedP1,
+          p2Salary: convertedP2,
+          goalTargets: convertedGoals,
+          milestones: convertedMilestones
+        });
         get().syncInsightsData();
+        
+        const { db } = await import('../utils/firebase');
+        const currentUser = get().user;
+        if (currentUser?.uid && db) {
+          const { doc, updateDoc } = await import('firebase/firestore');
+          try {
+            const userRef = doc(db, 'users', currentUser.uid);
+            const settingsMap = {
+              language: get().language || 'English',
+              currency: v,
+              timezone: get().timezone || 'GMT+5:30'
+            };
+            await updateDoc(userRef, {
+              currency: v,
+              settings: settingsMap,
+              'settings.currency': v
+            });
+            console.log("Firestore currency preference saved.");
+          } catch (err) {
+            console.warn("Could not save currency to Firestore:", err);
+          }
+        }
       },
       setSimYears: v => {
         const old = get().simYears;

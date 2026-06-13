@@ -12,9 +12,11 @@ import { useFinanceStore } from '../../store/useFinanceStore';
 import { formatCurrency, formatCompact } from '../../utils/finance';
 import { Card } from '../common/Card';
 import { T } from '../../theme/tokens';
+import { useTranslation } from '../../utils/i18n';
 
 export function WealthInsightsPage() {
   const store = useFinanceStore();
+  const { t } = useTranslation();
   const {
     historicalNetWorth = [],
     incomeHistory = [],
@@ -89,13 +91,13 @@ export function WealthInsightsPage() {
   const allocationData = useMemo(() => {
     const investBase = totalInvestments > 0 ? totalInvestments : (totalSal * 12);
     return [
-      { name: 'Cash Reserves', value: Math.round(investBase * 0.12), color: T.sky },
-      { name: 'Emergency Fund', value: Math.round(investBase * 0.18), color: T.rose },
-      { name: 'Mutual Funds / Equity', value: Math.round(investBase * 0.40), color: T.goldMid },
-      { name: 'Retirement Corpus', value: Math.round(investBase * 0.22), color: T.sage },
-      { name: 'Alternative Assets', value: Math.round(investBase * 0.08), color: T.violet }
+      { name: t('cash_reserves', 'Cash Reserves'), value: Math.round(investBase * 0.12), color: T.sky },
+      { name: t('emergency_fund', 'Emergency Fund'), value: Math.round(investBase * 0.18), color: T.rose },
+      { name: t('mutual_funds_equity', 'Mutual Funds / Equity'), value: Math.round(investBase * 0.40), color: T.goldMid },
+      { name: t('retirement_corpus', 'Retirement Corpus'), value: Math.round(investBase * 0.22), color: T.sage },
+      { name: t('alternative_assets', 'Alternative Assets'), value: Math.round(investBase * 0.08), color: T.violet }
     ];
-  }, [totalInvestments, totalSal]);
+  }, [totalInvestments, totalSal, t]);
 
   const totalAllocationValue = useMemo(() => {
     return allocationData.reduce((acc, curr) => acc + curr.value, 0);
@@ -286,10 +288,10 @@ export function WealthInsightsPage() {
 
           <div>
             <h4 style={{ fontSize: '0.9rem', fontWeight: 800, color: 'var(--text)', marginBottom: '6px', fontFamily: T.fontBody }}>
-              {title || 'Shared Wealth Locked'}
+              {title || t('shared_wealth_locked', 'Shared Wealth Locked')}
             </h4>
             <p style={{ fontSize: '0.74rem', color: 'var(--text-muted)', lineHeight: 1.4, margin: 0 }}>
-              {desc || 'Connect your partner to unlock shared wealth planning.'}
+              {desc || t('connect_partner_desc', 'Connect your partner to unlock shared wealth planning.')}
             </p>
           </div>
 
@@ -305,7 +307,7 @@ export function WealthInsightsPage() {
               boxShadow: 'var(--sh-sm)'
             }}
           >
-            Connect Partner
+            {t('connect_partner_btn', 'Connect Partner')}
           </button>
         </div>
       </div>
@@ -317,10 +319,10 @@ export function WealthInsightsPage() {
       {/* Top Banner Header */}
       <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16, marginBottom: '28px' }}>
         <div>
-          <div className="page-eyebrow">Intelligence & Insights</div>
-          <h1 className="page-title">Wealth <em>Insights</em></h1>
+          <div className="page-eyebrow">{t('intelligence_insights', 'Intelligence & Insights')}</div>
+          <h1 className="page-title">{t('wealth', 'Wealth')} <em>{t('insights', 'Insights')}</em></h1>
           <p className="page-desc">
-            Visual telemetry and algorithmic insights detailing your asset growth and financial path.
+            {t('wealth_insights_desc', 'Visual telemetry and algorithmic insights detailing your asset growth and financial path.')}
           </p>
         </div>
         <div style={{ flexShrink: 0 }} className="desktop-only-logo">
@@ -362,9 +364,9 @@ export function WealthInsightsPage() {
             <div className="lock-icon-glow" style={{ marginBottom: '24px' }}>
               <Lock size={28} />
             </div>
-            <h2 className="lock-title" style={{ fontSize: '1.6rem', marginBottom: '12px' }}>Insights Locked</h2>
+            <h2 className="lock-title" style={{ fontSize: '1.6rem', marginBottom: '12px' }}>{t('insights_locked', 'Insights Locked')}</h2>
             <p className="lock-desc" style={{ maxWidth: '380px', margin: '0 auto 24px' }}>
-              Wealth Insights require active income nodes to calculate growth trajectories, forecasts, and portfolio allocations.
+              {t('insights_locked_desc', 'Wealth Insights require active income nodes to calculate growth trajectories, forecasts, and portfolio allocations.')}
             </p>
             <button
               onClick={() => {
@@ -387,7 +389,7 @@ export function WealthInsightsPage() {
               onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.02)'}
               onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
             >
-              Add Income Node <ChevronRight size={16} />
+              {t('add_income_node', 'Add Income Node')} <ChevronRight size={16} />
             </button>
           </motion.div>
         ) : (
@@ -405,8 +407,8 @@ export function WealthInsightsPage() {
               <Card gold style={{ height: '100%', position: 'relative', overflow: 'hidden' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 12, marginBottom: '16px' }}>
                   <div>
-                    <span className="card-title" style={{ fontSize: '0.72rem', tracking: '0.08em', textTransform: 'uppercase', color: T.goldMid }}>Asset Balances</span>
-                    <h3 className="card-heading" style={{ fontSize: '1.25rem', marginTop: '2px' }}>Net Worth Growth</h3>
+                    <span className="card-title" style={{ fontSize: '0.72rem', tracking: '0.08em', textTransform: 'uppercase', color: T.goldMid }}>{t('asset_balances', 'Asset Balances')}</span>
+                    <h3 className="card-heading" style={{ fontSize: '1.25rem', marginTop: '2px' }}>{t('net_worth_growth', 'Net Worth Growth')}</h3>
                   </div>
 
                   {/* Range selector */}
@@ -428,7 +430,7 @@ export function WealthInsightsPage() {
                           transition: 'all 0.2s ease'
                         }}
                       >
-                        {r}
+                        {t('range_' + r.toLowerCase(), r)}
                       </button>
                     ))}
                   </div>
@@ -437,13 +439,13 @@ export function WealthInsightsPage() {
                 {/* Growth metrics display */}
                 <div style={{ display: 'flex', gap: '24px', marginBottom: '20px', alignItems: 'baseline' }}>
                   <div>
-                    <span style={{ fontSize: '0.7rem', color: 'var(--text-faint)' }}>CURRENT ESTIMATE</span>
+                    <span style={{ fontSize: '0.7rem', color: 'var(--text-faint)' }}>{t('current_estimate', 'CURRENT ESTIMATE')}</span>
                     <div style={{ fontSize: '2rem', fontWeight: 800, fontFamily: 'var(--fn)', color: 'var(--text)', lineHeight: '1.1' }}>
                       {fmt(netWorthMetrics.current)}
                     </div>
                   </div>
                   <div>
-                    <span style={{ fontSize: '0.7rem', color: 'var(--text-faint)' }}>GROWTH RATE</span>
+                    <span style={{ fontSize: '0.7rem', color: 'var(--text-faint)' }}>{t('growth_rate', 'GROWTH RATE')}</span>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 700, color: netWorthMetrics.trend === 'up' ? T.sage : netWorthMetrics.trend === 'down' ? T.rose : T.gold }}>
                       {netWorthMetrics.trend === 'up' ? <TrendingUp size={16} /> : netWorthMetrics.trend === 'down' ? <TrendingDown size={16} /> : null}
                       <span style={{ fontSize: '1.2rem' }}>{netWorthMetrics.growthPct}%</span>
@@ -483,7 +485,7 @@ export function WealthInsightsPage() {
                       />
                       <Tooltip
                         contentStyle={customTooltipStyle}
-                        formatter={(v) => [fmt(v), 'Net Worth']}
+                        formatter={(v) => [fmt(v), t('net_worth', 'Net Worth')]}
                         cursor={{ stroke: 'var(--border-mid)', strokeWidth: 1 }}
                       />
                       <Area
@@ -503,7 +505,10 @@ export function WealthInsightsPage() {
                 <div style={{ padding: '12px 16px', background: 'var(--bg-warm)', borderRadius: T.radiusSm, border: '1px solid var(--border-mid)', display: 'flex', gap: 10, alignItems: 'center' }}>
                   <Award size={18} style={{ color: T.gold, flexShrink: 0 }} />
                   <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', margin: 0, lineHeight: 1.4 }}>
-                    <strong>Insight Engine:</strong> Your assets are growing {netWorthMetrics.trend === 'up' ? 'positively' : 'neutrally'}. In the current {netWorthRange} selection, net worth increased by <strong>{netWorthMetrics.growthPct}%</strong>.
+                    <strong>{t('insight_engine', 'Insight Engine')}:</strong> {t('insight_nw_growth', 'Your assets are growing {trend}. In the current {range} selection, net worth increased by {percent}%.')
+                      .replace('{trend}', netWorthMetrics.trend === 'up' ? t('positively', 'positively') : t('neutrally', 'neutrally'))
+                      .replace('{range}', t('range_' + netWorthRange.toLowerCase(), netWorthRange))
+                      .replace('{percent}', netWorthMetrics.growthPct)}
                   </p>
                 </div>
               </Card>
@@ -513,8 +518,8 @@ export function WealthInsightsPage() {
             <motion.div variants={itemVariants} className="span-4">
               <Card style={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                 <div>
-                  <span className="card-title" style={{ fontSize: '0.72rem', tracking: '0.08em', textTransform: 'uppercase', color: T.textFaint }}>Financial Health</span>
-                  <h3 className="card-heading" style={{ fontSize: '1.25rem', marginTop: '2px', marginBottom: '24px' }}>Savings Health</h3>
+                  <span className="card-title" style={{ fontSize: '0.72rem', tracking: '0.08em', textTransform: 'uppercase', color: T.textFaint }}>{t('financial_health', 'Financial Health')}</span>
+                  <h3 className="card-heading" style={{ fontSize: '1.25rem', marginTop: '2px', marginBottom: '24px' }}>{t('savings_health', 'Savings Health')}</h3>
 
                   <SavingsGauge
                     value={savingsRate?.percentage || 30}
@@ -533,7 +538,7 @@ export function WealthInsightsPage() {
                       fontSize: '0.8rem',
                       padding: '4px 14px'
                     }}>
-                      {savingsRate?.level || 'Healthy'} Rating
+                      {t('savings_level_' + (savingsRate?.level || 'Healthy').toLowerCase(), savingsRate?.level || 'Healthy')} {t('rating', 'Rating')}
                     </span>
                   </div>
                 </div>
@@ -541,7 +546,7 @@ export function WealthInsightsPage() {
                 {/* Insight Engine */}
                 <div style={{ padding: '12px 14px', background: 'var(--bg-warm)', borderRadius: T.radiusSm, border: '1px solid var(--border-mid)' }}>
                   <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: 0, lineHeight: 1.4 }}>
-                    {savingsRate?.description || 'Your shared financial plan is healthy.'}
+                    {t(savingsRate?.description, savingsRate?.description || 'Your shared financial plan is healthy.')}
                   </p>
                 </div>
               </Card>
@@ -550,8 +555,8 @@ export function WealthInsightsPage() {
             {/* CHART 2 — INCOME VS EXPENSES (span-6) */}
             <motion.div variants={itemVariants} className="span-6">
               <Card style={{ height: '100%' }}>
-                <span className="card-title" style={{ fontSize: '0.72rem', tracking: '0.08em', textTransform: 'uppercase', color: T.textFaint }}>Cash Flow</span>
-                <h3 className="card-heading" style={{ fontSize: '1.25rem', marginTop: '2px', marginBottom: '16px' }}>Income vs Expenses</h3>
+                <span className="card-title" style={{ fontSize: '0.72rem', tracking: '0.08em', textTransform: 'uppercase', color: T.textFaint }}>{t('cash_flow', 'Cash Flow')}</span>
+                <h3 className="card-heading" style={{ fontSize: '1.25rem', marginTop: '2px', marginBottom: '16px' }}>{t('income_vs_expenses', 'Income vs Expenses')}</h3>
 
                 <div style={{ height: '220px', width: '100%', marginBottom: '16px' }}>
                   <ResponsiveContainer width="100%" height="100%">
@@ -571,17 +576,17 @@ export function WealthInsightsPage() {
                             const rate = combinedInc > 0 ? ((savingAmt / combinedInc) * 100).toFixed(0) : 0;
                             return (
                               <div style={{ padding: '4px' }}>
-                                <div style={{ fontWeight: 700, marginBottom: '6px', borderBottom: '1px solid var(--border-mid)', paddingBottom: '4px' }}>{label} Cashflow</div>
+                                <div style={{ fontWeight: 700, marginBottom: '6px', borderBottom: '1px solid var(--border-mid)', paddingBottom: '4px' }}>{t('monthly_cashflow_title', '{label} Cashflow').replace('{label}', label)}</div>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16 }}>
-                                  <span style={{ color: T.sage }}>Income:</span>
+                                  <span style={{ color: T.sage }}>{t('income_label', 'Income:')}</span>
                                   <span style={{ fontWeight: 600 }}>{fmt(combinedInc)}</span>
                                 </div>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, marginBottom: '4px' }}>
-                                  <span style={{ color: T.rose }}>Expenses:</span>
+                                  <span style={{ color: T.rose }}>{t('expenses_label', 'Expenses:')}</span>
                                   <span style={{ fontWeight: 600 }}>{fmt(combinedExp)}</span>
                                 </div>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, borderTop: '1px dashed var(--border-mid)', paddingTop: '4px', fontWeight: 700 }}>
-                                  <span>Savings Rate:</span>
+                                  <span>{t('savings_rate_label', 'Savings Rate:')}</span>
                                   <span style={{ color: T.gold }}>{rate}%</span>
                                 </div>
                               </div>
@@ -590,7 +595,7 @@ export function WealthInsightsPage() {
                           return null;
                         }}
                       />
-                      <Line type="monotone" dataKey="combined" stroke={T.sage} strokeWidth={2.5} dot={{ r: 3 }} activeDot={{ r: 5 }} name="Income" />
+                      <Line type="monotone" dataKey="combined" stroke={T.sage} strokeWidth={2.5} dot={{ r: 3 }} activeDot={{ r: 5 }} name={t('income', 'Income')} />
                       {/* Read matching monthly expenses */}
                       <Line
                         type="monotone"
@@ -603,7 +608,7 @@ export function WealthInsightsPage() {
                         strokeWidth={2.5}
                         dot={{ r: 3 }}
                         activeDot={{ r: 5 }}
-                        name="Expenses"
+                        name={t('expenses', 'Expenses')}
                       />
                     </LineChart>
                   </ResponsiveContainer>
@@ -613,7 +618,7 @@ export function WealthInsightsPage() {
                 <div style={{ padding: '10px 14px', background: 'var(--bg-warm)', borderRadius: T.radiusSm, border: '1px solid var(--border-mid)', display: 'flex', gap: 8, alignItems: 'center' }}>
                   <Wallet size={16} style={{ color: T.sage, flexShrink: 0 }} />
                   <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: 0, lineHeight: 1.4 }}>
-                    <strong>Insight Engine:</strong> Your saving rate averages <strong>{savingsRate?.percentage || 30}%</strong>. Cash flow direction is <strong>positive</strong>; your surplus is safely allocated into wealth generators.
+                    <strong>{t('insight_engine', 'Insight Engine')}:</strong> {t('insight_savings_average', 'Your saving rate averages {percent}%. Cash flow direction is positive; your surplus is safely allocated into wealth generators.').replace('{percent}', savingsRate?.percentage || 30)}
                   </p>
                 </div>
               </Card>
@@ -622,8 +627,8 @@ export function WealthInsightsPage() {
             {/* CHART 5 — WEALTH FORECAST (span-6) */}
             <motion.div variants={itemVariants} className="span-6">
               <Card style={{ height: '100%' }}>
-                <span className="card-title" style={{ fontSize: '0.72rem', tracking: '0.08em', textTransform: 'uppercase', color: T.textFaint }}>Projections</span>
-                <h3 className="card-heading" style={{ fontSize: '1.25rem', marginTop: '2px', marginBottom: '16px' }}>Future Wealth Projection</h3>
+                <span className="card-title" style={{ fontSize: '0.72rem', tracking: '0.08em', textTransform: 'uppercase', color: T.textFaint }}>{t('projections', 'Projections')}</span>
+                <h3 className="card-heading" style={{ fontSize: '1.25rem', marginTop: '2px', marginBottom: '16px' }}>{t('future_wealth_projection', 'Future Wealth Projection')}</h3>
 
                 <div style={{ height: '220px', width: '100%', marginBottom: '16px' }}>
                   <ResponsiveContainer width="100%" height="100%">
@@ -652,22 +657,22 @@ export function WealthInsightsPage() {
                             const data = payload[0].payload;
                             return (
                               <div style={{ padding: '4px' }}>
-                                <div style={{ fontWeight: 700, marginBottom: '6px', borderBottom: '1px solid var(--border-mid)', paddingBottom: '4px' }}>Forecast ({label})</div>
+                                <div style={{ fontWeight: 700, marginBottom: '6px', borderBottom: '1px solid var(--border-mid)', paddingBottom: '4px' }}>{t('forecast_year', 'Forecast ({label})').replace('{label}', label)}</div>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16 }}>
-                                  <span style={{ color: T.sage }}>Optimistic (12%):</span>
+                                  <span style={{ color: T.sage }}>{t('optimistic_rate', 'Optimistic (12%):')}</span>
                                   <span style={{ fontWeight: 600 }}>{fmt(data.optimistic)}</span>
                                 </div>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16 }}>
-                                  <span style={{ color: T.gold }}>Base (10%):</span>
+                                  <span style={{ color: T.gold }}>{t('base_rate', 'Base (10%):')}</span>
                                   <span style={{ fontWeight: 600 }}>{fmt(data.base)}</span>
                                 </div>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, marginBottom: '4px' }}>
-                                  <span style={{ color: T.rose }}>Conservative (7%):</span>
+                                  <span style={{ color: T.rose }}>{t('conservative_rate', 'Conservative (7%):')}</span>
                                   <span style={{ fontWeight: 600 }}>{fmt(data.conservative)}</span>
                                 </div>
                                 {data.milestone && (
                                   <div style={{ borderTop: '1px dashed var(--border-mid)', paddingTop: '4px', fontSize: '10px', color: T.gold, fontWeight: 700 }}>
-                                    🎯 Milestone: {data.milestone}
+                                    🎯 {t('milestone', 'Milestone')}: {t(data.milestone, data.milestone)}
                                   </div>
                                 )}
                               </div>
@@ -676,9 +681,9 @@ export function WealthInsightsPage() {
                           return null;
                         }}
                       />
-                      <Area type="monotone" dataKey="optimistic" stroke={T.sage} strokeWidth={1} fill="url(#optimisticGrad)" name="Optimistic" />
-                      <Area type="monotone" dataKey="base" stroke={T.goldMid} strokeWidth={2} fill="url(#baseGrad)" name="Base Estimate" />
-                      <Area type="monotone" dataKey="conservative" stroke={T.rose} strokeWidth={1} fill="url(#conservativeGrad)" name="Conservative" />
+                      <Area type="monotone" dataKey="optimistic" stroke={T.sage} strokeWidth={1} fill="url(#optimisticGrad)" name={t('optimistic', 'Optimistic')} />
+                      <Area type="monotone" dataKey="base" stroke={T.goldMid} strokeWidth={2} fill="url(#baseGrad)" name={t('base_estimate', 'Base Estimate')} />
+                      <Area type="monotone" dataKey="conservative" stroke={T.rose} strokeWidth={1} fill="url(#conservativeGrad)" name={t('conservative', 'Conservative')} />
                     </AreaChart>
                   </ResponsiveContainer>
                 </div>
@@ -687,7 +692,7 @@ export function WealthInsightsPage() {
                 <div style={{ padding: '10px 14px', background: 'var(--bg-warm)', borderRadius: T.radiusSm, border: '1px solid var(--border-mid)', display: 'flex', gap: 8, alignItems: 'center' }}>
                   <Calendar size={16} style={{ color: T.gold, flexShrink: 0 }} />
                   <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: 0, lineHeight: 1.4 }}>
-                    <strong>Insight Engine:</strong> In 10 Years, your projected portfolio base corpus is expected to compound to <strong>{wealthForecast.length > 2 ? cmpct(wealthForecast[2].base) : ''}</strong>.
+                    <strong>{t('insight_engine', 'Insight Engine')}:</strong> {t('insight_wealth_projection', 'In 10 Years, your projected portfolio base corpus is expected to compound to {amount}.').replace('{amount}', wealthForecast.length > 2 ? cmpct(wealthForecast[2].base) : '')}
                   </p>
                 </div>
               </Card>
@@ -696,8 +701,8 @@ export function WealthInsightsPage() {
             {/* CHART 3 — ASSET ALLOCATION (span-6) */}
             <motion.div variants={itemVariants} className="span-6">
               <Card style={{ height: '100%', position: 'relative' }}>
-                <span className="card-title" style={{ fontSize: '0.72rem', tracking: '0.08em', textTransform: 'uppercase', color: T.textFaint }}>Diversification</span>
-                <h3 className="card-heading" style={{ fontSize: '1.25rem', marginTop: '2px', marginBottom: '12px' }}>Portfolio Allocation</h3>
+                <span className="card-title" style={{ fontSize: '0.72rem', tracking: '0.08em', textTransform: 'uppercase', color: T.textFaint }}>{t('diversification', 'Diversification')}</span>
+                <h3 className="card-heading" style={{ fontSize: '1.25rem', marginTop: '2px', marginBottom: '12px' }}>{t('portfolio_allocation', 'Portfolio Allocation')}</h3>
 
                 <div style={{ position: 'relative', height: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <div style={{ height: '100%', width: '100%' }}>
@@ -746,13 +751,13 @@ export function WealthInsightsPage() {
                     ) : (
                       <>
                         <span style={{ fontSize: '9px', color: 'var(--text-faint)', textTransform: 'uppercase', fontWeight: 800, display: 'block' }}>
-                          Portfolio
+                          {t('portfolio', 'Portfolio')}
                         </span>
                         <span style={{ fontSize: '1.25rem', fontWeight: 800, fontFamily: 'var(--fn)', display: 'block', margin: '2px 0' }}>
                           {cmpct(totalAllocationValue)}
                         </span>
                         <span style={{ fontSize: '10px', color: T.gold, fontWeight: 700 }}>
-                          Allocated
+                          {t('allocated', 'Allocated')}
                         </span>
                       </>
                     )}
@@ -780,7 +785,7 @@ export function WealthInsightsPage() {
                       }}
                     >
                       <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: item.color }} />
-                      <span>{item.name.split(' / ')[0]}</span>
+                      <span>{t(item.name, item.name)}</span>
                     </div>
                   ))}
                 </div>
@@ -789,7 +794,7 @@ export function WealthInsightsPage() {
                 <div style={{ padding: '10px 14px', background: 'var(--bg-warm)', borderRadius: T.radiusSm, border: '1px solid var(--border-mid)', display: 'flex', gap: 8, alignItems: 'center' }}>
                   <Sparkles size={16} style={{ color: T.violet, flexShrink: 0 }} />
                   <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: 0, lineHeight: 1.4 }}>
-                    <strong>Insight Engine:</strong> Emergency safety reserves form <strong>18%</strong> of assets, satisfying standard diversification metrics.
+                    <strong>{t('insight_engine', 'Insight Engine')}:</strong> {t('insight_diversification', 'Emergency safety reserves form 18% of assets, satisfying standard diversification metrics.')}
                   </p>
                 </div>
               </Card>
@@ -799,13 +804,13 @@ export function WealthInsightsPage() {
             <motion.div variants={itemVariants} className="span-6">
               <Card style={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                 <div>
-                  <span className="card-title" style={{ fontSize: '0.72rem', tracking: '0.08em', textTransform: 'uppercase', color: T.textFaint }}>Milestones</span>
-                  <h3 className="card-heading" style={{ fontSize: '1.25rem', marginTop: '2px', marginBottom: '16px' }}>Goals Progress</h3>
+                  <span className="card-title" style={{ fontSize: '0.72rem', tracking: '0.08em', textTransform: 'uppercase', color: T.textFaint }}>{t('milestones', 'Milestones')}</span>
+                  <h3 className="card-heading" style={{ fontSize: '1.25rem', marginTop: '2px', marginBottom: '16px' }}>{t('goals_progress', 'Goals Progress')}</h3>
 
                   {goalProgress.length === 0 ? (
                     <div style={{ padding: '30px 0', textCenter: 'center', color: 'var(--text-faint)', fontSize: '0.85rem' }} className="ms-empty-state">
                       <Target size={32} style={{ opacity: 0.4, marginBottom: '8px' }} />
-                      Initialize dream goals in the Goals section to unlock ring tracking.
+                      {t('initialize_goals_prompt', 'Initialize dream goals in the Goals section to unlock ring tracking.')}
                     </div>
                   ) : (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -825,15 +830,15 @@ export function WealthInsightsPage() {
                             </div>
                             <div style={{ flex: 1, minWidth: 0 }}>
                               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 8 }}>
-                                <span style={{ fontWeight: 700, fontSize: '0.88rem', color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{goal.name}</span>
-                                <span style={{ fontSize: '0.75rem', color: ringColor, fontWeight: 700, flexShrink: 0 }}>ETA: {goal.estimatedCompletion}</span>
+                                <span style={{ fontWeight: 700, fontSize: '0.88rem', color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t(goal.name, goal.name)}</span>
+                                <span style={{ fontSize: '0.75rem', color: ringColor, fontWeight: 700, flexShrink: 0 }}>{t('eta', 'ETA')}: {goal.estimatedCompletion}</span>
                               </div>
                               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px' }}>
-                                <span>Saved: {cmpct(goal.current)}</span>
-                                <span>Target: {cmpct(goal.target)}</span>
+                                <span>{t('saved_label', 'Saved')}: {cmpct(goal.current)}</span>
+                                <span>{t('target_label', 'Target')}: {cmpct(goal.target)}</span>
                               </div>
                               <div style={{ fontSize: '0.68rem', color: 'var(--text-faint)', marginTop: '2px' }}>
-                                Remaining: {fmt(goal.remaining)} ➔ Est: {goal.completionDate}
+                                {t('remaining_label', 'Remaining')}: {fmt(goal.remaining)} ➔ {t('est_label', 'Est')}: {goal.completionDate}
                               </div>
                             </div>
                           </div>
@@ -847,7 +852,10 @@ export function WealthInsightsPage() {
                 <div style={{ padding: '10px 14px', background: 'var(--bg-warm)', borderRadius: T.radiusSm, border: '1px solid var(--border-mid)', display: 'flex', gap: 8, alignItems: 'center', marginTop: '16px' }}>
                   <Target size={16} style={{ color: T.rose, flexShrink: 0 }} />
                   <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: 0, lineHeight: 1.4 }}>
-                    <strong>Insight Engine:</strong> {goalProgress[0] ? `Your ${goalProgress[0].name} goal is ${goalProgress[0].percentage}% complete. Target completion: ${goalProgress[0].completionDate}.` : 'Set targets to evaluate milestones.'}
+                    <strong>{t('insight_engine', 'Insight Engine')}:</strong> {goalProgress[0] ? t('insight_goal_progress', 'Your {goalName} goal is {percent}% complete. Target completion: {date}.')
+                      .replace('{goalName}', t(goalProgress[0].name, goalProgress[0].name))
+                      .replace('{percent}', goalProgress[0].percentage)
+                      .replace('{date}', goalProgress[0].completionDate) : t('set_targets_prompt', 'Set targets to evaluate milestones.')}
                   </p>
                 </div>
               </Card>
@@ -857,8 +865,8 @@ export function WealthInsightsPage() {
             <motion.div variants={itemVariants} className="span-6">
               <Card style={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                 <div>
-                  <span className="card-title" style={{ fontSize: '0.72rem', tracking: '0.08em', textTransform: 'uppercase', color: T.textFaint }}>Roadmap</span>
-                  <h3 className="card-heading" style={{ fontSize: '1.25rem', marginTop: '2px', marginBottom: '24px' }}>Financial Journey Timeline</h3>
+                  <span className="card-title" style={{ fontSize: '0.72rem', tracking: '0.08em', textTransform: 'uppercase', color: T.textFaint }}>{t('roadmap', 'Roadmap')}</span>
+                  <h3 className="card-heading" style={{ fontSize: '1.25rem', marginTop: '2px', marginBottom: '24px' }}>{t('financial_journey_timeline', 'Financial Journey Timeline')}</h3>
 
                   {/* Horizontal visual line */}
                   <div style={{ position: 'relative', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 8px 32px' }}>
@@ -884,10 +892,10 @@ export function WealthInsightsPage() {
 
                     {/* Nodes */}
                     {[
-                      { key: 'Single', label: 'Single', color: T.sky, icon: '👤' },
-                      { key: 'Committed', label: 'Committed', color: T.rose, icon: '💖' },
-                      { key: 'Married', label: 'Married', color: T.gold, icon: '💍' },
-                      { key: 'Freedom', label: 'Financial Freedom', color: T.sage, icon: '🌴' }
+                      { key: 'Single', label: t('single', 'Single'), color: T.sky, icon: '👤' },
+                      { key: 'Committed', label: t('committed', 'Committed'), color: T.rose, icon: '💖' },
+                      { key: 'Married', label: t('married', 'Married'), color: T.gold, icon: '💍' },
+                      { key: 'Freedom', label: t('financial_freedom', 'Financial Freedom'), color: T.sage, icon: '🌴' }
                     ].map((node, index) => {
                       // Node is completed if we are at or past its stage
                       const stages = ['Single', 'Committed', 'Married', 'Freedom'];
@@ -944,12 +952,12 @@ export function WealthInsightsPage() {
                   {/* Journey stage items */}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '12px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', borderBottom: '1px solid var(--border)', paddingBottom: '6px' }}>
-                      <span style={{ color: 'var(--text-muted)' }}>Current Node:</span>
-                      <span style={{ fontWeight: 700, color: T.gold }}>{stage === 'Single' ? 'Independent Builder' : stage === 'Committed' ? 'Committed Network' : 'Married Dynasty'}</span>
+                      <span style={{ color: 'var(--text-muted)' }}>{t('current_node', 'Current Node:')}</span>
+                      <span style={{ fontWeight: 700, color: T.gold }}>{stage === 'Single' ? t('independent_builder', 'Independent Builder') : stage === 'Committed' ? t('committed_network', 'Committed Network') : t('married_dynasty', 'Married Dynasty')}</span>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', borderBottom: '1px solid var(--border)', paddingBottom: '6px' }}>
-                      <span style={{ color: 'var(--text-muted)' }}>Connection Link:</span>
-                      <span style={{ fontWeight: 700 }}>{connectionStatus === 'connected' ? 'Cryptographic Link Active' : 'Unlinked Solo Node'}</span>
+                      <span style={{ color: 'var(--text-muted)' }}>{t('connection_link', 'Connection Link:')}</span>
+                      <span style={{ fontWeight: 700 }}>{connectionStatus === 'connected' ? t('crypto_link_active', 'Cryptographic Link Active') : t('unlinked_solo_node', 'Unlinked Solo Node')}</span>
                     </div>
                   </div>
                 </div>
@@ -958,7 +966,7 @@ export function WealthInsightsPage() {
                 <div style={{ padding: '10px 14px', background: 'var(--bg-warm)', borderRadius: T.radiusSm, border: '1px solid var(--border-mid)', display: 'flex', gap: 8, alignItems: 'center', marginTop: '16px' }}>
                   <Sparkles size={16} style={{ color: T.gold, flexShrink: 0 }} />
                   <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: 0, lineHeight: 1.4 }}>
-                    <strong>Insight Engine:</strong> You are currently at the <strong>{stage}</strong> stage of your planning journey. {stage === 'Single' ? 'Connect a partner to double allocations.' : 'Your nodes are merged and planning is fully synchronized.'}
+                    <strong>{t('insight_engine', 'Insight Engine')}:</strong> {t('insight_journey_stage', 'You are currently at the {stage} stage of your planning journey. {extra}').replace('{stage}', t(stage.toLowerCase(), stage)).replace('{extra}', stage === 'Single' ? t('connect_partner_promo', 'Connect a partner to double allocations.') : t('nodes_merged_msg', 'Your nodes are merged and planning is fully synchronized.'))}
                   </p>
                 </div>
               </Card>
@@ -968,16 +976,16 @@ export function WealthInsightsPage() {
             <motion.div variants={itemVariants} className="span-6" style={{ position: 'relative' }}>
               {connectionStatus === 'connected' ? (
                 <Card style={{ height: '100%', background: 'linear-gradient(135deg, rgba(208, 92, 114, 0.04) 0%, rgba(124, 107, 190, 0.04) 100%)', border: '1px solid var(--rose-border)' }}>
-                  <span className="card-title" style={{ fontSize: '0.72rem', tracking: '0.08em', textTransform: 'uppercase', color: T.rose }}>Relationship Dashboard</span>
+                  <span className="card-title" style={{ fontSize: '0.72rem', tracking: '0.08em', textTransform: 'uppercase', color: T.rose }}>{t('relationship_dashboard', 'Relationship Dashboard')}</span>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '2px', marginBottom: '16px' }}>
                     <Heart size={18} fill={T.rose} style={{ color: T.rose }} />
-                    <h3 className="card-heading" style={{ fontSize: '1.25rem', margin: 0 }}>Couple Wealth Insights</h3>
+                    <h3 className="card-heading" style={{ fontSize: '1.25rem', margin: 0 }}>{t('couple_wealth_insights', 'Couple Wealth Insights')}</h3>
                   </div>
 
                   {/* Comparative Metrics Grid */}
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
                     <div style={{ background: 'var(--bg-card)', padding: '12px', borderRadius: T.radiusSm, border: '1px solid var(--border)' }}>
-                      <span style={{ fontSize: '0.68rem', color: 'var(--text-faint)' }}>SHARED MONTHLY INCOME</span>
+                      <span style={{ fontSize: '0.68rem', color: 'var(--text-faint)' }}>{t('shared_monthly_income', 'SHARED MONTHLY INCOME')}</span>
                       <div style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text)', margin: '2px 0' }}>{fmt(totalSal)}</div>
                       <span style={{ fontSize: '0.7rem', color: T.sage, fontWeight: 700 }}>
                         {partner1}: {Math.round((p1Salary / totalSal) * 100)}% | {partner2}: {Math.round((p2Salary / totalSal) * 100)}%
@@ -985,25 +993,25 @@ export function WealthInsightsPage() {
                     </div>
 
                     <div style={{ background: 'var(--bg-card)', padding: '12px', borderRadius: T.radiusSm, border: '1px solid var(--border)' }}>
-                      <span style={{ fontSize: '0.68rem', color: 'var(--text-faint)' }}>COMBINED SAVINGS RATE</span>
+                      <span style={{ fontSize: '0.68rem', color: 'var(--text-faint)' }}>{t('combined_savings_rate', 'COMBINED SAVINGS RATE')}</span>
                       <div style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text)', margin: '2px 0' }}>{savingsRate?.percentage}%</div>
                       <span style={{ fontSize: '0.7rem', color: T.gold, fontWeight: 700 }}>
-                        {partnerWealthData?.partnerName}'s individual: {partnerWealthData?.partnerSavingsRate}%
+                        {t('partner_individual_savings', '{name}\'s individual: {rate}%').replace('{name}', partnerWealthData?.partnerName || '').replace('{rate}', partnerWealthData?.partnerSavingsRate || '')}
                       </span>
                     </div>
 
                     <div style={{ background: 'var(--bg-card)', padding: '12px', borderRadius: T.radiusSm, border: '1px solid var(--border)' }}>
-                      <span style={{ fontSize: '0.68rem', color: 'var(--text-faint)' }}>PARTNER ASSET SHARE</span>
+                      <span style={{ fontSize: '0.68rem', color: 'var(--text-faint)' }}>{t('partner_asset_share', 'PARTNER ASSET SHARE')}</span>
                       <div style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text)', margin: '2px 0' }}>{fmt(partnerWealthData?.p2NetWorthShare || 0)}</div>
-                      <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>45% contribution index</span>
+                      <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{t('contribution_index_45', '45% contribution index')}</span>
                     </div>
 
                     <div style={{ background: 'var(--bg-card)', padding: '12px', borderRadius: T.radiusSm, border: '1px solid var(--border)' }}>
-                      <span style={{ fontSize: '0.68rem', color: 'var(--text-faint)' }}>ACTIVE SHARED GOALS</span>
+                      <span style={{ fontSize: '0.68rem', color: 'var(--text-faint)' }}>{t('active_shared_goals', 'ACTIVE SHARED GOALS')}</span>
                       <div style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text)', margin: '2px 0' }}>
-                        {goalProgress.length} Target{goalProgress.length !== 1 ? 's' : ''}
+                        {goalProgress.length} {goalProgress.length === 1 ? t('target', 'Target') : t('targets', 'Targets')}
                       </div>
-                      <span style={{ fontSize: '0.7rem', color: T.violet, fontWeight: 700 }}>Dual ledger sync fully active</span>
+                      <span style={{ fontSize: '0.7rem', color: T.violet, fontWeight: 700 }}>{t('dual_ledger_sync', 'Dual ledger sync fully active')}</span>
                     </div>
                   </div>
 
@@ -1011,20 +1019,20 @@ export function WealthInsightsPage() {
                   <div style={{ padding: '10px 14px', background: 'var(--bg-warm)', borderRadius: T.radiusSm, border: '1px solid var(--border-mid)', display: 'flex', gap: 8, alignItems: 'center' }}>
                     <Heart size={16} style={{ color: T.rose, flexShrink: 0 }} />
                     <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: 0, lineHeight: 1.4 }}>
-                      <strong>Insight Engine:</strong> Combined savings rate is <strong>{savingsRate?.percentage}%</strong>. Together, you are projected to reach your shared goals <strong>1.4 years earlier</strong> than solo paths.
+                      <strong>{t('insight_engine', 'Insight Engine')}:</strong> {t('insight_couple_savings', 'Combined savings rate is {percent}%. Together, you are projected to reach your shared goals {years} years earlier than solo paths.').replace('{percent}', savingsRate?.percentage || '').replace('{years}', 1.4)}
                     </p>
                   </div>
                 </Card>
               ) : (
                 <Card style={{ height: '100%', position: 'relative' }}>
-                  <span className="card-title" style={{ fontSize: '0.72rem', tracking: '0.08em', textTransform: 'uppercase', color: T.rose }}>Relationship Dashboard</span>
+                  <span className="card-title" style={{ fontSize: '0.72rem', tracking: '0.08em', textTransform: 'uppercase', color: T.rose }}>{t('relationship_dashboard', 'Relationship Dashboard')}</span>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '2px', marginBottom: '16px' }}>
                     <Heart size={18} fill={T.rose} style={{ color: T.rose }} />
-                    <h3 className="card-heading" style={{ fontSize: '1.25rem', margin: 0 }}>Couple Wealth Insights</h3>
+                    <h3 className="card-heading" style={{ fontSize: '1.25rem', margin: 0 }}>{t('couple_wealth_insights', 'Couple Wealth Insights')}</h3>
                   </div>
                   <LockedStateCard 
-                    title="Couple Insights Locked"
-                    desc="Connect your partner to unlock shared wealth planning."
+                    title={t('couple_insights_locked', 'Couple Insights Locked')}
+                    desc={t('connect_partner_desc', 'Connect your partner to unlock shared wealth planning.')}
                     onConnect={() => {
                       if (store.setPage) store.setPage('partner');
                     }}

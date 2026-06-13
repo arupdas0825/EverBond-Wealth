@@ -8,6 +8,7 @@ import { Logo } from './components/common/Logo';
 import { ThemeToggle } from './components/common/ThemeToggle';
 import { NotificationCenter } from './components/layout/NotificationCenter';
 import { LanguageSelector } from './components/layout/LanguageSelector';
+import { CurrencySelector } from './components/layout/CurrencySelector';
 import { ToastProvider } from './components/common/Toast';
 import { CookieConsent } from './components/common/CookieConsent';
 import { PrivacyDrawer } from './components/common/PrivacyDrawer';
@@ -579,6 +580,9 @@ export default function App() {
           <div className="eb-top-actions">
             <ErrorBoundary mini={true}>
               <LanguageSelector />
+            </ErrorBoundary>
+            <ErrorBoundary mini={true}>
+              <CurrencySelector />
             </ErrorBoundary>
             <ErrorBoundary mini={true}>
               <ThemeToggle />
