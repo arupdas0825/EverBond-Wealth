@@ -9,7 +9,9 @@ const PRECACHE_ASSETS = [
   '/icons/icon-192x192.png',
   '/icons/icon-512x512.png',
   '/icons/maskable-icon-192x192.png',
-  '/icons/maskable-icon-512x512.png'
+  '/icons/maskable-icon-512x512.png',
+  '/Auth page image.jpeg',
+  '/AD.jpeg'
 ];
 
 self.addEventListener('install', (event) => {

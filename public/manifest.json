@@ -2,11 +2,14 @@
   "name": "EverBond Wealth",
   "short_name": "EverBond",
   "description": "Premium financial planning and wealth management for modern couples.",
+  "id": "/",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
   "theme_color": "#B8902A",
-  "background_color": "#FFFFFF",
+  "background_color": "#FAF6EE",
+  "categories": ["finance", "productivity"],
   "icons": [
     {
       "src": "/icons/icon-192x192.png",
@@ -32,5 +35,37 @@
       "type": "image/png",
       "purpose": "maskable"
     }
-  ]
+  ],
+  "screenshots": [
+    {
+      "src": "/Auth page image.jpeg",
+      "sizes": "1280x800",
+      "type": "image/jpeg",
+      "form_factor": "wide",
+      "label": "EverBond Wealth - Premium Couple Finance"
+    },
+    {
+      "src": "/AD.jpeg",
+      "sizes": "720x1280",
+      "type": "image/jpeg",
+      "form_factor": "narrow",
+      "label": "EverBond Wealth - Shared Financial Planning"
+    }
+  ],
+  "launch_handler": {
+    "client_mode": "focus-existing"
+  },
+  "protocol_handlers": [
+    {
+      "protocol": "web+everbond",
+      "url": "/?open_pwa=%s"
+    }
+  ],
+  "related_applications": [
+    {
+      "platform": "webapp",
+      "url": "/manifest.json"
+    }
+  ],
+  "prefer_related_applications": true
 }

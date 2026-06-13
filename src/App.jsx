@@ -13,6 +13,7 @@ import { ToastProvider } from './components/common/Toast';
 import { CookieConsent } from './components/common/CookieConsent';
 import { PrivacyDrawer } from './components/common/PrivacyDrawer';
 import { ResetModal } from './components/common/ResetModal';
+import { InstallAppButton } from './components/common/InstallAppButton';
 import { RouteGuardScreen } from './components/common/RouteGuardScreen';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { SplashScreen } from './components/common/SplashScreen';
@@ -613,6 +614,11 @@ export default function App() {
             <ErrorBoundary mini={true}>
               <NotificationCenter />
             </ErrorBoundary>
+            {isMobile && (
+              <ErrorBoundary mini={true}>
+                <InstallAppButton variant="icon" />
+              </ErrorBoundary>
+            )}
             <ErrorBoundary mini={true}>
               <ProfileChip setPage={setPage} onReset={() => setShowResetModal(true)} />
             </ErrorBoundary>

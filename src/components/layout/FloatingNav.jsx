@@ -8,6 +8,7 @@ import {
 import { T } from '../../theme/tokens';
 import { useFinanceStore } from '../../store/useFinanceStore';
 import { useTranslation } from '../../utils/i18n';
+import { InstallAppButton } from '../common/InstallAppButton';
 
 const MAIN_TABS = [
   { id: 'dashboard',  label: 'Dashboard',  icon: <LayoutDashboard size={16} /> },
@@ -505,6 +506,10 @@ export function FloatingNav({ page, setPage }) {
             )}
           </AnimatePresence>
         </div>
+
+        {/* Dynamic PWA Installer/Launcher */}
+        <div style={{ width: '1px', height: '18px', background: 'var(--border-thin)', margin: '0 6px' }} />
+        <InstallAppButton variant="navbar" />
 
     </motion.div>
     </div>

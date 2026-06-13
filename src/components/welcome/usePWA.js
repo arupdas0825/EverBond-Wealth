@@ -1,67 +1,42 @@
 import { useState, useEffect } from 'react';
+import { pwaManager } from '../../utils/pwaManager';
 import { useToast } from '../common/Toast';
 
 export function usePWA() {
-  const [deferredPrompt, setDeferredPrompt] = useState(window.deferredPrompt || null);
-  const [isInstalled, setIsInstalled] = useState(false);
+  const [pwaState, setPwaState] = useState(pwaManager.getStateSnapshot());
   const [showPopup, setShowPopup] = useState(false);
   const [showMobileSuggest, setShowMobileSuggest] = useState(false);
   const toast = useToast();
 
   useEffect(() => {
-    const checkStandalone = () => {
-      const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
-                           window.navigator.standalone === true;
-      const hasInstalledFlag = localStorage.getItem('pwa_installed') === 'true';
-      
-      if (isStandalone || hasInstalledFlag) {
-        setIsInstalled(true);
-      }
-    };
-
-    checkStandalone();
-
-    const handleInstallable = () => {
-      setDeferredPrompt(window.deferredPrompt);
-    };
-
-    const handleAppInstalled = () => {
-      localStorage.setItem('pwa_installed', 'true');
-      setIsInstalled(true);
-      setDeferredPrompt(null);
-      window.deferredPrompt = null;
-      setShowPopup(false);
-      setShowMobileSuggest(false);
-      toast.success('✓ EverBond Wealth installed successfully. Welcome to the native experience.');
-    };
-
-    window.addEventListener('pwa-installable', handleInstallable);
-    window.addEventListener('appinstalled', handleAppInstalled);
-
-    if (window.deferredPrompt && !deferredPrompt) {
-      setDeferredPrompt(window.deferredPrompt);
-    }
+    // Subscribe to central PWA Manager updates
+    const unsubscribe = pwaManager.subscribe((newState) => {
+      setPwaState(newState);
+    });
 
     return () => {
-      window.removeEventListener('pwa-installable', handleInstallable);
-      window.removeEventListener('appinstalled', handleAppInstalled);
+      unsubscribe();
     };
-  }, [toast, deferredPrompt]);
+  }, []);
 
-  // Mobile suggestion logic
+  // Mobile suggestion banner auto-display logic
   useEffect(() => {
     const checkMobileAndSuggest = () => {
       const isMobile = window.innerWidth < 768;
       const dismissedThisSession = sessionStorage.getItem('pwa_mobile_suggest_dismissed') === 'true';
       
-      if (isMobile && !isInstalled && deferredPrompt && !dismissedThisSession) {
+      // Suggest if on mobile, app not installed, and either installable or requires manual install
+      const canInstall = pwaState.installState === 'INSTALLABLE' || pwaState.installState === 'MANUAL_INSTALL';
+      
+      if (isMobile && !pwaState.isInstalled && canInstall && !dismissedThisSession) {
         setShowMobileSuggest(true);
       } else {
         setShowMobileSuggest(false);
       }
     };
 
-    const timer = setTimeout(checkMobileAndSuggest, 1500);
+    // Run after a short delay on mount/state change
+    const timer = setTimeout(checkMobileAndSuggest, 2000);
 
     const handleResize = () => {
       checkMobileAndSuggest();
@@ -73,7 +48,7 @@ export function usePWA() {
       clearTimeout(timer);
       window.removeEventListener('resize', handleResize);
     };
-  }, [isInstalled, deferredPrompt]);
+  }, [pwaState.isInstalled, pwaState.installState]);
 
   const dismissMobileSuggest = () => {
     sessionStorage.setItem('pwa_mobile_suggest_dismissed', 'true');
@@ -81,31 +56,35 @@ export function usePWA() {
   };
 
   const triggerInstallFlow = async () => {
-    if (!deferredPrompt) return;
+    const result = await pwaManager.triggerInstall();
     
-    try {
-      await deferredPrompt.prompt();
-      const { outcome } = await deferredPrompt.userChoice;
-      console.log(`User response to install prompt: ${outcome}`);
-      if (outcome === 'accepted') {
-        localStorage.setItem('pwa_installed', 'true');
-        setIsInstalled(true);
-        setDeferredPrompt(null);
-        window.deferredPrompt = null;
-      }
+    if (result.success) {
+      toast.success('✓ Welcome to EverBond Wealth PWA experience!');
       setShowPopup(false);
-    } catch (err) {
-      console.error('Installation prompt failed:', err);
+    } else if (result.manual) {
+      // If native prompt is not supported, this triggers showing the manual install guide.
+      // This is handled in the UI by opening the manual guide modal.
+      setShowPopup(true);
+    } else if (result.error) {
+      toast.error('Installation could not be started. Please try installing from browser menu.');
     }
   };
 
+  const openApp = () => {
+    pwaManager.openApp();
+  };
+
   return {
-    isInstalled,
-    isInstallable: !!deferredPrompt,
+    isInstalled: pwaState.isInstalled,
+    isInstallable: pwaState.isInstallable,
+    installState: pwaState.installState,
+    platform: pwaState.platform,
+    isStandalone: pwaState.isStandalone,
     showPopup,
     setShowPopup,
     showMobileSuggest,
     dismissMobileSuggest,
     triggerInstallFlow,
+    openApp
   };
 }
