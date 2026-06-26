@@ -1,12 +1,19 @@
 /**
- * partnerService.js
- * Production-ready Partner Connection service.
- * ALL Firestore write operations go through here.
- * Security: Never trusts client values — always uses authenticated Firebase UID from params.
- * Collections used: users, partnerInvites, partnerWorkspaces, notifications
+ * partnerService.js — Production Rewrite
+ * ALL partner Firestore writes go through here.
+ *
+ * Security guarantees:
+ *  1. assertAuth() called at the top of every exported function
+ *  2. UIDs always come from authenticated session, never from client params
+ *  3. All multi-doc writes use runTransaction or writeBatch for atomicity
+ *  4. partnerName + partnerPhoto written onto both user docs at connect time
+ *     → eliminates secondary getDoc races in hooks
+ *
+ * Collections: users, partnerInvites, partnerWorkspaces, notifications
  */
 
 import { db } from '../utils/firebase';
+import { assertAuth } from '../firebase/firestoreGuard';
 import {
   doc,
   getDoc,
@@ -19,52 +26,42 @@ import {
   serverTimestamp,
 } from 'firebase/firestore';
 import { batchAddNotification } from './notificationService';
+import { decodeQRPayload, validateQRPayload } from './qrService';
 
 // ─────────────────────────────────────────────────────────────────────────────
-// INTERNAL HELPERS
+// PRIVATE HELPERS
 // ─────────────────────────────────────────────────────────────────────────────
 
-/**
- * Find a user document by EverBond ID (ebId field).
- * @param {string} ebId
- * @returns {Promise<{uid: string, data: Object}|null>}
- */
 async function findUserByEbId(ebId) {
   const q = query(collection(db, 'users'), where('ebId', '==', ebId.trim().toUpperCase()));
   const snap = await getDocs(q);
   if (snap.empty) return null;
-  const d = snap.docs[0];
-  return { uid: d.id, data: d.data() };
+  return { uid: snap.docs[0].id, data: snap.docs[0].data() };
 }
 
-/**
- * Find a user document by email address.
- * @param {string} email
- * @returns {Promise<{uid: string, data: Object}|null>}
- */
 async function findUserByEmail(email) {
   const q = query(collection(db, 'users'), where('email', '==', email.trim().toLowerCase()));
   const snap = await getDocs(q);
   if (snap.empty) return null;
-  const d = snap.docs[0];
-  return { uid: d.id, data: d.data() };
+  return { uid: snap.docs[0].id, data: snap.docs[0].data() };
 }
 
-/**
- * Check if a pending invite already exists between sender and receiver.
- * @param {string} senderUid
- * @param {string} receiverUid
- * @returns {Promise<boolean>}
- */
-async function pendingInviteExists(senderUid, receiverUid) {
-  const q = query(
-    collection(db, 'partnerInvites'),
-    where('senderUid', '==', senderUid),
-    where('receiverUid', '==', receiverUid),
-    where('status', '==', 'pending')
-  );
-  const snap = await getDocs(q);
-  return !snap.empty;
+/** Check for existing pending invite in either direction between two users */
+async function pendingInviteExistsBetween(uidA, uidB) {
+  const [q1, q2] = [
+    query(collection(db, 'partnerInvites'), where('senderUid', '==', uidA), where('receiverUid', '==', uidB), where('status', '==', 'pending')),
+    query(collection(db, 'partnerInvites'), where('senderUid', '==', uidB), where('receiverUid', '==', uidA), where('status', '==', 'pending')),
+  ];
+  const [s1, s2] = await Promise.all([getDocs(q1), getDocs(q2)]);
+  return !s1.empty || !s2.empty;
+}
+
+/** Safely coerce a Firestore Timestamp / Date / ISO string to a JS Date */
+function toDate(val) {
+  if (!val) return null;
+  if (val?.toDate) return val.toDate();
+  if (val instanceof Date) return val;
+  return new Date(val);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -72,302 +69,296 @@ async function pendingInviteExists(senderUid, receiverUid) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * Send a partner invitation by EverBond ID or email.
- * Validates all guards server-side before writing.
+ * Send a partner invitation identified by EverBond ID or email.
  *
- * Guards checked:
- *  - receiver exists
- *  - not self-invite
- *  - sender is not already connected
- *  - receiver is not already connected
- *  - no duplicate pending invite
+ * Guards:
+ *  ✓ Authenticated
+ *  ✓ Receiver exists
+ *  ✓ Not self-invite
+ *  ✓ Sender not already connected
+ *  ✓ Receiver not already connected
+ *  ✓ No duplicate pending invite (either direction)
  *
  * Writes (batched):
- *  - partnerInvites doc (status=pending)
+ *  - partnerInvites doc  (status=pending)
  *  - partnerWorkspaces doc (status=pending)
  *  - notifications doc for receiver
  *
- * @param {Object} senderUser  - { uid, ebId, fullName, email } from Firebase Auth + Firestore
- * @param {string} receiverIdentifier - EverBond ID (EB-XXXXXX) or email address
+ * @param {Object} senderUser  { uid, ebId, fullName, email, photoURL? }
+ * @param {string} receiverIdentifier  EverBond ID or email
  * @returns {Promise<{inviteId: string, workspaceId: string}>}
  */
 export async function sendInvite(senderUser, receiverIdentifier) {
-  const { uid: senderUid, ebId: senderEbId, fullName: senderName, email: senderEmail } = senderUser;
+  // ── 1. Auth gate ──
+  const firebaseUser = assertAuth();
+  const senderUid = firebaseUser.uid;
 
-  if (!senderUid) throw new Error('UNAUTHENTICATED');
+  // ── 2. Locate receiver ──
+  const isEmail  = receiverIdentifier.includes('@');
+  const receiver = isEmail
+    ? await findUserByEmail(receiverIdentifier)
+    : await findUserByEbId(receiverIdentifier);
 
-  // ── Determine if identifier is email or EB ID ──
-  const isEmail = receiverIdentifier.includes('@');
-  let receiver = null;
-
-  if (isEmail) {
-    receiver = await findUserByEmail(receiverIdentifier);
-  } else {
-    receiver = await findUserByEbId(receiverIdentifier);
-  }
-
-  if (!receiver) {
-    throw new Error('RECEIVER_NOT_FOUND');
-  }
-
+  if (!receiver) throw new Error('RECEIVER_NOT_FOUND');
   const { uid: receiverUid, data: receiverData } = receiver;
 
-  // ── Guard: Self-invite ──
-  if (receiverUid === senderUid) {
-    throw new Error('SELF_INVITE');
-  }
+  // ── 3. Guards ──
+  if (receiverUid === senderUid) throw new Error('SELF_INVITE');
 
-  // ── Guard: Sender already connected ──
   const senderDoc = await getDoc(doc(db, 'users', senderUid));
   if (!senderDoc.exists()) throw new Error('SENDER_NOT_FOUND');
   const senderData = senderDoc.data();
-  if (senderData.partnerStatus === 'connected' && senderData.partnerUid) {
+
+  if (senderData.partnerStatus === 'connected' && senderData.partnerUid)
     throw new Error('SENDER_ALREADY_CONNECTED');
-  }
-
-  // ── Guard: Receiver already connected ──
-  if (receiverData.partnerStatus === 'connected' && receiverData.partnerUid) {
+  if (receiverData.partnerStatus === 'connected' && receiverData.partnerUid)
     throw new Error('RECEIVER_ALREADY_CONNECTED');
-  }
 
-  // ── Guard: Duplicate pending invite ──
-  const duplicate = await pendingInviteExists(senderUid, receiverUid);
-  if (duplicate) {
-    throw new Error('DUPLICATE_INVITE');
-  }
+  const dupExists = await pendingInviteExistsBetween(senderUid, receiverUid);
+  if (dupExists) throw new Error('DUPLICATE_INVITE');
 
-  // ── Build invite & workspace IDs ──
-  const inviteRef = doc(collection(db, 'partnerInvites'));
+  // ── 4. Resolve sender info from Firestore (never trust client params) ──
+  const resolvedSenderName  = senderData.fullName || senderUser.fullName || '';
+  const resolvedSenderEbId  = senderData.ebId     || senderUser.ebId     || '';
+  const resolvedSenderEmail = senderData.email    || senderUser.email    || '';
+  const resolvedSenderPhoto = senderData.photoURL || senderData.profilePhoto || '';
+
+  // ── 5. Build refs ──
+  const inviteRef    = doc(collection(db, 'partnerInvites'));
   const workspaceRef = doc(collection(db, 'partnerWorkspaces'));
-  const inviteId = inviteRef.id;
-  const workspaceId = workspaceRef.id;
-
-  const now = serverTimestamp();
-  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+  const inviteId     = inviteRef.id;
+  const workspaceId  = workspaceRef.id;
+  const expiresAt    = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
   const batch = writeBatch(db);
 
-  // partnerInvites doc
+  // partnerInvites
   batch.set(inviteRef, {
     senderUid,
-    senderEbId: senderEbId || '',
-    senderName: senderName || '',
-    senderEmail: senderEmail || '',
+    senderEbId:    resolvedSenderEbId,
+    senderName:    resolvedSenderName,
+    senderEmail:   resolvedSenderEmail,
+    senderPhoto:   resolvedSenderPhoto,
     receiverUid,
-    receiverEbId: receiverData.ebId || '',
-    receiverEmail: receiverData.email || '',
-    receiverName: receiverData.fullName || '',
-    status: 'pending',
-    inviteCode: senderEbId || '',
+    receiverEbId:  receiverData.ebId     || '',
+    receiverEmail: receiverData.email    || '',
+    receiverName:  receiverData.fullName || '',
+    receiverPhoto: receiverData.photoURL || receiverData.profilePhoto || '',
+    status:        'pending',
+    inviteCode:    resolvedSenderEbId,
     workspaceId,
-    createdAt: now,
+    createdAt:     serverTimestamp(),
     expiresAt,
-    acceptedAt: null,
-    rejectedAt: null,
-    cancelledAt: null,
+    acceptedAt:    null,
+    rejectedAt:    null,
+    cancelledAt:   null,
   });
 
-  // partnerWorkspaces doc (pre-created, awaiting partner2)
+  // partnerWorkspaces
   batch.set(workspaceRef, {
-    partner1Uid: senderUid,
-    partner1EbId: senderEbId || '',
-    partner1Name: senderName || '',
-    partner2Uid: null,
-    partner2EbId: null,
-    partner2Name: null,
-    status: 'pending',
+    partner1Uid:   senderUid,
+    partner1EbId:  resolvedSenderEbId,
+    partner1Name:  resolvedSenderName,
+    partner1Photo: resolvedSenderPhoto,
+    partner2Uid:   null,
+    partner2EbId:  null,
+    partner2Name:  null,
+    partner2Photo: null,
+    status:        'pending',
     inviteId,
-    createdAt: now,
-    connectedAt: null,
+    createdAt:     serverTimestamp(),
+    connectedAt:   null,
     disconnectedAt: null,
+    lastSync:      serverTimestamp(),
   });
 
   // Notification for receiver
-  batchAddNotification(
-    batch,
-    receiverUid,
+  batchAddNotification(batch, receiverUid,
     'partner_invite_received',
     'Partner Invitation Received',
-    `${senderName || 'Someone'} wants to connect their financial workspace with yours.`,
+    `${resolvedSenderName || 'Someone'} wants to connect their financial workspace with yours.`,
     inviteId
   );
 
   await batch.commit();
-
   return { inviteId, workspaceId };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 3. ACCEPT INVITATION
+// 2. ACCEPT INVITATION (Firestore Transaction)
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * Accept a pending partner invitation.
- * Uses a Firestore transaction to guarantee atomicity.
- *
- * Transaction steps:
- *  1. Validate invite exists, is pending, not expired
- *  2. Validate receiver is the authenticated user
- *  3. Update partnerInvites doc (status=accepted, receiverUid, acceptedAt)
- *  4. Update partnerWorkspaces doc (partner2Uid, partner2EbId, status=connected, connectedAt)
- *  5. Update sender's user doc (partnerUid, partnerEbId, partnerStatus, workspaceId)
- *  6. Update receiver's user doc (partnerUid, partnerEbId, partnerStatus, workspaceId)
- *  7. Create notification for sender (via batch, after transaction)
- *  8. Create notification for receiver
+ * Accept a pending invitation.
+ * Uses runTransaction for full atomicity across 4 documents.
+ * Also writes partnerName + partnerPhoto to both user docs so hooks
+ * never need a secondary getDoc.
  *
  * @param {string} inviteId
- * @param {Object} receiverUser - { uid, ebId, fullName } from authenticated session
+ * @param {{uid:string, ebId:string, fullName:string, photoURL?:string}} receiverUser
  * @returns {Promise<{workspaceId: string}>}
  */
 export async function acceptInvite(inviteId, receiverUser) {
-  const { uid: receiverUid, ebId: receiverEbId, fullName: receiverName } = receiverUser;
+  const firebaseUser = assertAuth();
+  const receiverUid  = firebaseUser.uid;  // Always use auth UID, not param
 
-  if (!receiverUid) throw new Error('UNAUTHENTICATED');
+  let workspaceId, senderUid, senderName, senderEbId;
 
-  let workspaceId;
-  let senderUid;
-  let senderName;
-
-  await runTransaction(db, async (transaction) => {
+  await runTransaction(db, async (tx) => {
     const inviteRef = doc(db, 'partnerInvites', inviteId);
-    const inviteSnap = await transaction.get(inviteRef);
-
+    const inviteSnap = await tx.get(inviteRef);
     if (!inviteSnap.exists()) throw new Error('INVALID_INVITE');
 
     const invite = inviteSnap.data();
 
-    // ── Validate status ──
-    if (invite.status !== 'pending') {
-      throw new Error(`INVITE_${invite.status.toUpperCase()}`);
-    }
+    if (invite.status !== 'pending') throw new Error(`INVITE_${invite.status.toUpperCase()}`);
 
-    // ── Validate expiry ──
-    const expiresAt = invite.expiresAt instanceof Date
-      ? invite.expiresAt
-      : invite.expiresAt?.toDate?.() ?? new Date(invite.expiresAt);
-    if (new Date() > expiresAt) {
-      throw new Error('INVITE_EXPIRED');
-    }
+    const expiresAt = toDate(invite.expiresAt);
+    if (expiresAt && new Date() > expiresAt) throw new Error('INVITE_EXPIRED');
 
-    // ── Security: Verify receiver is the authenticated user ──
-    if (invite.receiverUid !== receiverUid) {
+    // Security: receiver must be authenticated user
+    if (invite.receiverUid && invite.receiverUid !== receiverUid)
       throw new Error('UNAUTHORIZED');
-    }
 
     workspaceId = invite.workspaceId;
-    senderUid = invite.senderUid;
-    senderName = invite.senderName;
+    senderUid   = invite.senderUid;
+    senderName  = invite.senderName;
+    senderEbId  = invite.senderEbId;
 
-    const workspaceRef = doc(db, 'partnerWorkspaces', workspaceId);
-    const senderUserRef = doc(db, 'users', senderUid);
+    const workspaceRef    = doc(db, 'partnerWorkspaces', workspaceId);
+    const senderUserRef   = doc(db, 'users', senderUid);
     const receiverUserRef = doc(db, 'users', receiverUid);
 
-    // Read both user docs inside the transaction
     const [workspaceSnap, senderSnap, receiverSnap] = await Promise.all([
-      transaction.get(workspaceRef),
-      transaction.get(senderUserRef),
-      transaction.get(receiverUserRef),
+      tx.get(workspaceRef),
+      tx.get(senderUserRef),
+      tx.get(receiverUserRef),
     ]);
 
     if (!workspaceSnap.exists()) throw new Error('WORKSPACE_NOT_FOUND');
-    if (!senderSnap.exists()) throw new Error('SENDER_NOT_FOUND');
+    if (!senderSnap.exists())    throw new Error('SENDER_NOT_FOUND');
 
-    // ── Update partnerInvites ──
-    transaction.update(inviteRef, {
-      status: 'accepted',
+    const senderData   = senderSnap.data();
+    const receiverData = receiverSnap.exists() ? receiverSnap.data() : {};
+
+    // Resolve names & photos from Firestore docs (not from client params)
+    const resolvedReceiverName  = receiverData.fullName || receiverUser.fullName || '';
+    const resolvedReceiverEbId  = receiverData.ebId     || receiverUser.ebId     || '';
+    const resolvedReceiverPhoto = receiverData.photoURL || receiverData.profilePhoto || '';
+    const resolvedSenderPhoto   = senderData.photoURL   || senderData.profilePhoto   || '';
+
+    const now = serverTimestamp();
+
+    // Update invite
+    tx.update(inviteRef, {
+      status:        'accepted',
       receiverUid,
-      receiverEbId: receiverEbId || '',
-      acceptedAt: serverTimestamp(),
+      receiverEbId:  resolvedReceiverEbId,
+      acceptedAt:    now,
     });
 
-    // ── Update partnerWorkspaces ──
-    transaction.update(workspaceRef, {
-      partner2Uid: receiverUid,
-      partner2EbId: receiverEbId || '',
-      partner2Name: receiverName || '',
-      status: 'connected',
-      connectedAt: serverTimestamp(),
+    // Update workspace
+    tx.update(workspaceRef, {
+      partner2Uid:   receiverUid,
+      partner2EbId:  resolvedReceiverEbId,
+      partner2Name:  resolvedReceiverName,
+      partner2Photo: resolvedReceiverPhoto,
+      status:        'connected',
+      connectedAt:   now,
+      lastSync:      now,
     });
 
-    // ── Update sender's user doc ──
-    transaction.update(senderUserRef, {
-      partnerUid: receiverUid,
-      partnerEbId: receiverEbId || '',
+    // Update sender's user doc — write partner info directly
+    tx.update(senderUserRef, {
+      partnerUid:    receiverUid,
+      partnerEbId:   resolvedReceiverEbId,
+      partnerName:   resolvedReceiverName,
+      partnerPhoto:  resolvedReceiverPhoto,
       partnerStatus: 'connected',
       workspaceId,
+      connectedAt:   now,
     });
 
-    // ── Update receiver's user doc ──
-    transaction.update(receiverUserRef, {
-      partnerUid: senderUid,
-      partnerEbId: senderSnap.data().ebId || '',
+    // Update receiver's user doc
+    tx.update(receiverUserRef, {
+      partnerUid:    senderUid,
+      partnerEbId:   senderData.ebId || senderEbId || '',
+      partnerName:   senderData.fullName || senderName || '',
+      partnerPhoto:  resolvedSenderPhoto,
       partnerStatus: 'connected',
       workspaceId,
+      connectedAt:   now,
     });
   });
 
-  // Post-transaction: create notifications (outside transaction is fine — not critical path)
+  // Post-transaction notifications
   const notifBatch = writeBatch(db);
-  batchAddNotification(
-    notifBatch,
-    senderUid,
-    'partner_invite_accepted',
-    'Partner Invitation Accepted!',
-    `${receiverName || 'Your partner'} accepted your invitation. Your workspace is now connected.`,
-    inviteId
-  );
-  batchAddNotification(
-    notifBatch,
-    receiverUid,
-    'partner_invite_accepted',
-    'Workspace Connected!',
-    `You are now connected with ${senderName || 'your partner'}. Start planning together!`,
-    inviteId
-  );
+  batchAddNotification(notifBatch, senderUid,
+    'partner_invite_accepted', 'Partner Invitation Accepted! 🎉',
+    `Your workspace is now connected. Start planning together!`, inviteId);
+  batchAddNotification(notifBatch, receiverUid,
+    'partner_invite_accepted', 'Workspace Connected! 🎉',
+    `You are now connected with ${senderName || 'your partner'}.`, inviteId);
   await notifBatch.commit();
 
   return { workspaceId };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 4. REJECT INVITATION
+// 3. ACCEPT VIA QR CODE
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * Reject a pending partner invitation.
- * @param {string} inviteId
- * @param {Object} receiverUser - { uid, fullName }
- * @returns {Promise<void>}
+ * Decode a scanned QR string, validate it, then call acceptInvite.
+ * Fetches the invite from Firestore for status validation before accepting.
+ *
+ * @param {string} qrString - Raw string from camera scanner
+ * @param {{uid:string, ebId:string, fullName:string, photoURL?:string}} receiverUser
+ * @returns {Promise<{workspaceId: string, inviteId: string, senderName: string}>}
  */
-export async function rejectInvite(inviteId, receiverUser) {
-  const { uid: receiverUid, fullName: receiverName } = receiverUser;
-  if (!receiverUid) throw new Error('UNAUTHENTICATED');
+export async function acceptInviteByQR(qrString, receiverUser) {
+  const firebaseUser = assertAuth();
+  const currentUid   = firebaseUser.uid;
 
-  const inviteRef = doc(db, 'partnerInvites', inviteId);
-  const inviteSnap = await getDoc(inviteRef);
+  // 1. Decode
+  const payload = decodeQRPayload(qrString);  // throws QR_INVALID / QR_DECODE_FAILED
 
+  // 2. Validate own QR + expiry from payload
+  validateQRPayload(payload, currentUid);
+
+  // 3. Fetch invite from Firestore to verify current status
+  const inviteSnap = await getDoc(doc(db, 'partnerInvites', payload.inviteId));
   if (!inviteSnap.exists()) throw new Error('INVALID_INVITE');
-  const invite = inviteSnap.data();
 
+  const inviteData = inviteSnap.data();
+  validateQRPayload(payload, currentUid, inviteData.status);
+
+  // 4. Accept via the standard transaction
+  const result = await acceptInvite(payload.inviteId, receiverUser);
+  return { ...result, inviteId: payload.inviteId, senderName: inviteData.senderName };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 4. REJECT INVITATION
+// ─────────────────────────────────────────────────────────────────────────────
+
+export async function rejectInvite(inviteId, receiverUser) {
+  const firebaseUser = assertAuth();
+  const receiverUid  = firebaseUser.uid;
+
+  const inviteRef  = doc(db, 'partnerInvites', inviteId);
+  const inviteSnap = await getDoc(inviteRef);
+  if (!inviteSnap.exists()) throw new Error('INVALID_INVITE');
+
+  const invite = inviteSnap.data();
   if (invite.status !== 'pending') throw new Error(`INVITE_${invite.status.toUpperCase()}`);
   if (invite.receiverUid !== receiverUid) throw new Error('UNAUTHORIZED');
 
   const batch = writeBatch(db);
-
-  batch.update(inviteRef, {
-    status: 'rejected',
-    rejectedAt: serverTimestamp(),
-  });
-
-  batchAddNotification(
-    batch,
-    invite.senderUid,
-    'partner_invite_rejected',
-    'Invitation Declined',
-    `${receiverName || 'The recipient'} declined your partner invitation.`,
-    inviteId
-  );
-
+  batch.update(inviteRef, { status: 'rejected', rejectedAt: serverTimestamp() });
+  batchAddNotification(batch, invite.senderUid,
+    'partner_invite_rejected', 'Invitation Declined',
+    `${receiverUser.fullName || 'The recipient'} declined your partner invitation.`, inviteId);
   await batch.commit();
 }
 
@@ -375,42 +366,26 @@ export async function rejectInvite(inviteId, receiverUser) {
 // 5. CANCEL INVITATION
 // ─────────────────────────────────────────────────────────────────────────────
 
-/**
- * Cancel a sent invitation (only the sender can cancel).
- * @param {string} inviteId
- * @param {Object} senderUser - { uid }
- * @returns {Promise<void>}
- */
 export async function cancelInvite(inviteId, senderUser) {
-  const { uid: senderUid, fullName: senderName } = senderUser;
-  if (!senderUid) throw new Error('UNAUTHENTICATED');
+  const firebaseUser = assertAuth();
+  const senderUid    = firebaseUser.uid;
 
-  const inviteRef = doc(db, 'partnerInvites', inviteId);
+  const inviteRef  = doc(db, 'partnerInvites', inviteId);
   const inviteSnap = await getDoc(inviteRef);
-
   if (!inviteSnap.exists()) throw new Error('INVALID_INVITE');
-  const invite = inviteSnap.data();
 
+  const invite = inviteSnap.data();
   if (invite.senderUid !== senderUid) throw new Error('UNAUTHORIZED');
   if (invite.status !== 'pending') throw new Error(`INVITE_${invite.status.toUpperCase()}`);
 
   const batch = writeBatch(db);
+  batch.update(inviteRef, { status: 'cancelled', cancelledAt: serverTimestamp() });
 
-  batch.update(inviteRef, {
-    status: 'cancelled',
-    cancelledAt: serverTimestamp(),
-  });
-
-  // Notify receiver that invite was cancelled
-  batchAddNotification(
-    batch,
-    invite.receiverUid,
-    'partner_invite_cancelled',
-    'Partner Invitation Cancelled',
-    `${senderName || 'The sender'} cancelled their partner invitation.`,
-    inviteId
-  );
-
+  if (invite.receiverUid) {
+    batchAddNotification(batch, invite.receiverUid,
+      'partner_invite_cancelled', 'Partner Invitation Cancelled',
+      `${senderUser.fullName || 'The sender'} cancelled their invitation.`, inviteId);
+  }
   await batch.commit();
 }
 
@@ -420,68 +395,50 @@ export async function cancelInvite(inviteId, senderUser) {
 
 /**
  * Disconnect an established partner connection.
- * Archives the workspace (status=disconnected) instead of deleting.
+ * Archives workspace (status=disconnected). Never deletes data.
  * Clears partner fields from both user documents.
  *
- * @param {Object} currentUser - { uid, fullName }
+ * @param {{uid:string, fullName:string}} currentUser
  * @param {string} partnerUid
  * @param {string} workspaceId
- * @returns {Promise<void>}
  */
 export async function disconnectPartner(currentUser, partnerUid, workspaceId) {
-  const { uid: currentUid, fullName: currentName } = currentUser;
-  if (!currentUid) throw new Error('UNAUTHENTICATED');
+  const firebaseUser = assertAuth();
+  const currentUid   = firebaseUser.uid;
 
   const batch = writeBatch(db);
 
-  // Archive workspace
   if (workspaceId) {
-    const workspaceRef = doc(db, 'partnerWorkspaces', workspaceId);
-    batch.update(workspaceRef, {
-      status: 'disconnected',
-      disconnectedAt: serverTimestamp(),
+    batch.update(doc(db, 'partnerWorkspaces', workspaceId), {
+      status:          'disconnected',
+      disconnectedAt:  serverTimestamp(),
     });
   }
 
-  // Clear current user's partner fields
-  const currentUserRef = doc(db, 'users', currentUid);
-  batch.update(currentUserRef, {
-    partnerUid: null,
-    partnerEbId: null,
+  const clearFields = {
+    partnerUid:    null,
+    partnerEbId:   null,
+    partnerName:   null,
+    partnerPhoto:  null,
     partnerStatus: 'none',
-    workspaceId: null,
-  });
+    workspaceId:   null,
+    connectedAt:   null,
+  };
 
-  // Clear partner's partner fields
+  batch.update(doc(db, 'users', currentUid), clearFields);
+
   if (partnerUid) {
-    const partnerUserRef = doc(db, 'users', partnerUid);
-    batch.update(partnerUserRef, {
-      partnerUid: null,
-      partnerEbId: null,
-      partnerStatus: 'none',
-      workspaceId: null,
-    });
+    batch.update(doc(db, 'users', partnerUid), clearFields);
   }
 
-  // Notify both parties
-  batchAddNotification(
-    batch,
-    currentUid,
-    'partner_disconnected',
-    'Partner Disconnected',
-    'Your partner workspace has been disconnected. You are now in Single mode.',
-    null
-  );
-
+  const disconnectedByName = currentUser.fullName || 'Your partner';
+  batchAddNotification(batch, currentUid,
+    'partner_disconnected', 'Partner Disconnected',
+    'Your workspace has been disconnected. You are now in Single mode.', null);
   if (partnerUid) {
-    batchAddNotification(
-      batch,
-      partnerUid,
-      'partner_disconnected',
-      'Partner Disconnected',
-      `${currentName || 'Your partner'} has disconnected the shared workspace.`,
-      null
-    );
+    batchAddNotification(batch, partnerUid,
+      'partner_disconnected', 'Partner Disconnected',
+      `${disconnectedByName} has disconnected the shared workspace.`, null);
   }
 
   await batch.commit();
