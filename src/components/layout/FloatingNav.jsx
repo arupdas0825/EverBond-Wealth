@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useLayoutEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   LayoutDashboard, LineChart, Wallet, Target, 
@@ -99,20 +99,25 @@ export function FloatingNav({ page, setPage }) {
   const partnerCloseTimeout = useRef(null);
   
   const theme = useFinanceStore(s => s.theme);
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
 
-  const mainTabs = MAIN_TABS.map(tab => ({
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const mainTabs = useMemo(() => MAIN_TABS.map(tab => ({
     ...tab,
     label: t(tab.id, tab.label)
-  }));
-  const partnerTabs = PARTNER_TABS.map(tab => ({
+  })), [language]);
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const partnerTabs = useMemo(() => PARTNER_TABS.map(tab => ({
     ...tab,
     label: tab.id === 'partner-committed' ? t('partner', 'Partner') : t('family', 'Family')
-  }));
-  const moreTabs = MORE_TABS.map(tab => ({
+  })), [language]);
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const moreTabs = useMemo(() => MORE_TABS.map(tab => ({
     ...tab,
     label: t(tab.id, tab.label)
-  }));
+  })), [language]);
 
   // Screen width detection to toggle hover behavior for width >= 1024px
   const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1024);
@@ -298,6 +303,51 @@ export function FloatingNav({ page, setPage }) {
   const activeInMore = moreTabs.some(t => t.id === page);
   const activeInPartner = page === 'partner-committed' || page === 'partner-family';
 
+  const buttonRefs = useRef({});
+  const [indicatorStyle, setIndicatorStyle] = useState({
+    transform: 'translate3d(0px, 0px, 0px)',
+    width: '0px',
+    height: '0px',
+    opacity: 0,
+  });
+
+  const activeTabKey = useMemo(() => {
+    if (MAIN_TABS.some(t => t.id === page)) {
+      return page;
+    } else if (activeInPartner) {
+      return 'partner';
+    } else if (activeInMore) {
+      return 'more';
+    }
+    return null;
+  }, [page, activeInPartner, activeInMore]);
+
+  const updateIndicator = useCallback(() => {
+    if (!activeTabKey) {
+      setIndicatorStyle(prev => ({ ...prev, opacity: 0 }));
+      return;
+    }
+    const activeButton = buttonRefs.current[activeTabKey];
+    if (activeButton) {
+      const { offsetLeft, offsetWidth, offsetHeight, offsetTop } = activeButton;
+      setIndicatorStyle({
+        transform: `translate3d(${offsetLeft}px, ${offsetTop}px, 0px)`,
+        width: `${offsetWidth}px`,
+        height: `${offsetHeight}px`,
+        opacity: 1,
+      });
+    }
+  }, [activeTabKey]);
+
+  useLayoutEffect(() => {
+    updateIndicator();
+  }, [activeTabKey, updateIndicator, language]);
+
+  useEffect(() => {
+    window.addEventListener('resize', updateIndicator);
+    return () => window.removeEventListener('resize', updateIndicator);
+  }, [updateIndicator]);
+
   const dropdownVariants = {
     hidden: { 
       opacity: 0, 
@@ -368,11 +418,17 @@ export function FloatingNav({ page, setPage }) {
 
         {/* Content Wrapper */}
         <div style={{ position: 'relative', zIndex: 30, display: 'flex', alignItems: 'center', gap: '6px' }}>
+          {/* Shared active indicator pill */}
+          <div
+            className="eb-active-pill-slider-shared"
+            style={indicatorStyle}
+          />
           {mainTabs.map(tab => {
             const isActive = page === tab.id;
             return (
               <motion.button
                 key={tab.id}
+                ref={el => buttonRefs.current[tab.id] = el}
                 onClick={() => handleNav(tab.id)}
                 whileHover={{ scale: 1.02 }}
                 transition={{ duration: 0.2 }}
@@ -380,13 +436,6 @@ export function FloatingNav({ page, setPage }) {
                 aria-selected={isActive}
                 style={{ position: 'relative' }}
               >
-                {isActive && (
-                  <motion.div
-                    layoutId="activeTabPill"
-                    className="eb-active-pill-slider"
-                    transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-                  />
-                )}
                 <span style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', gap: '6px' }}>
                   {tab.icon}
                   {tab.label}
@@ -405,6 +454,7 @@ export function FloatingNav({ page, setPage }) {
             onBlur={handlePartnerBlur}
           >
             <motion.button
+              ref={el => buttonRefs.current['partner'] = el}
               whileHover={{ scale: 1.02 }}
               transition={{ duration: 0.2 }}
               onClick={handlePartnerClick}
@@ -412,13 +462,6 @@ export function FloatingNav({ page, setPage }) {
               aria-selected={activeInPartner}
               style={{ position: 'relative' }}
             >
-              {activeInPartner && (
-                <motion.div
-                  layoutId="activeTabPill"
-                  className="eb-active-pill-slider"
-                  transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-                />
-              )}
               <span style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <Heart size={16} /> Partner <ChevronDown size={14} style={{ transform: isPartnerOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
               </span>
@@ -513,6 +556,7 @@ export function FloatingNav({ page, setPage }) {
             onBlur={handleMoreBlur}
           >
             <motion.button
+              ref={el => buttonRefs.current['more'] = el}
               whileHover={{ scale: 1.02 }}
               transition={{ duration: 0.2 }}
               onClick={handleMoreClick}
@@ -520,13 +564,6 @@ export function FloatingNav({ page, setPage }) {
               aria-selected={activeInMore}
               style={{ position: 'relative' }}
             >
-              {activeInMore && (
-                <motion.div
-                  layoutId="activeTabPill"
-                  className="eb-active-pill-slider"
-                  transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-                />
-              )}
               <span style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', gap: '6px' }}>
                 More <ChevronDown size={14} style={{ transform: isMoreOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
               </span>
