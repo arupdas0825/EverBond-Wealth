@@ -401,6 +401,7 @@ export default function App() {
               p2Salary,
               connectionStatus: data.partnerId ? 'connected' : 'none',
               familyWorkspaceId: data.familyWorkspaceId || '',
+              workspaceId: data.workspaceId || '',
               // Synchronized profile fields
               bio: data.bio || '',
               profilePhoto: data.photoURL || data.profilePhoto || '',

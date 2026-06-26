@@ -168,6 +168,7 @@ export const useFinanceStore = create(
       verificationStatus: 'unverified', // 'unverified' | 'awaiting' | 'connected' | 'verified'
       invitationCode:     '',
       partnerId:          '',
+      workspaceId:        '',           // Active partnerWorkspaces doc ID
 
       // Onboarding data splits
       onboardingSingle: {
