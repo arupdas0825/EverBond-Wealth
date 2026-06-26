@@ -3363,4 +3363,83 @@ input,select{font-family:var(--fb)}
   .lp-header-install-btn .install-btn-text {
     display: none !important;
   }
-}
+}
+
+/* ── SEGMENTED CONTROL AUTH SWITCHER ──────────────────── */
+.auth-switcher-container {
+  display: flex;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border-radius: 14px;
+  padding: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  margin-bottom: 20px;
+  position: relative;
+  z-index: 5;
+  user-select: none;
+  box-sizing: border-box;
+}
+
+.auth-switcher-indicator {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 50%;
+  z-index: 1;
+  pointer-events: none;
+  box-sizing: border-box;
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform: translate3d(0, 0, 0);
+  transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.auth-switcher-container[data-active="signup"] .auth-switcher-indicator {
+  transform: translate3d(100%, 0, 0);
+}
+
+.auth-switcher-indicator-inner {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 4px;
+  right: 4px;
+  background: linear-gradient(135deg, rgba(201, 168, 76, 0.26) 0%, rgba(184, 144, 42, 0.16) 100%);
+  border: 1px solid rgba(201, 168, 76, 0.45);
+  border-radius: 10px;
+  box-sizing: border-box;
+}
+
+.auth-switcher-btn {
+  flex: 1;
+  padding: 10px 0;
+  border: none;
+  background: transparent;
+  font-size: 0.875rem;
+  font-weight: 700;
+  cursor: pointer;
+  color: rgba(28, 26, 22, 0.45);
+  font-family: inherit;
+  position: relative;
+  z-index: 2;
+  transition: color 200ms cubic-bezier(0.16, 1, 0.3, 1), opacity 200ms cubic-bezier(0.16, 1, 0.3, 1);
+  outline: none;
+  text-align: center;
+  border-radius: 10px;
+}
+
+.auth-switcher-btn:hover {
+  color: rgba(28, 26, 22, 0.7);
+}
+
+.auth-switcher-btn[aria-selected="true"] {
+  color: #C9A227;
+}
+
+.auth-switcher-btn:focus-visible {
+  box-shadow: 0 0 0 2px rgba(201, 168, 76, 0.4);
+}
+

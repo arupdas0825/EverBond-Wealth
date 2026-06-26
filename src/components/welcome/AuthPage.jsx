@@ -74,6 +74,63 @@ function AuthField({ icon, type = 'text', placeholder, value, onChange, disabled
   );
 }
 
+/* ── Segmented Control Switcher ────────────────────────── */
+const AuthSwitcher = React.memo(({ activeTab, onChange }) => {
+  const handleKeyDown = (e) => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+      e.preventDefault();
+      const nextTab = activeTab === 'login' ? 'signup' : 'login';
+      onChange(nextTab);
+      
+      // Focus the newly active tab button
+      const buttons = e.currentTarget.parentNode.querySelectorAll('.auth-switcher-btn');
+      const nextIndex = activeTab === 'login' ? 1 : 0;
+      if (buttons[nextIndex]) {
+        buttons[nextIndex].focus();
+      }
+    }
+  };
+
+  return (
+    <div 
+      className="auth-switcher-container" 
+      role="tablist"
+      aria-label="Authentication switcher"
+      data-active={activeTab}
+    >
+      <div className="auth-switcher-indicator" aria-hidden="true">
+        <div className="auth-switcher-indicator-inner" />
+      </div>
+      <button
+        type="button"
+        role="tab"
+        id="tab-login"
+        aria-selected={activeTab === 'login'}
+        aria-controls="auth-form-panel"
+        tabIndex={activeTab === 'login' ? 0 : -1}
+        className="auth-switcher-btn"
+        onClick={() => onChange('login')}
+        onKeyDown={handleKeyDown}
+      >
+        Sign In
+      </button>
+      <button
+        type="button"
+        role="tab"
+        id="tab-signup"
+        aria-selected={activeTab === 'signup'}
+        aria-controls="auth-form-panel"
+        tabIndex={activeTab === 'signup' ? 0 : -1}
+        className="auth-switcher-btn"
+        onClick={() => onChange('signup')}
+        onKeyDown={handleKeyDown}
+      >
+        Sign Up
+      </button>
+    </div>
+  );
+});
+
 /* ── Main component ───────────────────────────────────── */
 export function AuthPage({ onAuthSuccess, onBackToLanding, onOpenPolicy }) {
   const [activeTab, setActiveTab] = useState('login');
@@ -287,57 +344,16 @@ export function AuthPage({ onAuthSuccess, onBackToLanding, onOpenPolicy }) {
           </AnimatePresence>
 
           {/* Tab switcher */}
-          <div style={{
-            display: 'flex',
-            background: 'rgba(255, 255, 255, 0.15)',
-            backdropFilter: 'blur(15px)',
-            borderRadius: '14px',
-            padding: '4px',
-            border: '1px solid rgba(255, 255, 255, 0.25)',
-            marginBottom: '20px',
-            position: 'relative',
-            zIndex: 5,
-          }}>
-            {['login', 'signup'].map(tab => (
-              <button
-                key={tab}
-                type="button"
-                onClick={() => switchTab(tab)}
-                style={{
-                  flex: 1,
-                  padding: '10px 0',
-                  border: 'none',
-                  background: 'transparent',
-                  fontSize: '0.875rem',
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                  color: activeTab === tab ? '#C9A227' : 'rgba(28, 26, 22, 0.45)',
-                  transition: 'color 0.25s ease',
-                  fontFamily: 'inherit',
-                  position: 'relative',
-                }}
-              >
-                {activeTab === tab && (
-                  <motion.div
-                    layoutId="activeTabHighlight"
-                    transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-                    style={{
-                      position: 'absolute',
-                      inset: 0,
-                      background: 'linear-gradient(135deg, rgba(201, 168, 76, 0.26) 0%, rgba(184, 144, 42, 0.16) 100%)',
-                      border: '1px solid rgba(201, 168, 76, 0.45)',
-                      borderRadius: '10px',
-                      zIndex: -1,
-                    }}
-                  />
-                )}
-                {tab === 'login' ? 'Sign In' : 'Sign Up'}
-              </button>
-            ))}
-          </div>
+          <AuthSwitcher activeTab={activeTab} onChange={switchTab} />
 
           {/* Form with layout animations */}
-          <form onSubmit={handleEmailAuth} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          <form 
+            id="auth-form-panel"
+            role="tabpanel"
+            aria-labelledby={`tab-${activeTab}`}
+            onSubmit={handleEmailAuth} 
+            style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}
+          >
             <AnimatePresence initial={false}>
               {activeTab === 'signup' && (
                 <motion.div
