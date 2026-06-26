@@ -536,7 +536,7 @@ export function PartnerPage({ setPage, connectCode }) {
       <div className="fade-in" style={{ maxWidth: '640px', margin: '0 auto', paddingBottom: '60px' }}>
         <div className="page-header" style={{ marginBottom: '32px' }}>
           <div className="page-eyebrow">{t('connection_workspace', 'Connection Workspace')}</div>
-          <h1 className="page-title">{t('active', 'Active')} <em>{t('connection', 'Connection')}</em></h1>
+          <h1 className="page-title">{t('partner', 'Partner Workspace')}</h1>
           <p className="page-desc">{t('connection_active_desc', 'Your workspace is connected to your partner node in committed planning mode.')}</p>
         </div>
 

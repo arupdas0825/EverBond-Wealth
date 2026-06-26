@@ -2712,36 +2712,17 @@ input,select{font-family:var(--fb)}
   flex-direction: column;
   gap: 4px;
   z-index: 9999;
-  
-  /* Fallback styling first (solid premium surface) */
-  background: #ffffff;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
-  
-  transition: background 0.4s ease, border-color 0.4s ease;
-}
-
-@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
-  .eb-glass-dropdown {
-    background: rgba(255, 255, 255, 0.96);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
-    border: 1px solid rgba(255, 255, 255, 0.8);
-  }
+  background: transparent !important;
+  border: none !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 2.2) !important;
+  isolation: isolate;
 }
 
 [data-theme="dark"] .eb-glass-dropdown {
-  background: #0f141e;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
-}
-
-@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
-  [data-theme="dark"] .eb-glass-dropdown {
-    background: rgba(15, 20, 30, 0.96);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
-  }
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4) !important;
 }
 
 /* Hover bridge to prevent mouse-leave events in the 12px gap between nav item and dropdown */
@@ -2850,36 +2831,17 @@ input,select{font-family:var(--fb)}
   flex-direction: column;
   gap: 4px;
   z-index: 9999;
-  
-  /* Fallback styling first (solid premium surface) */
-  background: #ffffff;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
-  
-  transition: background 0.4s ease, border-color 0.4s ease;
-}
-
-@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
-  .eb-partner-glass-dropdown {
-    background: rgba(255, 255, 255, 0.96);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
-    border: 1px solid rgba(255, 255, 255, 0.8);
-  }
+  background: transparent !important;
+  border: none !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 2.2) !important;
+  isolation: isolate;
 }
 
 [data-theme="dark"] .eb-partner-glass-dropdown {
-  background: #0f141e;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
-}
-
-@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
-  [data-theme="dark"] .eb-partner-glass-dropdown {
-    background: rgba(15, 20, 30, 0.96);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
-  }
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4) !important;
 }
 
 /* Apple Card Style for Dashboard V3 Refocus */
@@ -3442,4 +3404,154 @@ input,select{font-family:var(--fb)}
 .auth-switcher-btn:focus-visible {
   box-shadow: 0 0 0 2px rgba(201, 168, 76, 0.4);
 }
+
+/* ── LIQUID GLASS DOCK/NAVBAR STYLING ─────────────────── */
+.eb-liquid-glass-nav {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  border-radius: 999px;
+  background: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: none !important;
+  box-shadow: 0 6px 6px rgba(0, 0, 0, 0.15), 0 0 20px rgba(0, 0, 0, 0.05) !important;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 2.2) !important;
+  isolation: isolate;
+}
+
+[data-theme="dark"] .eb-liquid-glass-nav {
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4), 0 0 30px rgba(0, 0, 0, 0.2) !important;
+}
+
+.eb-liquid-glass-layer-10 {
+  background: rgba(255, 255, 255, 0.25);
+}
+[data-theme="dark"] .eb-liquid-glass-layer-10 {
+  background: rgba(15, 22, 36, 0.35);
+}
+
+.eb-liquid-glass-layer-20 {
+  box-shadow: inset 2px 2px 1px 0 rgba(255, 255, 255, 0.5), inset -1px -1px 1px 1px rgba(255, 255, 255, 0.5);
+}
+[data-theme="dark"] .eb-liquid-glass-layer-20 {
+  box-shadow: inset 1px 1px 1.5px 0 rgba(255, 255, 255, 0.12), inset -1px -1px 2px 0 rgba(0, 0, 0, 0.4);
+}
+
+/* Tab button styles inside liquid glass nav */
+.eb-liquid-glass-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: transparent;
+  position: relative;
+  outline: none;
+  transition: color 250ms cubic-bezier(0.16, 1, 0.3, 1), transform 250ms cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.eb-liquid-glass-btn:hover {
+  color: var(--text);
+  transform: scale(1.02);
+}
+
+.eb-liquid-glass-btn[aria-selected="true"] {
+  color: #fff !important;
+}
+
+/* Active slider pill inside liquid glass nav */
+.eb-active-pill-slider {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--gold) 0%, #ca9718 100%) !important;
+  z-index: 0;
+  box-shadow: 0 4px 14px rgba(184, 144, 42, 0.32) !important;
+}
+
+/* ── UNIFIED PREMIUM BUTTONS ──────────────────────────── */
+.eb-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 48px;
+  padding: 0 24px;
+  background: linear-gradient(135deg, var(--gold-mid) 0%, var(--gold) 100%) !important;
+  color: #fff !important;
+  border: none !important;
+  border-radius: 12px !important;
+  font-size: 0.9rem !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  box-shadow: 0 4px 16px rgba(184, 144, 42, 0.25) !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  text-decoration: none !important;
+  box-sizing: border-box !important;
+  font-family: inherit !important;
+}
+
+.eb-btn-primary:hover:not(:disabled) {
+  transform: translateY(-1.5px) !important;
+  box-shadow: 0 6px 20px rgba(184, 144, 42, 0.35) !important;
+}
+
+.eb-btn-primary:active:not(:disabled) {
+  transform: translateY(0) !important;
+}
+
+.eb-btn-primary:disabled {
+  background: var(--bg-muted) !important;
+  color: var(--text-faint) !important;
+  opacity: 0.5 !important;
+  cursor: not-allowed !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+.eb-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 48px;
+  padding: 0 24px;
+  background: transparent !important;
+  border: 1.5px solid var(--border-mid) !important;
+  color: var(--text-muted) !important;
+  border-radius: 12px !important;
+  font-size: 0.9rem !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  text-decoration: none !important;
+  box-sizing: border-box !important;
+  font-family: inherit !important;
+}
+
+.eb-btn-secondary:hover:not(:disabled) {
+  background: var(--bg-warm) !important;
+  color: var(--text) !important;
+  border-color: var(--border-str) !important;
+  transform: translateY(-1.5px) !important;
+}
+
+.eb-btn-secondary:active:not(:disabled) {
+  transform: translateY(0) !important;
+}
+
+.eb-btn-secondary:disabled {
+  opacity: 0.5 !important;
+  cursor: not-allowed !important;
+  transform: none !important;
+}
+
 

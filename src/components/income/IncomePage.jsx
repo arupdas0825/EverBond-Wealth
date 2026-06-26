@@ -42,7 +42,7 @@ export function IncomePage() {
       <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
         <div>
           <div className="page-eyebrow">{t('shared_engine', 'Shared Engine')}</div>
-          <h1 className="page-title">{t('income', 'Income')} &amp; <em>{t('mode', 'Mode')}</em></h1>
+          <h1 className="page-title">{t('income', 'Income & Mode')}</h1>
           <p className="page-desc">{t('income_desc', 'Configure combined income and risk profile. All allocations update live.')}</p>
         </div>
       </div>

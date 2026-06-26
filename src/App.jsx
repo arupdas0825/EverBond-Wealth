@@ -13,7 +13,6 @@ import { ToastProvider } from './components/common/Toast';
 import { CookieConsent } from './components/common/CookieConsent';
 import { PrivacyDrawer } from './components/common/PrivacyDrawer';
 import { ResetModal } from './components/common/ResetModal';
-import { InstallAppButton } from './components/common/InstallAppButton';
 import { RouteGuardScreen } from './components/common/RouteGuardScreen';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { SplashScreen } from './components/common/SplashScreen';
@@ -248,18 +247,18 @@ function PageRenderer({ page, setPage, setActivePolicyDoc, setShowResetModal }) 
     const mapping = {
       'dashboard': 'Dashboard',
       'insights': 'Wealth Insights',
-      'income': 'Income Ledger',
+      'income': 'Income & Mode',
       'allocation': 'Asset Allocation',
       'goals': 'Financial Goals',
-      'milestones': 'Milestones & Targets',
-      'simulation': 'Wealth Simulation',
-      'partner': 'Committed Partner Journey',
-      'partner-committed': 'Committed Partner Journey',
+      'milestones': 'Milestones',
+      'simulation': 'Future Simulation',
+      'partner': 'Partner Workspace',
+      'partner-committed': 'Partner Workspace',
       'couple-planning': 'Couple Planning',
       'family-planning': 'Family Dynasty',
       'partner-family': 'Family Dynasty',
-      'settings': 'Settings & Policy',
-      'profile': 'Profile & Identity',
+      'settings': 'Settings',
+      'profile': 'Profile',
       'documentation': 'Documentation'
     };
     return mapping[p] || 'EverBond Section';
@@ -614,11 +613,6 @@ export default function App() {
             <ErrorBoundary mini={true}>
               <NotificationCenter />
             </ErrorBoundary>
-            {isMobile && (
-              <ErrorBoundary mini={true}>
-                <InstallAppButton variant="icon" />
-              </ErrorBoundary>
-            )}
             <ErrorBoundary mini={true}>
               <ProfileChip setPage={setPage} onReset={() => setShowResetModal(true)} />
             </ErrorBoundary>

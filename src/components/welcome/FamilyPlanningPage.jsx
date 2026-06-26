@@ -1064,7 +1064,7 @@ export function FamilyPlanningPage({ setPage, joinCode }) {
             <span style={{ color: 'var(--text-muted)' }}>{t('multigen_asset_command', '· Multi-Generational Asset Command')}</span>
           </div>
           <h1 className="page-title" style={{ marginTop: '8px' }}>
-            {dynastyWorkspaceName ? `${dynastyWorkspaceName} ${t('dynasty_label', 'Dynasty')}` : t('dynasty_label', 'Dynasty')} <em>{t('command_title', 'Command')}</em>
+            {dynastyWorkspaceName ? `${dynastyWorkspaceName} ${t('family', 'Family Dynasty')}` : t('family', 'Family Dynasty')}
           </h1>
           <p className="page-desc" style={{ color: 'var(--text-muted)' }}>
             {t('dynasty_page_desc', 'Oversee trust fund allocations, successors inheritance metrics, secure vaults, and dynamic rule governance.')}

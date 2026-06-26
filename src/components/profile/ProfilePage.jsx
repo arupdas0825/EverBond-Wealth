@@ -98,21 +98,11 @@ export function ProfilePage() {
       <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px', marginBottom: '32px' }}>
         <div>
           <div className="page-eyebrow">{t('identity_workspace', 'Identity Workspace')}</div>
-          <h1 className="page-title">{t('personal', 'Personal')} <em>{t('profile', 'Profile')}</em></h1>
+          <h1 className="page-title">{t('profile', 'Profile')}</h1>
           <p className="page-desc">{t('profile_desc', 'Manage your digital EverBond node, personal parameters, and security tokens.')}</p>
         </div>
         <button 
-          className="btn-primary" 
-          style={{ 
-            width: 'auto', 
-            padding: '12px 24px', 
-            background: `linear-gradient(135deg, ${T.gold} 0%, #a07d22 100%)`,
-            boxShadow: 'var(--sh-gold)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            borderRadius: '100px'
-          }}
+          className="eb-btn-primary" 
           onClick={() => setIsEditModalOpen(true)}
         >
           <Edit3 size={15} /> {t('edit_profile', 'Edit Profile')}

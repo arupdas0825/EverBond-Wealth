@@ -76,7 +76,7 @@ export function AllocationPage() {
       <div className="page-header" style={{display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:16}}>
         <div>
           <div className="page-eyebrow">{t('portfolio_engine', 'Portfolio Engine')}</div>
-          <h1 className="page-title">{t('investment', 'Investment')} <em>{t('allocation', 'Allocation')}</em></h1>
+          <h1 className="page-title">{t('allocation', 'Asset Allocation')}</h1>
           <p className="page-desc">
             {t('allocation_desc', 'Granular asset-class distribution — every number sourced directly from the Excel brain.')}
           </p>

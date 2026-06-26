@@ -116,7 +116,7 @@ export function SettingsPage({ setActivePolicyDoc, setPage }) {
       <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px', marginBottom: '32px' }}>
         <div>
           <div className="page-eyebrow">{t('platform_calibration', 'Platform Calibration')}</div>
-          <h1 className="page-title">{t('platform', 'Platform')} <em>{t('settings', 'Settings')}</em></h1>
+          <h1 className="page-title">{t('settings', 'Settings')}</h1>
           <p className="page-desc">{t('settings_desc', 'Configure visual theme engines, notification centers, data privacy, and session keys.')}</p>
         </div>
       </div>
@@ -370,15 +370,10 @@ export function SettingsPage({ setActivePolicyDoc, setPage }) {
 
             <button
               onClick={() => setPage('documentation')}
-              className="btn-primary"
-              style={{
-                background: `linear-gradient(135deg, ${T.gold} 0%, #a07d22 100%)`,
-                boxShadow: 'var(--sh-gold)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-                padding: '12px', width: '100%', borderRadius: '12px'
-              }}
+              className="eb-btn-primary"
+              style={{ width: '100%' }}
             >
-              <FileText size={16} /> {t('open_documentation', 'Open Platform Documentation')} <ChevronRight size={16} />
+              <FileText size={15} /> {t('open_documentation', 'Open Platform Documentation')}
             </button>
           </Card>
         </motion.div>
@@ -454,19 +449,7 @@ export function SettingsPage({ setActivePolicyDoc, setPage }) {
                 <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
                   <button 
                     onClick={handleExportData}
-                    style={{
-                      padding: '10px 20px',
-                      background: 'var(--bg-card)',
-                      border: '1.5px solid var(--border-mid)',
-                      borderRadius: '10px',
-                      color: 'var(--text)',
-                      fontSize: '0.82rem',
-                      fontWeight: 700,
-                      cursor: 'pointer',
-                      transition: 'all 0.2s'
-                    }}
-                    onMouseEnter={e => e.currentTarget.style.borderColor = T.gold}
-                    onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border-mid)'}
+                    className="eb-btn-secondary"
                   >
                     {t('export_my_data', 'Export My Data')}
                   </button>

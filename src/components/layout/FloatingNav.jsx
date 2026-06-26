@@ -8,7 +8,62 @@ import {
 import { T } from '../../theme/tokens';
 import { useFinanceStore } from '../../store/useFinanceStore';
 import { useTranslation } from '../../utils/i18n';
-import { InstallAppButton } from '../common/InstallAppButton';
+
+// SVG Filter Component for Liquid Glass Distortion
+function GlassFilter() {
+  return (
+    <svg style={{ display: "none" }}>
+      <filter
+        id="glass-distortion"
+        x="0%"
+        y="0%"
+        width="100%"
+        height="100%"
+        filterUnits="objectBoundingBox"
+      >
+        <feTurbulence
+          type="fractalNoise"
+          baseFrequency="0.001 0.005"
+          numOctaves="1"
+          seed="17"
+          result="turbulence"
+        />
+        <feComponentTransfer in="turbulence" result="mapped">
+          <feFuncR type="gamma" amplitude="1" exponent="10" offset="0.5" />
+          <feFuncG type="gamma" amplitude="0" exponent="1" offset="0" />
+          <feFuncB type="gamma" amplitude="0" exponent="1" offset="0.5" />
+        </feComponentTransfer>
+        <feGaussianBlur in="turbulence" stdDeviation="3" result="softMap" />
+        <feSpecularLighting
+          in="softMap"
+          surfaceScale="5"
+          specularConstant="1"
+          specularExponent="100"
+          lightingColor="white"
+          result="specLight"
+        >
+          <fePointLight x="-200" y="-200" z="300" />
+        </feSpecularLighting>
+        <feComposite
+          in="specLight"
+          operator="arithmetic"
+          k1="0"
+          k2="1"
+          k3="1"
+          k4="0"
+          result="litImage"
+        />
+        <feDisplacementMap
+          in="SourceGraphic"
+          in2="softMap"
+          scale="200"
+          xChannelSelector="R"
+          yChannelSelector="G"
+        />
+      </filter>
+    </svg>
+  );
+}
 
 const MAIN_TABS = [
   { id: 'dashboard',  label: 'Dashboard',  icon: <LayoutDashboard size={16} /> },
@@ -274,244 +329,297 @@ export function FloatingNav({ page, setPage }) {
       display: 'flex',
       alignItems: 'center'
     }}>
+      <GlassFilter />
       <motion.div 
-      initial={{ opacity: 0, y: -20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '4px',
-        padding: '6px 8px',
-        borderRadius: '999px',
-        background: theme === 'dark' ? 'rgba(15, 20, 30, 0.65)' : 'rgba(255, 255, 255, 0.65)',
-        backdropFilter: 'blur(20px) saturate(180%)',
-        WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-        border: theme === 'dark' ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid rgba(255, 255, 255, 0.25)',
-        boxShadow: theme === 'dark' ? '0 10px 40px rgba(0, 0, 0, 0.35)' : '0 10px 40px rgba(0, 0, 0, 0.08)'
-      }}
-    >
-        {mainTabs.map(tab => {
-          const isActive = page === tab.id;
-          return (
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+        className="eb-liquid-glass-nav"
+      >
+        {/* Glass Layers */}
+        <div
+          className="eb-liquid-glass-layer-0"
+          style={{
+            position: 'absolute',
+            inset: 0,
+            zIndex: 0,
+            overflow: 'hidden',
+            borderRadius: 'inherit',
+            backdropFilter: "blur(3px)",
+            WebkitBackdropFilter: "blur(3px)",
+            filter: "url(#glass-distortion)",
+            isolation: "isolate",
+            pointerEvents: 'none'
+          }}
+        />
+        <div
+          className="eb-liquid-glass-layer-10"
+          style={{
+            position: 'absolute',
+            inset: 0,
+            zIndex: 10,
+            borderRadius: 'inherit',
+            pointerEvents: 'none'
+          }}
+        />
+        <div
+          className="eb-liquid-glass-layer-20"
+          style={{
+            position: 'absolute',
+            inset: 0,
+            zIndex: 20,
+            borderRadius: 'inherit',
+            overflow: 'hidden',
+            pointerEvents: 'none'
+          }}
+        />
+
+        {/* Content Wrapper */}
+        <div style={{ position: 'relative', zIndex: 30, display: 'flex', alignItems: 'center', gap: '6px' }}>
+          {mainTabs.map(tab => {
+            const isActive = page === tab.id;
+            return (
+              <motion.button
+                key={tab.id}
+                onClick={() => handleNav(tab.id)}
+                whileHover={{ scale: 1.02 }}
+                transition={{ duration: 0.2 }}
+                className="eb-liquid-glass-btn"
+                aria-selected={isActive}
+                style={{ position: 'relative' }}
+              >
+                {isActive && (
+                  <motion.div
+                    layoutId="activeTabPill"
+                    className="eb-active-pill-slider"
+                    transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                  />
+                )}
+                <span style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  {tab.icon}
+                  {tab.label}
+                </span>
+              </motion.button>
+            );
+          })}
+
+          {/* Partner Dropdown */}
+          <div 
+            ref={partnerRef} 
+            style={{ position: 'relative' }}
+            onMouseEnter={isHoverMode ? handlePartnerMouseEnter : undefined}
+            onMouseLeave={isHoverMode ? handlePartnerMouseLeave : undefined}
+            onFocus={handlePartnerFocus}
+            onBlur={handlePartnerBlur}
+          >
             <motion.button
-              key={tab.id}
-              onClick={() => handleNav(tab.id)}
               whileHover={{ scale: 1.02 }}
               transition={{ duration: 0.2 }}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                padding: '8px 16px',
-                borderRadius: '999px',
-                border: 'none',
-                cursor: 'pointer',
-                fontSize: '0.85rem',
-                fontWeight: isActive ? 700 : 600,
-                color: isActive ? '#fff' : 'var(--text-muted)',
-                background: 'transparent',
-                position: 'relative',
-                outline: 'none'
-              }}
+              onClick={handlePartnerClick}
+              className="eb-liquid-glass-btn"
+              aria-selected={activeInPartner}
+              style={{ position: 'relative' }}
             >
-              {isActive && (
+              {activeInPartner && (
                 <motion.div
                   layoutId="activeTabPill"
-                  style={{
-                    position: 'absolute',
-                    inset: 0,
-                    borderRadius: '999px',
-                    background: `linear-gradient(135deg, ${T.gold} 0%, #d4a017 100%)`,
-                    zIndex: 0,
-                    boxShadow: `0 4px 14px ${T.gold}40`
-                  }}
+                  className="eb-active-pill-slider"
                   transition={{ type: 'spring', stiffness: 380, damping: 30 }}
                 />
               )}
               <span style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', gap: '6px' }}>
-                {tab.icon}
-                {tab.label}
+                <Heart size={16} /> Partner <ChevronDown size={14} style={{ transform: isPartnerOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
               </span>
             </motion.button>
-          );
-        })}
 
-        {/* Partner Dropdown */}
-        <div 
-          ref={partnerRef} 
-          style={{ position: 'relative' }}
-          onMouseEnter={isHoverMode ? handlePartnerMouseEnter : undefined}
-          onMouseLeave={isHoverMode ? handlePartnerMouseLeave : undefined}
-          onFocus={handlePartnerFocus}
-          onBlur={handlePartnerBlur}
-        >
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            transition={{ duration: 0.2 }}
-            onClick={handlePartnerClick}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              padding: '8px 16px',
-              borderRadius: '999px',
-              border: 'none',
-              cursor: 'pointer',
-              fontSize: '0.85rem',
-              fontWeight: activeInPartner ? 700 : 600,
-              color: activeInPartner ? '#fff' : 'var(--text-muted)',
-              background: 'transparent',
-              position: 'relative',
-              outline: 'none'
-            }}
+            <AnimatePresence>
+              {isPartnerOpen && (
+                <motion.div
+                  variants={dropdownVariants}
+                  initial="hidden"
+                  animate="visible"
+                  exit="hidden"
+                  className="eb-partner-glass-dropdown"
+                  style={{ position: 'absolute', isolation: 'isolate' }}
+                >
+                  {/* Dropdown Glass Layers */}
+                  <div
+                    className="eb-liquid-glass-layer-0"
+                    style={{
+                      position: 'absolute',
+                      inset: 0,
+                      zIndex: 0,
+                      overflow: 'hidden',
+                      borderRadius: 'inherit',
+                      backdropFilter: "blur(3px)",
+                      WebkitBackdropFilter: "blur(3px)",
+                      filter: "url(#glass-distortion)",
+                      isolation: "isolate",
+                      pointerEvents: 'none'
+                    }}
+                  />
+                  <div
+                    className="eb-liquid-glass-layer-10"
+                    style={{
+                      position: 'absolute',
+                      inset: 0,
+                      zIndex: 10,
+                      borderRadius: 'inherit',
+                      pointerEvents: 'none'
+                    }}
+                  />
+                  <div
+                    className="eb-liquid-glass-layer-20"
+                    style={{
+                      position: 'absolute',
+                      inset: 0,
+                      zIndex: 20,
+                      borderRadius: 'inherit',
+                      overflow: 'hidden',
+                      pointerEvents: 'none'
+                    }}
+                  />
+
+                  {/* Dropdown Content */}
+                  <div style={{ position: 'relative', zIndex: 30, display: 'flex', flexDirection: 'column', gap: '4px', width: '100%' }}>
+                    {partnerTabs.map(tab => {
+                      const isItemActive = page === tab.id;
+                      return (
+                        <button
+                          key={tab.id}
+                          onClick={() => handlePartnerNav(tab.id)}
+                          className="eb-dropdown-item"
+                          style={{
+                            background: isItemActive ? 'var(--gold-pale)' : 'transparent',
+                            color: isItemActive ? T.gold : (theme === 'dark' ? '#f3f4f6' : '#111827'),
+                            fontWeight: isItemActive ? 700 : 600
+                          }}
+                        >
+                          <span 
+                            className="eb-dropdown-item-icon" 
+                            style={{ color: isItemActive ? T.gold : (theme === 'dark' ? '#9ca3af' : '#374151') }}
+                          >
+                            {tab.icon}
+                          </span>
+                          {tab.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* More Dropdown */}
+          <div 
+            ref={moreRef} 
+            style={{ position: 'relative' }}
+            onMouseEnter={isHoverMode ? handleMoreMouseEnter : undefined}
+            onMouseLeave={isHoverMode ? handleMoreMouseLeave : undefined}
+            onFocus={handleMoreFocus}
+            onBlur={handleMoreBlur}
           >
-            {activeInPartner && (
-              <motion.div
-                layoutId="activeTabPill"
-                style={{
-                  position: 'absolute',
-                  inset: 0,
-                  borderRadius: '999px',
-                  background: `linear-gradient(135deg, ${T.gold} 0%, #d4a017 100%)`,
-                  zIndex: 0,
-                  boxShadow: `0 4px 14px ${T.gold}40`
-                }}
-                transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-              />
-            )}
-            <span style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Heart size={16} /> Partner <ChevronDown size={14} style={{ transform: isPartnerOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
-            </span>
-          </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              transition={{ duration: 0.2 }}
+              onClick={handleMoreClick}
+              className="eb-liquid-glass-btn"
+              aria-selected={activeInMore}
+              style={{ position: 'relative' }}
+            >
+              {activeInMore && (
+                <motion.div
+                  layoutId="activeTabPill"
+                  className="eb-active-pill-slider"
+                  transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                />
+              )}
+              <span style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                More <ChevronDown size={14} style={{ transform: isMoreOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
+              </span>
+            </motion.button>
 
-          <AnimatePresence>
-            {isPartnerOpen && (
-              <motion.div
-                variants={dropdownVariants}
-                initial="hidden"
-                animate="visible"
-                exit="hidden"
-                className="eb-partner-glass-dropdown"
-              >
-                {partnerTabs.map(tab => {
-                  const isItemActive = page === tab.id;
-                  return (
-                    <button
-                      key={tab.id}
-                      onClick={() => handlePartnerNav(tab.id)}
-                      className="eb-dropdown-item"
-                      style={{
-                        background: isItemActive ? 'var(--gold-pale)' : 'transparent',
-                        color: isItemActive ? T.gold : (theme === 'dark' ? '#f3f4f6' : '#111827'),
-                        fontWeight: isItemActive ? 700 : 600
-                      }}
-                    >
-                      <span 
-                        className="eb-dropdown-item-icon" 
-                        style={{ color: isItemActive ? T.gold : (theme === 'dark' ? '#9ca3af' : '#374151') }}
-                      >
-                        {tab.icon}
-                      </span>
-                      {tab.label}
-                    </button>
-                  );
-                })}
-              </motion.div>
-            )}
-          </AnimatePresence>
+            <AnimatePresence>
+              {isMoreOpen && (
+                <motion.div
+                  variants={dropdownVariants}
+                  initial="hidden"
+                  animate="visible"
+                  exit="hidden"
+                  className="eb-glass-dropdown"
+                  style={{ position: 'absolute', isolation: 'isolate' }}
+                >
+                  {/* Dropdown Glass Layers */}
+                  <div
+                    className="eb-liquid-glass-layer-0"
+                    style={{
+                      position: 'absolute',
+                      inset: 0,
+                      zIndex: 0,
+                      overflow: 'hidden',
+                      borderRadius: 'inherit',
+                      backdropFilter: "blur(3px)",
+                      WebkitBackdropFilter: "blur(3px)",
+                      filter: "url(#glass-distortion)",
+                      isolation: "isolate",
+                      pointerEvents: 'none'
+                    }}
+                  />
+                  <div
+                    className="eb-liquid-glass-layer-10"
+                    style={{
+                      position: 'absolute',
+                      inset: 0,
+                      zIndex: 10,
+                      borderRadius: 'inherit',
+                      pointerEvents: 'none'
+                    }}
+                  />
+                  <div
+                    className="eb-liquid-glass-layer-20"
+                    style={{
+                      position: 'absolute',
+                      inset: 0,
+                      zIndex: 20,
+                      borderRadius: 'inherit',
+                      overflow: 'hidden',
+                      pointerEvents: 'none'
+                    }}
+                  />
+
+                  {/* Dropdown Content */}
+                  <div style={{ position: 'relative', zIndex: 30, display: 'flex', flexDirection: 'column', gap: '4px', width: '100%' }}>
+                    {moreTabs.map(tab => {
+                      const isItemActive = page === tab.id;
+                      return (
+                        <button
+                          key={tab.id}
+                          onClick={() => handleNav(tab.id)}
+                          className="eb-dropdown-item"
+                          style={{
+                            background: isItemActive ? 'var(--gold-pale)' : 'transparent',
+                            color: isItemActive ? T.gold : (theme === 'dark' ? '#f3f4f6' : '#111827'),
+                            fontWeight: isItemActive ? 700 : 600
+                          }}
+                        >
+                          <span 
+                            className="eb-dropdown-item-icon" 
+                            style={{ color: isItemActive ? T.gold : (theme === 'dark' ? '#9ca3af' : '#374151') }}
+                          >
+                            {tab.icon}
+                          </span>
+                          {tab.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
-
-        {/* More Dropdown */}
-        <div 
-          ref={moreRef} 
-          style={{ position: 'relative' }}
-          onMouseEnter={isHoverMode ? handleMoreMouseEnter : undefined}
-          onMouseLeave={isHoverMode ? handleMoreMouseLeave : undefined}
-          onFocus={handleMoreFocus}
-          onBlur={handleMoreBlur}
-        >
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            transition={{ duration: 0.2 }}
-            onClick={handleMoreClick}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              padding: '8px 16px',
-              borderRadius: '999px',
-              border: 'none',
-              cursor: 'pointer',
-              fontSize: '0.85rem',
-              fontWeight: activeInMore ? 700 : 600,
-              color: activeInMore ? '#fff' : 'var(--text-muted)',
-              background: 'transparent',
-              position: 'relative',
-              outline: 'none'
-            }}
-          >
-            {activeInMore && (
-              <motion.div
-                layoutId="activeTabPill"
-                style={{
-                  position: 'absolute',
-                  inset: 0,
-                  borderRadius: '999px',
-                  background: `linear-gradient(135deg, ${T.gold} 0%, #d4a017 100%)`,
-                  zIndex: 0,
-                  boxShadow: `0 4px 14px ${T.gold}40`
-                }}
-                transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-              />
-            )}
-            <span style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', gap: '6px' }}>
-              More <ChevronDown size={14} style={{ transform: isMoreOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
-            </span>
-          </motion.button>
-
-          <AnimatePresence>
-            {isMoreOpen && (
-              <motion.div
-                variants={dropdownVariants}
-                initial="hidden"
-                animate="visible"
-                exit="hidden"
-                className="eb-glass-dropdown"
-              >
-                {moreTabs.map(tab => {
-                  const isItemActive = page === tab.id;
-                  return (
-                    <button
-                      key={tab.id}
-                      onClick={() => handleNav(tab.id)}
-                      className="eb-dropdown-item"
-                      style={{
-                        background: isItemActive ? 'var(--gold-pale)' : 'transparent',
-                        color: isItemActive ? T.gold : (theme === 'dark' ? '#f3f4f6' : '#111827'),
-                        fontWeight: isItemActive ? 700 : 600
-                      }}
-                    >
-                      <span 
-                        className="eb-dropdown-item-icon" 
-                        style={{ color: isItemActive ? T.gold : (theme === 'dark' ? '#9ca3af' : '#374151') }}
-                      >
-                        {tab.icon}
-                      </span>
-                      {tab.label}
-                    </button>
-                  );
-                })}
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-
-        {/* Dynamic PWA Installer/Launcher */}
-        <div style={{ width: '1px', height: '18px', background: 'var(--border-thin)', margin: '0 6px' }} />
-        <InstallAppButton variant="navbar" />
-
-    </motion.div>
+      </motion.div>
     </div>
   );
 }

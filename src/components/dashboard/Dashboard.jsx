@@ -197,7 +197,7 @@ export function Dashboard({ setPage }) {
           {t('greeting_' + getGreeting().toLowerCase().replace(' ', '_'), getGreeting())}, {partner1 || 'User'}
         </span>
         <h1 className="page-title" style={{ marginTop: '8px', fontSize: '2.1rem', fontWeight: 800 }}>
-          {t('dashboard_title', 'Financial Command Center')}
+          {t('dashboard', 'Dashboard')}
         </h1>
         <p className="page-desc" style={{ color: 'var(--text-muted)', fontSize: '0.92rem', marginTop: '6px', maxWidth: '600px' }}>
           {t('dashboard_desc', 'Track income, investments, savings and long-term financial goals in one focused workspace.')}

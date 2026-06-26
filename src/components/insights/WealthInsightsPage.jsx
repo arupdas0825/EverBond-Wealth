@@ -320,7 +320,7 @@ export function WealthInsightsPage() {
       <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16, marginBottom: '28px' }}>
         <div>
           <div className="page-eyebrow">{t('intelligence_insights', 'Intelligence & Insights')}</div>
-          <h1 className="page-title">{t('wealth', 'Wealth')} <em>{t('insights', 'Insights')}</em></h1>
+          <h1 className="page-title">{t('insights', 'Wealth Insights')}</h1>
           <p className="page-desc">
             {t('wealth_insights_desc', 'Visual telemetry and algorithmic insights detailing your asset growth and financial path.')}
           </p>
@@ -372,22 +372,7 @@ export function WealthInsightsPage() {
               onClick={() => {
                 if (store.setPage) store.setPage('income');
               }}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '12px 28px',
-                background: `linear-gradient(135deg, ${T.gold}, ${T.goldMid})`,
-                color: '#fff',
-                border: 'none',
-                borderRadius: T.radiusSm,
-                fontWeight: 600,
-                cursor: 'pointer',
-                boxShadow: T.shadowGold,
-                transition: 'transform 0.2s ease'
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.02)'}
-              onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+              className="eb-btn-primary"
             >
               {t('add_income_node', 'Add Income Node')} <ChevronRight size={16} />
             </button>
