@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 import { formatCurrency, formatCompact } from '../../utils/finance';
 import { useTranslation } from '../../utils/i18n';
-import { Logo } from '../common/Logo';
+
 import * as QRCodeModule from 'react-qr-code';
 import { db } from '../../utils/firebase';
 import {
@@ -1059,12 +1059,7 @@ export function FamilyPlanningPage({ setPage, joinCode }) {
       
       {/* Page Header */}
       <div className="eb-page-header">
-        <div className="eb-page-header-left">
-          <div className="eb-logo-glass-card">
-            <Logo size={32} showText={false} />
-          </div>
-        </div>
-        <div className="eb-page-header-right" style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px', width: '100%' }}>
+        <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px', width: '100%' }}>
           <div style={{ flex: 1, minWidth: '280px' }}>
             <div className="page-eyebrow" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
               <span className="stage-badge married" style={{ background: `linear-gradient(135deg, ${T.gold} 0%, #d4a017 100%)`, color: '#fff' }}>{t('family_dynasty', 'Family Dynasty')}</span>

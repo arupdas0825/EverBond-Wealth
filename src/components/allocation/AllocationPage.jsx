@@ -6,7 +6,7 @@ import { totalMilestoneContribution } from '../../utils/milestones';
 import { T } from '../../theme/tokens';
 import { Card } from '../common/Card';
 import { useTranslation } from '../../utils/i18n';
-import { Logo } from '../common/Logo';
+
 
 const TT = {
   borderRadius: '14px',
@@ -75,18 +75,11 @@ export function AllocationPage() {
   return (
     <div className="fade-in">
       <div className="eb-page-header">
-        <div className="eb-page-header-left">
-          <div className="eb-logo-glass-card">
-            <Logo size={32} showText={false} />
-          </div>
-        </div>
-        <div className="eb-page-header-right">
-          <span className="page-eyebrow">{t('portfolio_engine', 'Portfolio Engine')}</span>
-          <h1 className="page-title">{t('allocation', 'Asset Allocation')}</h1>
-          <p className="page-desc">
-            {t('allocation_desc', 'Granular asset-class distribution — every number sourced directly from the Excel brain.')}
-          </p>
-        </div>
+        <span className="page-eyebrow">{t('portfolio_engine', 'Portfolio Engine')}</span>
+        <h1 className="page-title">{t('allocation', 'Asset Allocation')}</h1>
+        <p className="page-desc">
+          {t('allocation_desc', 'Granular asset-class distribution — every number sourced directly from the Excel brain.')}
+        </p>
       </div>
 
       {/* Charts */}

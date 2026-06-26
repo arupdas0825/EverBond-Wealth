@@ -7,7 +7,7 @@ import { T } from '../../theme/tokens';
 import { Card } from '../common/Card';
 import { Heart, Lock } from 'lucide-react';
 import { useTranslation } from '../../utils/i18n';
-import { Logo } from '../common/Logo';
+
 
 const MODES = [
   { key: 'Conservative', icon: '🛡️', desc: '60% Needs · 30% Invest\nSafety-first approach' },
@@ -41,16 +41,9 @@ export function IncomePage() {
   return (
     <div className="fade-in">
       <div className="eb-page-header">
-        <div className="eb-page-header-left">
-          <div className="eb-logo-glass-card">
-            <Logo size={32} showText={false} />
-          </div>
-        </div>
-        <div className="eb-page-header-right">
-          <span className="page-eyebrow">{t('shared_engine', 'Shared Engine')}</span>
-          <h1 className="page-title">{t('income', 'Income & Mode')}</h1>
-          <p className="page-desc">{t('income_desc', 'Configure combined income and risk profile. All allocations update live.')}</p>
-        </div>
+        <span className="page-eyebrow">{t('shared_engine', 'Shared Engine')}</span>
+        <h1 className="page-title">{t('income', 'Income & Mode')}</h1>
+        <p className="page-desc">{t('income_desc', 'Configure combined income and risk profile. All allocations update live.')}</p>
       </div>
       <div className="grid-2 mb-20">
         <Card gold>

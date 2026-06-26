@@ -13,7 +13,7 @@ import { formatCurrency, formatCompact } from '../../utils/finance';
 import { Card } from '../common/Card';
 import { T } from '../../theme/tokens';
 import { useTranslation } from '../../utils/i18n';
-import { Logo } from '../common/Logo';
+
 
 export function WealthInsightsPage() {
   const store = useFinanceStore();
@@ -318,18 +318,11 @@ export function WealthInsightsPage() {
   return (
     <div className="fade-in">
       <div className="eb-page-header">
-        <div className="eb-page-header-left">
-          <div className="eb-logo-glass-card">
-            <Logo size={32} showText={false} />
-          </div>
-        </div>
-        <div className="eb-page-header-right">
-          <span className="page-eyebrow">{t('intelligence_insights', 'Intelligence & Insights')}</span>
-          <h1 className="page-title">{t('insights', 'Wealth Insights')}</h1>
-          <p className="page-desc">
-            {t('wealth_insights_desc', 'Visual telemetry and algorithmic insights detailing your asset growth and financial path.')}
-          </p>
-        </div>
+        <span className="page-eyebrow">{t('intelligence_insights', 'Intelligence & Insights')}</span>
+        <h1 className="page-title">{t('insights', 'Wealth Insights')}</h1>
+        <p className="page-desc">
+          {t('wealth_insights_desc', 'Visual telemetry and algorithmic insights detailing your asset growth and financial path.')}
+        </p>
       </div>
 
       <AnimatePresence mode="wait">

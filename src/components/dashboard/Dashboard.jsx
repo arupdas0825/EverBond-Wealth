@@ -17,7 +17,7 @@ import {
   Target, AlertCircle, CheckCircle2, ChevronRight, Activity, 
   FileText, Heart, Info, Plus
 } from 'lucide-react';
-import { Logo } from '../common/Logo';
+
 
 const CHART_TOOLTIP_STYLE = {
   borderRadius: '16px',
@@ -194,22 +194,15 @@ export function Dashboard({ setPage }) {
       
       {/* SECTION 1: WELCOME HEADER */}
       <div className="eb-page-header">
-        <div className="eb-page-header-left">
-          <div className="eb-logo-glass-card">
-            <Logo size={32} showText={false} />
-          </div>
-        </div>
-        <div className="eb-page-header-right">
-          <span className="page-eyebrow">
-            {t('greeting_' + getGreeting().toLowerCase().replace(' ', '_'), getGreeting())}, {partner1 || 'User'}
-          </span>
-          <h1 className="page-title">
-            {t('dashboard', 'Dashboard')}
-          </h1>
-          <p className="page-desc">
-            {t('dashboard_desc', 'Track income, investments, savings and long-term financial goals in one focused workspace.')}
-          </p>
-        </div>
+        <span className="page-eyebrow">
+          {t('greeting_' + getGreeting().toLowerCase().replace(' ', '_'), getGreeting())}, {partner1 || 'User'}
+        </span>
+        <h1 className="page-title">
+          {t('dashboard', 'Dashboard')}
+        </h1>
+        <p className="page-desc">
+          {t('dashboard_desc', 'Track income, investments, savings and long-term financial goals in one focused workspace.')}
+        </p>
       </div>
 
       {/* SECTION 2: CORE FINANCIAL SNAPSHOT */}

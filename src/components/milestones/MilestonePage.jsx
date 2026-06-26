@@ -10,7 +10,7 @@ import {
 import { formatCurrency, formatCompact } from '../../utils/finance';
 import { T } from '../../theme/tokens';
 import { useTranslation } from '../../utils/i18n';
-import { Logo } from '../common/Logo';
+
 
 const CATEGORIES = [
   { id: 'car',       label: 'Car / Vehicle', icon: '🚗', color: '#B8902A' }, // gold
@@ -121,12 +121,7 @@ export function MilestonePage() {
   return (
     <div className="fade-in">
       <div className="eb-page-header">
-        <div className="eb-page-header-left">
-          <div className="eb-logo-glass-card">
-            <Logo size={32} showText={false} />
-          </div>
-        </div>
-        <div className="eb-page-header-right" style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px', width: '100%' }}>
+        <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px', width: '100%' }}>
           <div style={{ flex: 1, minWidth: '280px' }}>
             <div className="page-eyebrow" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <span>{t('milestone_planner', 'Milestone Planner')}</span>

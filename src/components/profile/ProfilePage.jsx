@@ -5,7 +5,7 @@ import { T } from '../../theme/tokens';
 import { Card } from '../common/Card';
 import { ProfileEditModal } from './ProfileEditModal';
 import { useTranslation } from '../../utils/i18n';
-import { Logo } from '../common/Logo';
+
 import { 
   User, Shield, MapPin, DollarSign, Calendar, Edit3, 
   Mail, Globe, Clock, Laptop, Check, Lock, Smartphone, 
@@ -97,12 +97,7 @@ export function ProfilePage() {
       
       {/* Page Header */}
       <div className="eb-page-header">
-        <div className="eb-page-header-left">
-          <div className="eb-logo-glass-card">
-            <Logo size={32} showText={false} />
-          </div>
-        </div>
-        <div className="eb-page-header-right" style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px', width: '100%' }}>
+        <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px', width: '100%' }}>
           <div style={{ flex: 1, minWidth: '280px' }}>
             <div className="page-eyebrow">{t('identity_workspace', 'Identity Workspace')}</div>
             <h1 className="page-title">{t('profile', 'Profile')}</h1>

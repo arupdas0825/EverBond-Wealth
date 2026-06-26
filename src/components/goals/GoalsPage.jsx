@@ -7,7 +7,7 @@ import {
 import { T } from '../../theme/tokens';
 import { Lock, Crown } from 'lucide-react';
 import { useTranslation } from '../../utils/i18n';
-import { Logo } from '../common/Logo';
+
 
 const GOAL_DEFS = [
   { key:'child',      icon:'🎓', name:'Child Education',   color:T.goldMid, retPct:10, tag:'Education Fund', lockedAt: 'Committed' },
@@ -51,18 +51,11 @@ export function GoalsPage() {
   return (
     <div className="fade-in">
       <div className="eb-page-header">
-        <div className="eb-page-header-left">
-          <div className="eb-logo-glass-card">
-            <Logo size={32} showText={false} />
-          </div>
-        </div>
-        <div className="eb-page-header-right">
-          <span className="page-eyebrow">{t('dream_planner', 'Dream Planner')}</span>
-          <h1 className="page-title">{t('life', 'Life')} <em>{t('goals', 'Goals')}</em></h1>
-          <p className="page-desc">
-            {t('goals_desc', 'Set your targets. Monthly allocations are auto-calculated from the Excel engine based on your current life stage.')}
-          </p>
-        </div>
+        <span className="page-eyebrow">{t('dream_planner', 'Dream Planner')}</span>
+        <h1 className="page-title">{t('life', 'Life')} <em>{t('goals', 'Goals')}</em></h1>
+        <p className="page-desc">
+          {t('goals_desc', 'Set your targets. Monthly allocations are auto-calculated from the Excel engine based on your current life stage.')}
+        </p>
       </div>
 
       <div className="grid-2">

@@ -3560,25 +3560,13 @@ input,select{font-family:var(--fb)}
 /* 1. Page Header Spacing & Layout */
 .eb-page-header {
   display: flex;
-  align-items: center;
-  gap: 36px; /* Gap: 32-40px */
-  margin-bottom: 36px;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 32px;
   width: 100%;
 }
 
-.eb-page-header-left {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-}
-
-.eb-page-header-right {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.eb-page-header-right .page-eyebrow {
+.eb-page-header .page-eyebrow {
   font-size: 0.72rem;
   font-weight: 800;
   text-transform: uppercase;
@@ -3586,7 +3574,7 @@ input,select{font-family:var(--fb)}
   color: var(--gold);
 }
 
-.eb-page-header-right .page-title {
+.eb-page-header .page-title {
   margin-top: 2px;
   font-size: 2.1rem;
   font-weight: 800;
@@ -3594,20 +3582,11 @@ input,select{font-family:var(--fb)}
   line-height: 1.25;
 }
 
-.eb-page-header-right .page-desc {
+.eb-page-header .page-desc {
   color: var(--text-muted);
   font-size: 0.92rem;
   margin-top: 4px;
   max-width: 650px;
-}
-
-@media (max-width: 767px) {
-  .eb-page-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 16px;
-    margin-bottom: 24px;
-  }
 }
 
 /* 2. Glassmorphic Logo Card */
