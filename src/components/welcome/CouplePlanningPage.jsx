@@ -6,6 +6,7 @@ import { Card } from '../common/Card';
 import { Heart, Sparkles, CheckSquare, ShieldCheck, Compass, Info, Lock } from 'lucide-react';
 import { formatCurrency } from '../../utils/finance';
 import { useTranslation } from '../../utils/i18n';
+import { Logo } from '../common/Logo';
 
 export function CouplePlanningPage() {
   const { partner1, partner2, currency, getTotalSalary, partnerAccepted } = useFinanceStore();
@@ -30,8 +31,13 @@ export function CouplePlanningPage() {
 
   return (
     <div className="fade-in">
-      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
-        <div>
+      <div className="eb-page-header">
+        <div className="eb-page-header-left">
+          <div className="eb-logo-glass-card">
+            <Logo size={32} showText={false} />
+          </div>
+        </div>
+        <div className="eb-page-header-right">
           <div className="page-eyebrow" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
             <span className="stage-badge committed">{t('committed_workspace', 'Committed Workspace')}</span>
             <span>· {t('dynamic_shared_ledger', 'Dynamic Shared Ledger')}</span>

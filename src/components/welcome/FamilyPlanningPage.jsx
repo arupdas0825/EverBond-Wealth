@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { formatCurrency, formatCompact } from '../../utils/finance';
 import { useTranslation } from '../../utils/i18n';
+import { Logo } from '../common/Logo';
 import * as QRCodeModule from 'react-qr-code';
 import { db } from '../../utils/firebase';
 import {
@@ -1057,39 +1058,47 @@ export function FamilyPlanningPage({ setPage, joinCode }) {
     <div className="fade-in" style={{ paddingBottom: '100px' }}>
       
       {/* Page Header */}
-      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px', marginBottom: '24px' }}>
-        <div>
-          <div className="page-eyebrow" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-            <span className="stage-badge married" style={{ background: `linear-gradient(135deg, ${T.gold} 0%, #d4a017 100%)`, color: '#fff' }}>{t('family_dynasty', 'Family Dynasty')}</span>
-            <span style={{ color: 'var(--text-muted)' }}>{t('multigen_asset_command', '· Multi-Generational Asset Command')}</span>
+      <div className="eb-page-header">
+        <div className="eb-page-header-left">
+          <div className="eb-logo-glass-card">
+            <Logo size={32} showText={false} />
           </div>
-          <h1 className="page-title" style={{ marginTop: '8px' }}>
-            {dynastyWorkspaceName ? `${dynastyWorkspaceName} ${t('family', 'Family Dynasty')}` : t('family', 'Family Dynasty')}
-          </h1>
-          <p className="page-desc" style={{ color: 'var(--text-muted)' }}>
-            {t('dynasty_page_desc', 'Oversee trust fund allocations, successors inheritance metrics, secure vaults, and dynamic rule governance.')}
-          </p>
         </div>
-        
-        {/* Apple Switch for Simulated Link State */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '10px',
-          background: 'var(--bg-muted)',
-          padding: '6px 14px',
-          borderRadius: '16px',
-          border: '1px solid var(--border)'
-        }}>
-          <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)' }}>{t('simulate_active_partner', 'Simulate Active Partner:')}</span>
-          <button 
-            onClick={() => setIsSimulatedLinked(!isSimulatedLinked)}
-            style={{
-              background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', color: isSimulatedLinked ? T.gold : 'var(--text-faint)'
-            }}
-          >
-            {isSimulatedLinked ? <ToggleRight size={28} /> : <ToggleLeft size={28} />}
-          </button>
+        <div className="eb-page-header-right" style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px', width: '100%' }}>
+          <div style={{ flex: 1, minWidth: '280px' }}>
+            <div className="page-eyebrow" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+              <span className="stage-badge married" style={{ background: `linear-gradient(135deg, ${T.gold} 0%, #d4a017 100%)`, color: '#fff' }}>{t('family_dynasty', 'Family Dynasty')}</span>
+              <span style={{ color: 'var(--text-muted)' }}>{t('multigen_asset_command', '· Multi-Generational Asset Command')}</span>
+            </div>
+            <h1 className="page-title" style={{ marginTop: '8px' }}>
+              {dynastyWorkspaceName ? `${dynastyWorkspaceName} ${t('family', 'Family Dynasty')}` : t('family', 'Family Dynasty')}
+            </h1>
+            <p className="page-desc">
+              {t('dynasty_page_desc', 'Oversee trust fund allocations, successors inheritance metrics, secure vaults, and dynamic rule governance.')}
+            </p>
+          </div>
+          
+          {/* Apple Switch for Simulated Link State */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            background: 'var(--bg-muted)',
+            padding: '6px 14px',
+            borderRadius: '16px',
+            border: '1px solid var(--border)',
+            flexShrink: 0
+          }}>
+            <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)' }}>{t('simulate_active_partner', 'Simulate Active Partner:')}</span>
+            <button 
+              onClick={() => setIsSimulatedLinked(!isSimulatedLinked)}
+              style={{
+                background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', color: isSimulatedLinked ? T.gold : 'var(--text-faint)'
+              }}
+            >
+              {isSimulatedLinked ? <ToggleRight size={28} /> : <ToggleLeft size={28} />}
+            </button>
+          </div>
         </div>
       </div>
 

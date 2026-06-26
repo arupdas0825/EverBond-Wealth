@@ -320,15 +320,7 @@ export function FloatingNav({ page, setPage }) {
   const isLight = theme === 'light';
 
   return (
-    <div className="hide-on-mobile" style={{
-      position: 'fixed',
-      top: '24px',
-      left: '50%',
-      transform: 'translateX(-50%)',
-      zIndex: 9999,
-      display: 'flex',
-      alignItems: 'center'
-    }}>
+    <div className="hide-on-mobile eb-floating-nav-outer">
       <GlassFilter />
       <motion.div 
         initial={{ opacity: 0, y: -20 }}

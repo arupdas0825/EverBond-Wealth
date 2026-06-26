@@ -8,6 +8,7 @@ import {
   BookOpen, Search, Copy, Check, ChevronRight, Info, Shield, 
   Map, Sparkles, Target, Zap, Users, ShieldAlert
 } from 'lucide-react';
+import { Logo } from '../common/Logo';
 
 const DOC_SECTIONS = [
   {
@@ -222,10 +223,17 @@ export function DocumentationPage() {
   return (
     <div className="fade-in" style={{ width: '100%' }}>
       {/* Page Header */}
-      <div className="page-header" style={{ marginBottom: '24px' }}>
-        <div className="page-eyebrow">User Manual & Specifications</div>
-        <h1 className="page-title">Internal <em>Documentation</em></h1>
-        <p className="page-desc">Complete scrollable reference detailing system stages, security models, and compound math parameters.</p>
+      <div className="eb-page-header">
+        <div className="eb-page-header-left">
+          <div className="eb-logo-glass-card">
+            <Logo size={32} showText={false} />
+          </div>
+        </div>
+        <div className="eb-page-header-right">
+          <div className="page-eyebrow">User Manual & Specifications</div>
+          <h1 className="page-title">Internal <em>Documentation</em></h1>
+          <p className="page-desc">Complete scrollable reference detailing system stages, security models, and compound math parameters.</p>
+        </div>
       </div>
 
       {/* Reader Layout */}

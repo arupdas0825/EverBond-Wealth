@@ -5,6 +5,7 @@ import { T } from '../../theme/tokens';
 import { Card } from '../common/Card';
 import { ProfileEditModal } from './ProfileEditModal';
 import { useTranslation } from '../../utils/i18n';
+import { Logo } from '../common/Logo';
 import { 
   User, Shield, MapPin, DollarSign, Calendar, Edit3, 
   Mail, Globe, Clock, Laptop, Check, Lock, Smartphone, 
@@ -95,18 +96,26 @@ export function ProfilePage() {
     <div className="fade-in" style={{ width: '100%', paddingBottom: '60px' }}>
       
       {/* Page Header */}
-      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px', marginBottom: '32px' }}>
-        <div>
-          <div className="page-eyebrow">{t('identity_workspace', 'Identity Workspace')}</div>
-          <h1 className="page-title">{t('profile', 'Profile')}</h1>
-          <p className="page-desc">{t('profile_desc', 'Manage your digital EverBond node, personal parameters, and security tokens.')}</p>
+      <div className="eb-page-header">
+        <div className="eb-page-header-left">
+          <div className="eb-logo-glass-card">
+            <Logo size={32} showText={false} />
+          </div>
         </div>
-        <button 
-          className="eb-btn-primary" 
-          onClick={() => setIsEditModalOpen(true)}
-        >
-          <Edit3 size={15} /> {t('edit_profile', 'Edit Profile')}
-        </button>
+        <div className="eb-page-header-right" style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px', width: '100%' }}>
+          <div style={{ flex: 1, minWidth: '280px' }}>
+            <div className="page-eyebrow">{t('identity_workspace', 'Identity Workspace')}</div>
+            <h1 className="page-title">{t('profile', 'Profile')}</h1>
+            <p className="page-desc">{t('profile_desc', 'Manage your digital EverBond node, personal parameters, and security tokens.')}</p>
+          </div>
+          <button 
+            className="eb-btn-primary" 
+            onClick={() => setIsEditModalOpen(true)}
+            style={{ flexShrink: 0 }}
+          >
+            <Edit3 size={15} /> {t('edit_profile', 'Edit Profile')}
+          </button>
+        </div>
       </div>
 
       <motion.div 

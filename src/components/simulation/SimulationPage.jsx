@@ -11,6 +11,7 @@ import { T } from '../../theme/tokens';
 import { Card } from '../common/Card';
 import { useTranslation } from '../../utils/i18n';
 import { Lock } from 'lucide-react';
+import { Logo } from '../common/Logo';
 
 const YEARS     = [1, 5, 10, 20, 30];
 const MILESTONES= [1, 3, 5, 10, 15, 20, 25, 30];
@@ -51,8 +52,13 @@ export function SimulationPage() {
 
   return (
     <div className="fade-in">
-      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
-        <div>
+      <div className="eb-page-header">
+        <div className="eb-page-header-left">
+          <div className="eb-logo-glass-card">
+            <Logo size={32} showText={false} />
+          </div>
+        </div>
+        <div className="eb-page-header-right">
           <div className="page-eyebrow">{t('wealth_engine', 'Wealth Engine')}</div>
           <h1 className="page-title">{t('future', 'Future')} <em>{t('simulation', 'Simulation')}</em></h1>
           <p className="page-desc">

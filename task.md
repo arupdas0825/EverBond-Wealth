@@ -1,0 +1,27 @@
+# UI Polish: Brand Header, Navbar & Profile Layout Fix
+
+- [x] Wrap logo inside premium Liquid Glassmorphism container (`.eb-logo-glass-card`)
+  - [x] Match logo size closely
+  - [x] Soft white glass background
+  - [x] Soft shadow, 18-20px border radius, equal padding
+- [x] Rebuild Page Header layout (`.eb-page-header`)
+  - [x] Left: Glass Logo Card
+  - [x] Right: Eyebrow greeting, Page Title, Description
+  - [x] Gap: 36px (32-40px range)
+  - [x] Vertical alignment, stack on mobile, zero collision
+- [x] Separate Navbar and Profile components
+  - [x] Layout: Logo - (space) - Navigation - (space) - Utility Icons - Gap - Profile Pill
+  - [x] Prevent profile pill and navigation from touching
+- [x] Rebuild Profile Section as an independent pill (`.eb-profile-pill-wrapper`)
+  - [x] Contains initials avatar, user name, dropdown chevron
+  - [x] Radius 999px, padding 8px 18px (18-22px range)
+  - [x] Glass/White background, soft shadow
+- [x] Rebuild responsive top navbar with pure Flexbox (`.eb-top-navbar`)
+  - [x] Use `display: flex`, `justify-content: space-between`, `align-items: center`
+  - [x] Auto spacing on laptop with dynamically hidden logo text below 1150px viewport
+  - [x] Tablet compression (hide profile name below 1024px, compress tab padding)
+- [x] Standardize Page Content Offset (`.eb-page`)
+  - [x] Set 120px top padding on desktop to clear floating navbar
+  - [x] Ensure headers never hide behind navigation
+- [x] Ensure visual consistency across all pages
+  - [x] Dashboard, Income, Allocation, Insights, Partner, Family Dynasty, Profile, Settings, Goals, Milestones, Simulation, Documentation

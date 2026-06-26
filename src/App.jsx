@@ -590,42 +590,66 @@ export default function App() {
       <CursorSpotlight />
       <OnboardingGuard page={page} setPage={setPage} onOpenPolicy={setActivePolicyDoc} authLoading={authLoading}>
         <div className="eb-app">
-          {!isMobile && (
-            <div className="eb-desktop-brand" style={{
-              position: 'fixed',
-              top: '20px',
-              left: '24px',
-              zIndex: 100
-            }}>
-              <Logo size={36} showText={true} />
-            </div>
-          )}
-          <div className="eb-top-actions">
-            <ErrorBoundary mini={true}>
-              <LanguageSelector />
-            </ErrorBoundary>
-            <ErrorBoundary mini={true}>
-              <CurrencySelector />
-            </ErrorBoundary>
-            <ErrorBoundary mini={true}>
-              <ThemeToggle />
-            </ErrorBoundary>
-            <ErrorBoundary mini={true}>
-              <NotificationCenter />
-            </ErrorBoundary>
-            <ErrorBoundary mini={true}>
-              <ProfileChip setPage={setPage} onReset={() => setShowResetModal(true)} />
-            </ErrorBoundary>
-          </div>
-          {isMobile && (
-            <div className="eb-mobile-header" style={{ display: 'flex', justifyContent: 'flex-start', paddingLeft: '16px' }}>
-              <Logo size={28} showText={false} />
-            </div>
-          )}
-          {!isMobile && (
-            <ErrorBoundary mini={true}>
-              <FloatingNav page={page} setPage={setPage} />
-            </ErrorBoundary>
+          {isMobile ? (
+            <>
+              <div className="eb-top-actions">
+                <ErrorBoundary mini={true}>
+                  <LanguageSelector />
+                </ErrorBoundary>
+                <ErrorBoundary mini={true}>
+                  <CurrencySelector />
+                </ErrorBoundary>
+                <ErrorBoundary mini={true}>
+                  <ThemeToggle />
+                </ErrorBoundary>
+                <ErrorBoundary mini={true}>
+                  <NotificationCenter />
+                </ErrorBoundary>
+                <ErrorBoundary mini={true}>
+                  <ProfileChip setPage={setPage} onReset={() => setShowResetModal(true)} />
+                </ErrorBoundary>
+              </div>
+              <div className="eb-mobile-header" style={{ display: 'flex', justifyContent: 'flex-start', paddingLeft: '16px' }}>
+                <Logo size={28} showText={false} />
+              </div>
+            </>
+          ) : (
+            <header className="eb-top-navbar">
+              <div className="eb-navbar-logo-card">
+                <div className="eb-logo-glass-card">
+                  <Logo size={28} showText={windowWidth >= 1150} />
+                </div>
+              </div>
+              
+              <div className="eb-desktop-nav-wrapper">
+                <ErrorBoundary mini={true}>
+                  <FloatingNav page={page} setPage={setPage} />
+                </ErrorBoundary>
+              </div>
+              
+              <div className="eb-navbar-right-section">
+                <div className="eb-utility-icons">
+                  <ErrorBoundary mini={true}>
+                    <LanguageSelector />
+                  </ErrorBoundary>
+                  <ErrorBoundary mini={true}>
+                    <CurrencySelector />
+                  </ErrorBoundary>
+                  <ErrorBoundary mini={true}>
+                    <ThemeToggle />
+                  </ErrorBoundary>
+                  <ErrorBoundary mini={true}>
+                    <NotificationCenter />
+                  </ErrorBoundary>
+                </div>
+                
+                <div className="eb-profile-pill-wrapper">
+                  <ErrorBoundary mini={true}>
+                    <ProfileChip setPage={setPage} onReset={() => setShowResetModal(true)} />
+                  </ErrorBoundary>
+                </div>
+              </div>
+            </header>
           )}
           <main className="eb-main">
             <div className="eb-page">

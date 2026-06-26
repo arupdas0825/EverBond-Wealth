@@ -5,6 +5,7 @@ import { T } from '../../theme/tokens';
 import { useToast } from '../common/Toast';
 import { Card } from '../common/Card';
 import { useTranslation } from '../../utils/i18n';
+import { Logo } from '../common/Logo';
 import {
   Users, Copy, Check, Heart, Key, Calendar, Link2, UserCheck,
   Sparkles, Lock, Shield, X, ArrowRight, Share2,
@@ -534,10 +535,17 @@ export function PartnerPage({ setPage, connectCode }) {
   if (partnerLinked) {
     return (
       <div className="fade-in" style={{ maxWidth: '640px', margin: '0 auto', paddingBottom: '60px' }}>
-        <div className="page-header" style={{ marginBottom: '32px' }}>
-          <div className="page-eyebrow">{t('connection_workspace', 'Connection Workspace')}</div>
-          <h1 className="page-title">{t('partner', 'Partner Workspace')}</h1>
-          <p className="page-desc">{t('connection_active_desc', 'Your workspace is connected to your partner node in committed planning mode.')}</p>
+        <div className="eb-page-header">
+          <div className="eb-page-header-left">
+            <div className="eb-logo-glass-card">
+              <Logo size={32} showText={false} />
+            </div>
+          </div>
+          <div className="eb-page-header-right">
+            <span className="page-eyebrow">{t('connection_workspace', 'Connection Workspace')}</span>
+            <h1 className="page-title">{t('partner', 'Partner Workspace')}</h1>
+            <p className="page-desc">{t('connection_active_desc', 'Your workspace is connected to your partner node in committed planning mode.')}</p>
+          </div>
         </div>
 
         <motion.div

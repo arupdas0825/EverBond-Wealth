@@ -6,6 +6,7 @@ import { Card } from '../common/Card';
 import { useToast } from '../common/Toast';
 import { auth } from '../../utils/firebase';
 import { useTranslation } from '../../utils/i18n';
+import { Logo } from '../common/Logo';
 import { 
   Sun, Moon, Laptop, Bell, Shield, Lock, Smartphone, LaptopIcon, 
   Trash2, FileText, ChevronRight, Eye, RefreshCw, Key, Globe, EyeOff,
@@ -113,9 +114,14 @@ export function SettingsPage({ setActivePolicyDoc, setPage }) {
   return (
     <div className="fade-in" style={{ width: '100%' }}>
       {/* Page Header */}
-      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px', marginBottom: '32px' }}>
-        <div>
-          <div className="page-eyebrow">{t('platform_calibration', 'Platform Calibration')}</div>
+      <div className="eb-page-header">
+        <div className="eb-page-header-left">
+          <div className="eb-logo-glass-card">
+            <Logo size={32} showText={false} />
+          </div>
+        </div>
+        <div className="eb-page-header-right">
+          <span className="page-eyebrow">{t('platform_calibration', 'Platform Calibration')}</span>
           <h1 className="page-title">{t('settings', 'Settings')}</h1>
           <p className="page-desc">{t('settings_desc', 'Configure visual theme engines, notification centers, data privacy, and session keys.')}</p>
         </div>

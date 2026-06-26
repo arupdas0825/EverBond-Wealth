@@ -17,6 +17,7 @@ import {
   Target, AlertCircle, CheckCircle2, ChevronRight, Activity, 
   FileText, Heart, Info, Plus
 } from 'lucide-react';
+import { Logo } from '../common/Logo';
 
 const CHART_TOOLTIP_STYLE = {
   borderRadius: '16px',
@@ -192,16 +193,23 @@ export function Dashboard({ setPage }) {
     <div className="fade-in" style={{ paddingBottom: '60px' }}>
       
       {/* SECTION 1: WELCOME HEADER */}
-      <div style={{ marginBottom: '28px' }}>
-        <span style={{ fontSize: '0.72rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.10em', color: T.gold }}>
-          {t('greeting_' + getGreeting().toLowerCase().replace(' ', '_'), getGreeting())}, {partner1 || 'User'}
-        </span>
-        <h1 className="page-title" style={{ marginTop: '8px', fontSize: '2.1rem', fontWeight: 800 }}>
-          {t('dashboard', 'Dashboard')}
-        </h1>
-        <p className="page-desc" style={{ color: 'var(--text-muted)', fontSize: '0.92rem', marginTop: '6px', maxWidth: '600px' }}>
-          {t('dashboard_desc', 'Track income, investments, savings and long-term financial goals in one focused workspace.')}
-        </p>
+      <div className="eb-page-header">
+        <div className="eb-page-header-left">
+          <div className="eb-logo-glass-card">
+            <Logo size={32} showText={false} />
+          </div>
+        </div>
+        <div className="eb-page-header-right">
+          <span className="page-eyebrow">
+            {t('greeting_' + getGreeting().toLowerCase().replace(' ', '_'), getGreeting())}, {partner1 || 'User'}
+          </span>
+          <h1 className="page-title">
+            {t('dashboard', 'Dashboard')}
+          </h1>
+          <p className="page-desc">
+            {t('dashboard_desc', 'Track income, investments, savings and long-term financial goals in one focused workspace.')}
+          </p>
+        </div>
       </div>
 
       {/* SECTION 2: CORE FINANCIAL SNAPSHOT */}

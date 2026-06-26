@@ -13,6 +13,7 @@ import { formatCurrency, formatCompact } from '../../utils/finance';
 import { Card } from '../common/Card';
 import { T } from '../../theme/tokens';
 import { useTranslation } from '../../utils/i18n';
+import { Logo } from '../common/Logo';
 
 export function WealthInsightsPage() {
   const store = useFinanceStore();
@@ -316,17 +317,18 @@ export function WealthInsightsPage() {
 
   return (
     <div className="fade-in">
-      {/* Top Banner Header */}
-      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16, marginBottom: '28px' }}>
-        <div>
-          <div className="page-eyebrow">{t('intelligence_insights', 'Intelligence & Insights')}</div>
+      <div className="eb-page-header">
+        <div className="eb-page-header-left">
+          <div className="eb-logo-glass-card">
+            <Logo size={32} showText={false} />
+          </div>
+        </div>
+        <div className="eb-page-header-right">
+          <span className="page-eyebrow">{t('intelligence_insights', 'Intelligence & Insights')}</span>
           <h1 className="page-title">{t('insights', 'Wealth Insights')}</h1>
           <p className="page-desc">
             {t('wealth_insights_desc', 'Visual telemetry and algorithmic insights detailing your asset growth and financial path.')}
           </p>
-        </div>
-        <div style={{ flexShrink: 0 }} className="desktop-only-logo">
-          <Sparkles size={28} style={{ color: T.gold }} className="animate-pulse" />
         </div>
       </div>
 

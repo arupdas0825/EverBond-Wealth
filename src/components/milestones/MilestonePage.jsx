@@ -10,6 +10,7 @@ import {
 import { formatCurrency, formatCompact } from '../../utils/finance';
 import { T } from '../../theme/tokens';
 import { useTranslation } from '../../utils/i18n';
+import { Logo } from '../common/Logo';
 
 const CATEGORIES = [
   { id: 'car',       label: 'Car / Vehicle', icon: '🚗', color: '#B8902A' }, // gold
@@ -119,21 +120,28 @@ export function MilestonePage() {
 
   return (
     <div className="fade-in">
-      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px' }}>
-        <div>
-          <div className="page-eyebrow" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span>{t('milestone_planner', 'Milestone Planner')}</span>
+      <div className="eb-page-header">
+        <div className="eb-page-header-left">
+          <div className="eb-logo-glass-card">
+            <Logo size={32} showText={false} />
           </div>
-          <h1 className="page-title">{stage === 'Single' ? t('solo', 'Solo') : t('shared', 'Shared')} <em>{t('milestones', 'Milestones')}</em></h1>
-          <p className="page-desc">{stage === 'Single' ? t('solo_milestones_desc', 'Plan future purchases. Linear savings for major dreams.') : t('shared_milestones_desc', 'Plan future purchases together. Linear savings for major dreams.')}</p>
         </div>
-        <div style={{
-          background: 'var(--gold-pale)', padding: '12px 20px', borderRadius: '18px',
-          border: '1px solid var(--gold-border)', textAlign: 'right'
-        }}>
-          <div className="stat-label" style={{ marginBottom: 2 }}>{t('monthly_contribution', 'Monthly Contribution')}</div>
-          <div style={{ fontFamily: 'var(--fd)', fontSize: '1.8rem', fontWeight: 700, color: 'var(--gold)' }}>
-            {fmt(totalMonthly)}
+        <div className="eb-page-header-right" style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px', width: '100%' }}>
+          <div style={{ flex: 1, minWidth: '280px' }}>
+            <div className="page-eyebrow" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span>{t('milestone_planner', 'Milestone Planner')}</span>
+            </div>
+            <h1 className="page-title">{stage === 'Single' ? t('solo', 'Solo') : t('shared', 'Shared')} <em>{t('milestones', 'Milestones')}</em></h1>
+            <p className="page-desc">{stage === 'Single' ? t('solo_milestones_desc', 'Plan future purchases. Linear savings for major dreams.') : t('shared_milestones_desc', 'Plan future purchases together. Linear savings for major dreams.')}</p>
+          </div>
+          <div style={{
+            background: 'var(--gold-pale)', padding: '12px 20px', borderRadius: '18px',
+            border: '1px solid var(--gold-border)', textAlign: 'right', flexShrink: 0
+          }}>
+            <div className="stat-label" style={{ marginBottom: 2 }}>{t('monthly_contribution', 'Monthly Contribution')}</div>
+            <div style={{ fontFamily: 'var(--fd)', fontSize: '1.8rem', fontWeight: 700, color: 'var(--gold)' }}>
+              {fmt(totalMonthly)}
+            </div>
           </div>
         </div>
       </div>

@@ -3554,4 +3554,301 @@ input,select{font-family:var(--fb)}
   transform: none !important;
 }
 
+
+/* ── UI POLISH: TOP HEADER, NAVBAR & PROFILE PILL ─────────────────── */
+
+/* 1. Page Header Spacing & Layout */
+.eb-page-header {
+  display: flex;
+  align-items: center;
+  gap: 36px; /* Gap: 32-40px */
+  margin-bottom: 36px;
+  width: 100%;
+}
+
+.eb-page-header-left {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+.eb-page-header-right {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.eb-page-header-right .page-eyebrow {
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.10em;
+  color: var(--gold);
+}
+
+.eb-page-header-right .page-title {
+  margin-top: 2px;
+  font-size: 2.1rem;
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1.25;
+}
+
+.eb-page-header-right .page-desc {
+  color: var(--text-muted);
+  font-size: 0.92rem;
+  margin-top: 4px;
+  max-width: 650px;
+}
+
+@media (max-width: 767px) {
+  .eb-page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+}
+
+/* 2. Glassmorphic Logo Card */
+.eb-logo-glass-card {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.45);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 18px; /* Border radius: 18-20px */
+  padding: 10px; /* Equal padding, matches size closely */
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  flex-shrink: 0;
+}
+
+[data-theme="dark"] .eb-logo-glass-card {
+  background: rgba(15, 22, 36, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.16);
+}
+
+/* 3. Top Floating Navbar Wrapper */
+.eb-top-navbar {
+  position: fixed;
+  top: 16px;
+  left: 24px;
+  right: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 9999;
+  pointer-events: none; /* Ignore clicks on background gaps */
+}
+
+.eb-top-navbar > * {
+  pointer-events: auto; /* Enable clicks inside child components */
+}
+
+.eb-navbar-logo-card {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.eb-desktop-nav-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex: 1;
+  margin: 0 24px;
+  min-width: 0;
+}
+
+.eb-navbar-right-section {
+  display: flex;
+  align-items: center;
+  gap: 20px; /* Spacing: 16-24px between utility and profile */
+  flex-shrink: 0;
+}
+
+/* 4. Floating Navbar Outer override */
+.eb-floating-nav-outer {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+/* 5. Utility Icons glass box */
+.eb-utility-icons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.45);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+  padding: 5px 8px;
+  border-radius: 999px;
+  height: 48px;
+  box-sizing: border-box;
+}
+
+[data-theme="dark"] .eb-utility-icons {
+  background: rgba(15, 22, 36, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.16);
+}
+
+/* 6. Extend Glass Button Styles to Utility Icons */
+.eb-utility-icons button.eb-theme-btn-reset,
+.eb-utility-icons button[aria-label="Toggle Theme"],
+.eb-utility-icons button.eb-notif-bell-btn {
+  position: relative !important;
+  width: 38px !important;
+  height: 38px !important;
+  border-radius: 50% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  outline: none !important;
+  color: var(--text) !important;
+  
+  background: rgba(255, 255, 255, 0.25) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02) !important;
+  transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease !important;
+}
+
+.eb-utility-icons button.eb-theme-btn-reset:hover,
+.eb-utility-icons button[aria-label="Toggle Theme"]:hover,
+.eb-utility-icons button.eb-notif-bell-btn:hover {
+  transform: scale(1.05) !important;
+  background: rgba(255, 255, 255, 0.45) !important;
+  border-color: rgba(255, 255, 255, 0.4) !important;
+}
+
+[data-theme="dark"] .eb-utility-icons button.eb-theme-btn-reset,
+[data-theme="dark"] .eb-utility-icons button[aria-label="Toggle Theme"],
+[data-theme="dark"] .eb-utility-icons button.eb-notif-bell-btn {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.05) !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1) !important;
+  color: #fff !important;
+}
+
+[data-theme="dark"] .eb-utility-icons button.eb-theme-btn-reset:hover,
+[data-theme="dark"] .eb-utility-icons button[aria-label="Toggle Theme"]:hover,
+[data-theme="dark"] .eb-utility-icons button.eb-notif-bell-btn:hover {
+  transform: scale(1.05) !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+/* 7. Profile Pill Styles (completely independent rounded pill) */
+.eb-profile-pill-wrapper .eb-profile-container {
+  position: relative !important;
+}
+
+.eb-profile-pill-wrapper button.eb-profile-chip-btn {
+  background: rgba(255, 255, 255, 0.45) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04) !important;
+  border-radius: 999px !important;
+  padding: 8px 18px !important; /* Spacing: 18-22px */
+  height: 48px !important;
+  max-width: 200px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  cursor: pointer !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  outline: none !important;
+}
+
+[data-theme="dark"] .eb-profile-pill-wrapper button.eb-profile-chip-btn {
+  background: rgba(15, 22, 36, 0.45) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.16) !important;
+}
+
+.eb-profile-pill-wrapper button.eb-profile-chip-btn:hover {
+  background: rgba(255, 255, 255, 0.6) !important;
+  border-color: rgba(255, 255, 255, 0.35) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06) !important;
+}
+
+[data-theme="dark"] .eb-profile-pill-wrapper button.eb-profile-chip-btn:hover {
+  background: rgba(15, 22, 36, 0.6) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.24) !important;
+}
+
+.eb-profile-pill-wrapper .eb-profile-name {
+  font-size: 0.88rem !important;
+  font-weight: 600 !important;
+  color: var(--text) !important;
+  max-width: 90px !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 8. Page Offset - ensure page starts below navbar */
+@media (min-width: 768px) {
+  .eb-page {
+    padding-top: 120px !important; /* Consistent top spacing */
+  }
+}
+
+/* 9. Responsive adjustments for Laptop/Tablet width viewports */
+@media (max-width: 1149px) {
+  .eb-top-navbar {
+    left: 16px;
+    right: 16px;
+  }
+  .eb-desktop-nav-wrapper {
+    margin: 0 12px;
+  }
+}
+
+@media (max-width: 1023px) {
+  .eb-top-navbar {
+    gap: 12px;
+  }
+  .eb-desktop-nav-wrapper {
+    margin: 0 8px;
+  }
+  .eb-navbar-right-section {
+    gap: 12px;
+  }
+  .eb-utility-icons {
+    gap: 6px;
+    padding: 5px 6px;
+  }
+  .eb-profile-pill-wrapper button.eb-profile-chip-btn {
+    padding: 8px 12px !important;
+    gap: 6px !important;
+  }
+  .eb-profile-name {
+    display: none !important; /* Hide name on tablet, show only avatar + chevron */
+  }
+  
+  /* Compress navbar items slightly on tablet */
+  .eb-liquid-glass-btn {
+    padding: 8px 12px !important;
+    font-size: 0.8rem !important;
+    gap: 4px !important;
+  }
+  .eb-liquid-glass-nav {
+    gap: 4px !important;
+    padding: 6px 6px !important;
+  }
+}
 
