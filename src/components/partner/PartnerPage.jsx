@@ -119,8 +119,7 @@ export function PartnerPage({ setPage, connectCode }) {
     setIsCreatingInvite(true);
 
     try {
-      const codeSuffix = Math.random().toString(36).substring(2, 8).toUpperCase();
-      const inviteCode = `EB-${codeSuffix}`;
+      const inviteCode = everBondId || '';
       const inviteId = doc(collection(db, 'partnerInvites')).id;
       const inviteRef = doc(db, 'partnerInvites', inviteId);
       const workspaceRef = doc(db, 'partnerWorkspaces', doc(collection(db, 'partnerWorkspaces')).id);
@@ -131,7 +130,7 @@ export function PartnerPage({ setPage, connectCode }) {
 
       batch.set(inviteRef, {
         senderUid: user.uid,
-        senderEbId: everBondId || '',
+        senderEbId: inviteCode,
         senderName: user.name || '',
         senderEmail: user.email || '',
         receiverUid: null,

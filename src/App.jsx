@@ -285,7 +285,6 @@ export default function App() {
   }
 
   const theme = useFinanceStore(s => s.theme);
-  const initEverBondId = useFinanceStore(s => s.initEverBondId);
   const isAuthenticated = useFinanceStore(s => s.isAuthenticated);
   const onboardingComplete = useFinanceStore(s => s.onboardingComplete);
 
@@ -474,16 +473,12 @@ export default function App() {
           onboardingComplete: false,
           started: false
         });
-        setPage(prev => (prev !== 'landing' && prev !== 'auth' ? 'landing' : prev));
       }
       setAuthLoading(false);
     });
 
     return () => unsubscribe();
   }, []);
-
-  // Initialize EverBond ID on first load
-  useEffect(() => { initEverBondId(); }, []);
 
   // Synchronize HTML data-theme attribute
   useEffect(() => {

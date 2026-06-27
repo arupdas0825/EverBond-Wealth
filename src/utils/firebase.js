@@ -1,6 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider, OAuthProvider, deleteUser } from "firebase/auth";
-import { getFirestore, doc, getDoc, setDoc, deleteDoc } from "firebase/firestore";
+import { getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 import { generatePersonalId } from "./everbondId";
 
@@ -98,7 +98,7 @@ export const appleProvider = new OAuthProvider('apple.com');
 
 /**
  * Creates or retrieves the Firestore user document for a given user.
- * Guarantees no duplicates and logs status at each step.
+ * Guarantees no duplicates and enforces an immutable EverBond Identity (ebId).
  */
 export async function createUserDocument(user, fullName = '', providerId = 'password') {
   if (!user) return null;
@@ -108,17 +108,26 @@ export async function createUserDocument(user, fullName = '', providerId = 'pass
     const userSnap = await getDoc(userDocRef);
     if (userSnap.exists()) {
       const existingData = userSnap.data();
-      console.log("USER DOCUMENT FOUND:", existingData);
+      console.log("[EverBond Identity] Existing user document found for UID:", user.uid, "EB ID:", existingData.ebId);
+      
+      // Self-healing check: If a legacy user document is somehow missing ebId, generate it permanently once.
+      if (!existingData.ebId) {
+        const permanentEbId = generatePersonalId();
+        console.log("[EverBond Identity] Legacy user missing ebId. Assigning permanent EB ID:", permanentEbId);
+        await updateDoc(userDocRef, { ebId: permanentEbId });
+        existingData.ebId = permanentEbId;
+      }
       return existingData;
     }
   } catch (readErr) {
-    console.warn("Could not read user document before creation (ignoring to attempt write):", readErr.code, readErr.message);
+    console.warn("[EverBond Identity] Could not read user document before creation:", readErr.code, readErr.message);
   }
 
-  console.log("CREATING USER DOCUMENT");
+  console.log("[EverBond Identity] FIRST-TIME ACCOUNT CREATION for UID:", user.uid);
+  const permanentEbId = generatePersonalId();
   const data = {
     uid: user.uid,
-    ebId: generatePersonalId(),
+    ebId: permanentEbId,
     fullName: fullName || user.displayName || 'User',
     email: user.email || '',
     authProvider: providerId,
@@ -131,10 +140,10 @@ export async function createUserDocument(user, fullName = '', providerId = 'pass
 
   try {
     await setDoc(userDocRef, data);
-    console.log("USER DOCUMENT CREATED");
+    console.log("[EverBond Identity] Successfully saved permanent EB ID to Firestore users/" + user.uid + ".ebId:", permanentEbId);
     return data;
   } catch (err) {
-    console.error("Firestore write failed (exact error code):", err.code, err.message);
+    console.error("[EverBond Identity] Firestore write failed:", err.code, err.message);
     throw err;
   }
 }

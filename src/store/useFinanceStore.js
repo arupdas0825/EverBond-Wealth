@@ -287,30 +287,17 @@ export const useFinanceStore = create(
       // ── EverBond ID Actions ──
 
       initEverBondId: () => {
-        const current = get().userId || get().everBondId;
-        if (!current || current.length <= 9) {
-          const generated = generatePersonalId(get().partner1 || 'USER');
-          set({ userId: generated, everBondId: generated });
-        } else if (!get().userId || !get().everBondId) {
-          set({ userId: current, everBondId: current });
-        }
+        // EverBond ID is permanent and managed strictly via Firestore users/{uid}.ebId.
+        // Never regenerate locally.
       },
 
       loginWithGoogle: (googleUser) => {
-        let generatedId = get().userId || get().everBondId;
-        if (!generatedId || generatedId.length <= 9) {
-          generatedId = generatePersonalId(googleUser.name);
-        }
+        // EverBond ID is synced from Firestore on auth state resolution.
         set({
           isAuthenticated: true,
-          user: {
-            ...googleUser,
-            everBondId: generatedId
-          },
-          userId: generatedId,
-          everBondId: generatedId,
-          partner1: googleUser.name,
-          userName: googleUser.name
+          user: googleUser,
+          partner1: googleUser?.name || '',
+          userName: googleUser?.name || ''
         });
       },
 
@@ -1070,7 +1057,7 @@ export const useFinanceStore = create(
       },
 
       reset: () => {
-        const newId = generateEverBondId();
+        const currentEbId = get().userId || get().everBondId;
         set({
           started: false,
           onboardingComplete: false,
@@ -1092,9 +1079,9 @@ export const useFinanceStore = create(
           accountsConnected: false,
           relationshipVerified: false,
           
-          // Reset EverBond ID system (regenerate fresh ID)
-          userId: newId,
-          everBondId: newId,
+          // Preserve permanent EverBond Identity system
+          userId: currentEbId,
+          everBondId: currentEbId,
           partnerId: '',
           partnerEverBondId: '',
           relationshipStatus: 'Single',
