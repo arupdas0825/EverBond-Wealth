@@ -15,9 +15,7 @@
 
 <br /><br />
 
-# EverBond Wealth
 
-### **Build Wealth Through Every Stage of Life**
 
 EverBond Wealth is a relationship-driven, premium financial planning platform that evolves with your life. Whether you are building solo, planning with a committed partner, or orchestrating multi-generational family wealth, the platform restructures its entire workspace — dashboards, calculations, and tools — around your current life stage.
 
