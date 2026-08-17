@@ -163,6 +163,7 @@ export function LandingPage({ onStartJourney, onLoginClick, onOpenPolicy }) {
   const theme = useFinanceStore(s => s.theme);
   const [activeStage, setActiveStage] = useState('Single');
   const [imgFailed, setImgFailed] = useState(false);
+  const [videoError, setVideoError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   const {
@@ -438,13 +439,13 @@ export function LandingPage({ onStartJourney, onLoginClick, onOpenPolicy }) {
             left: 0,
             width: '100%',
             height: '70px',
-            background: theme === 'dark' ? 'rgba(18, 17, 14, 0.75)' : 'rgba(250, 246, 238, 0.75)',
-            backdropFilter: 'blur(12px)',
-            WebkitBackdropFilter: 'blur(12px)',
-            borderBottom: '1px solid var(--border)',
+            background: theme === 'dark' ? 'rgba(18, 17, 14, 0.45)' : 'rgba(250, 246, 238, 0.45)',
+            backdropFilter: 'blur(16px)',
+            WebkitBackdropFilter: 'blur(16px)',
+            borderBottom: '1px solid rgba(255, 255, 255, 0.12)',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'flex-end',
+            justifyContent: 'space-between',
             padding: '0 24px',
             zIndex: 100,
             transition: 'background 0.3s ease',
@@ -452,248 +453,213 @@ export function LandingPage({ onStartJourney, onLoginClick, onOpenPolicy }) {
           }}
           className="lp-header"
         >
-          {isInstalled ? (
-            <button
-              disabled
-              style={{
-                padding: '8px 20px',
-                borderRadius: '100px',
-                border: '1.5px solid var(--border-mid)',
-                background: 'transparent',
-                color: 'var(--text-faint)',
-                fontSize: '0.82rem',
-                fontWeight: 700,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
-                cursor: 'not-allowed',
-                opacity: 0.6
-              }}
-              className="lp-header-install-btn"
-            >
-              <Check size={14} />
-              <span className="install-btn-text">Installed</span>
-            </button>
-          ) : isInstallable ? (
-            <InstallAppButton>
-              <motion.button
-                whileHover={{ 
-                  scale: 1.02,
-                  borderColor: T.gold,
-                  boxShadow: '0 0 10px rgba(184, 144, 42, 0.15)'
-                }}
-                whileTap={{ scale: 0.98 }}
+          {/* Logo on far-left */}
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <Logo size={36} showText={true} />
+          </div>
+
+          {/* Right-side controls */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            {isInstalled ? (
+              <button
+                disabled
                 style={{
                   padding: '8px 20px',
                   borderRadius: '100px',
-                  border: `1.5px solid ${T.goldMid}`,
+                  border: '1.5px solid var(--border-mid)',
                   background: 'transparent',
-                  color: T.gold,
+                  color: 'var(--text-faint)',
                   fontSize: '0.82rem',
                   fontWeight: 700,
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   gap: '8px',
-                  boxShadow: 'var(--sh-xs)'
+                  cursor: 'not-allowed',
+                  opacity: 0.6
                 }}
                 className="lp-header-install-btn"
               >
-                <Download size={14} />
-                <span className="install-btn-text">Install App</span>
-              </motion.button>
-            </InstallAppButton>
-          ) : null}
+                <Check size={14} />
+                <span className="install-btn-text">Installed</span>
+              </button>
+            ) : isInstallable ? (
+              <InstallAppButton>
+                <motion.button
+                  whileHover={{ 
+                    scale: 1.02,
+                    borderColor: T.gold,
+                    boxShadow: '0 0 10px rgba(184, 144, 42, 0.15)'
+                  }}
+                  whileTap={{ scale: 0.98 }}
+                  style={{
+                    padding: '8px 20px',
+                    borderRadius: '100px',
+                    border: `1.5px solid ${T.goldMid}`,
+                    background: 'transparent',
+                    color: T.gold,
+                    fontSize: '0.82rem',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px',
+                    boxShadow: 'var(--sh-xs)'
+                  }}
+                  className="lp-header-install-btn"
+                >
+                  <Download size={14} />
+                  <span className="install-btn-text">Install App</span>
+                </motion.button>
+              </InstallAppButton>
+            ) : null}
 
-          <ThemeToggle />
-          
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={onLoginClick}
-            style={{
-              padding: '8px 20px',
-              borderRadius: '100px',
-              border: '1.5px solid var(--border-mid)',
-              background: 'var(--bg-card)',
-              color: 'var(--text)',
-              fontSize: '0.82rem',
-              fontWeight: 700,
-              cursor: 'pointer',
-              boxShadow: 'var(--sh-xs)',
-              transition: 'all 0.2s ease',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}
-          >
-            Login
-          </motion.button>
+            <ThemeToggle />
+            
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={onLoginClick}
+              style={{
+                padding: '8px 20px',
+                borderRadius: '100px',
+                border: '1.5px solid var(--border-mid)',
+                background: 'var(--bg-card)',
+                color: 'var(--text)',
+                fontSize: '0.82rem',
+                fontWeight: 700,
+                cursor: 'pointer',
+                boxShadow: 'var(--sh-xs)',
+                transition: 'all 0.2s ease',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+            >
+              Login
+            </motion.button>
+          </div>
         </header>
 
-      {/* ── SECTION 1: HERO SECTION ── */}
+      {/* ── SECTION 1: HERO SECTION (FULLSCREEN BLENDED VIDEO) ── */}
       <motion.section 
         style={{
           y: heroY,
           minHeight: '100vh',
+          height: '100vh',
+          width: '100%',
+          position: 'relative',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          justifyContent: 'center',
-          padding: '80px 24px',
+          justifyContent: 'flex-end',
+          padding: '0 0 32px 0',
           textAlign: 'center',
-          position: 'relative',
           zIndex: 1,
-          maxWidth: '1200px',
-          margin: '0 auto'
+          overflow: 'hidden',
+          boxSizing: 'border-box'
         }}
       >
-        
-        {/* Brand Header — Premium Page Load Fade-in + Upwards Motion & Subtle Scale */}
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={!isLoading ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.9 }}
-          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-          style={{ marginBottom: '60px' }}
-        >
-          <Logo size={48} showText={true} />
-        </motion.div>
-
-        {/* Headline — Premium Staggered Luxury Line-by-Line Reveal */}
-        <h1 
+        {/* Fullscreen Video Background */}
+        <div
           style={{
-            fontFamily: T.fontDisplay,
-            fontSize: 'clamp(2.4rem, 6vw, 4.8rem)',
-            fontWeight: 700,
-            lineHeight: 1.08,
-            letterSpacing: '-0.03em',
-            maxWidth: '900px',
-            margin: '0 auto 24px',
-            color: 'var(--text)'
+            position: 'absolute',
+            inset: 0,
+            width: '100%',
+            height: '100%',
+            zIndex: 0,
+            overflow: 'hidden',
+            background: '#12110e'
           }}
+          className="hero-video-wrapper"
         >
-          <motion.span 
-            variants={line1Variants} 
-            initial="hidden" 
-            animate={!isLoading ? "visible" : "hidden"} 
-            style={{ display: 'block' }}
-          >
-            Build Wealth Through
-          </motion.span>
-          <motion.span 
-            variants={line2Variants} 
-            initial="hidden" 
-            animate={!isLoading ? "visible" : "hidden"} 
-            style={{ display: 'block' }}
-          >
-            Every Stage of{" "}
-            <span style={{ position: 'relative', display: 'inline-block', fontStyle: 'italic', fontWeight: '400', fontFamily: T.fontDisplay }}>
-              Life
-              <svg style={{ position: 'absolute', bottom: '-4px', left: 0, width: '100%', height: '12px' }} viewBox="0 0 100 10" preserveAspectRatio="none">
-                <motion.path 
-                  d="M0,7 C30,2 70,2 100,7" 
-                  stroke={T.goldMid} 
-                  strokeWidth="3" 
-                  fill="none" 
-                  strokeLinecap="round" 
-                  initial={{ pathLength: 0 }}
-                  animate={!isLoading ? { pathLength: 1 } : { pathLength: 0 }}
-                  transition={{ delay: 0.5, duration: 0.6, ease: "easeOut" }}
-                />
-              </svg>
-            </span>
-          </motion.span>
-        </h1>
+          {!videoError ? (
+            <video
+              autoPlay
+              muted
+              loop
+              playsInline
+              preload="metadata"
+              onError={() => {
+                console.warn('Hero video failed to load from /media/Everbond%20video.mp4');
+                setVideoError(true);
+              }}
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                display: 'block'
+              }}
+              aria-label="EverBond Wealth overview presentation"
+            >
+              <source src="/media/Everbond%20video.mp4" type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
+          ) : (
+            <div
+              style={{
+                position: 'absolute',
+                inset: 0,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '16px',
+                padding: '48px 24px',
+                background: 'var(--bg-card)'
+              }}
+            >
+              <Logo size={56} showText={true} />
+            </div>
+          )}
 
-        {/* Dynamic Selector Relationship Stage Chips with Soft Hover Glow, Scale, & 4-second Gold/Accent Pulse */}
-        <motion.div 
-          initial={{ opacity: 0, filter: 'blur(8px)' }}
-          animate={!isLoading ? { opacity: 1, filter: 'blur(0px)' } : { opacity: 0, filter: 'blur(8px)' }}
-          transition={{ duration: 0.6, ease: 'easeOut', delay: 0.6 }}
-          style={{
-            display: 'flex',
-            justifyContent: 'center',
-            gap: '16px',
-            marginBottom: '40px',
-            flexWrap: 'wrap'
-          }}
-        >
-          {['Single', 'Committed', 'Married'].map((stageName) => {
-            const isActive = activeStage === stageName;
-            const colors = {
-              Single: T.sky,
-              Committed: '#D05C72',
-              Married: T.goldMid
-            };
-            const activeColor = colors[stageName];
+          {/* Top Gradient Blend */}
+          <div 
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              height: '140px',
+              background: 'linear-gradient(to bottom, rgba(0, 0, 0, 0.35) 0%, transparent 100%)',
+              pointerEvents: 'none',
+              zIndex: 1
+            }}
+          />
 
-            return (
-              <motion.button 
-                key={stageName}
-                onClick={() => setActiveStage(stageName)}
-                className={isActive ? "stage-badge-selected" : ""}
-                whileHover={{ 
-                  scale: 1.02,
-                  boxShadow: `0 2px 8px rgba(201, 168, 76, 0.1)`,
-                  borderColor: T.goldMid
-                }}
-                whileTap={{ scale: 0.98 }}
-                style={{
-                  background: 'var(--bg-card)',
-                  border: `1px solid ${isActive ? T.goldMid : 'var(--border)'}`,
-                  padding: '8px 20px',
-                  borderRadius: '100px',
-                  fontSize: '0.88rem',
-                  fontWeight: 600,
-                  color: isActive ? T.goldMid : 'var(--text-muted)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  cursor: 'pointer',
-                  outline: 'none',
-                  transition: 'color 0.3s ease, border-color 0.3s ease'
-                }}
-              >
-                <span style={{ 
-                  width: '6px', 
-                  height: '6px', 
-                  borderRadius: '50%', 
-                  background: activeColor
-                }} />
-                {stageName}
-              </motion.button>
-            );
-          })}
-        </motion.div>
+          {/* Bottom Gradient Blend into Page Background */}
+          <div 
+            style={{
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              height: '320px',
+              background: 'linear-gradient(to top, var(--bg) 0%, rgba(0, 0, 0, 0.4) 55%, transparent 100%)',
+              pointerEvents: 'none',
+              zIndex: 1
+            }}
+          />
+        </div>
 
-        {/* Subheadline */}
-        <motion.p 
-          initial={{ opacity: 0 }}
-          animate={!isLoading ? { opacity: 1 } : { opacity: 0 }}
-          transition={{ duration: 0.6, ease: 'easeOut', delay: 0.8 }}
-          style={{
-            fontSize: 'clamp(1.05rem, 2vw, 1.25rem)',
-            color: 'var(--text-muted)',
-            lineHeight: 1.6,
-            maxWidth: '680px',
-            margin: '0 auto 48px'
-          }}
-        >
-          A relationship-driven financial platform designed to help individuals, couples, and families align goals, project futures, and grow together.
-        </motion.p>
-
-        {/* CTAs */}
+        {/* Overlay CTAs on Top of Video */}
         <div 
-          className="hero-ctas-container"
+          className="hero-ctas-container hero-video-overlay-ctas"
           style={{
+            position: 'relative',
+            zIndex: 10,
             display: 'flex',
             gap: '16px',
             flexWrap: 'wrap',
             justifyContent: 'center',
-            alignItems: 'center'
+            alignItems: 'center',
+            padding: '0 20px',
+            marginBottom: '20px'
           }}
         >
           <MagneticContainer>
@@ -702,14 +668,14 @@ export function LandingPage({ onStartJourney, onLoginClick, onOpenPolicy }) {
               className="btn-primary premium-btn-primary"
               initial={{ opacity: 0, y: 12 }}
               animate={!isLoading ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
-              transition={{ duration: 0.5, ease: 'easeOut', delay: 1.0 }}
+              transition={{ duration: 0.5, ease: 'easeOut', delay: 0.4 }}
               whileHover="hover"
               whileTap="tap"
               variants={{
                 idle: { y: 0 },
                 hover: { 
                   y: -3, 
-                  boxShadow: '0 10px 25px rgba(184, 144, 42, 0.25), 0 0 15px rgba(184, 144, 42, 0.15)' 
+                  boxShadow: '0 10px 25px rgba(184, 144, 42, 0.4), 0 0 20px rgba(184, 144, 42, 0.25)' 
                 },
                 tap: { scale: 0.96 }
               }}
@@ -728,7 +694,7 @@ export function LandingPage({ onStartJourney, onLoginClick, onOpenPolicy }) {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                boxShadow: 'var(--sh-gold)',
+                boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3), var(--sh-gold)',
                 outline: 'none',
                 transition: 'box-shadow 0.2s ease, transform 0.1s ease'
               }}
@@ -750,12 +716,12 @@ export function LandingPage({ onStartJourney, onLoginClick, onOpenPolicy }) {
               className="btn-secondary"
               initial={{ opacity: 0, y: 12 }}
               animate={!isLoading ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
-              transition={{ duration: 0.5, ease: 'easeOut', delay: 1.15 }}
+              transition={{ duration: 0.5, ease: 'easeOut', delay: 0.5 }}
               whileHover={{
                 y: -2,
                 borderColor: T.goldMid,
-                boxShadow: '0 6px 16px rgba(0, 0, 0, 0.04), 0 0 10px rgba(184, 144, 42, 0.08)',
-                background: theme === 'dark' ? 'rgba(255, 255, 255, 0.06)' : 'rgba(28, 26, 22, 0.04)'
+                boxShadow: '0 8px 24px rgba(0, 0, 0, 0.35)',
+                background: 'rgba(255, 255, 255, 0.25)'
               }}
               whileTap={{ scale: 0.97 }}
               style={{
@@ -765,17 +731,17 @@ export function LandingPage({ onStartJourney, onLoginClick, onOpenPolicy }) {
                 height: '52px',
                 boxSizing: 'border-box',
                 fontWeight: 700,
-                border: '1.5px solid var(--border-mid)',
-                background: theme === 'dark' ? 'rgba(255, 255, 255, 0.03)' : 'rgba(28, 26, 22, 0.02)',
-                color: 'var(--text)',
+                border: '1.5px solid rgba(255, 255, 255, 0.45)',
+                background: 'rgba(255, 255, 255, 0.16)',
+                color: '#ffffff',
                 textDecoration: 'none',
-                backdropFilter: 'blur(12px)',
-                WebkitBackdropFilter: 'blur(12px)',
+                backdropFilter: 'blur(16px)',
+                WebkitBackdropFilter: 'blur(16px)',
                 transition: 'background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                boxShadow: 'var(--sh-xs)',
+                boxShadow: '0 8px 24px rgba(0, 0, 0, 0.25)',
                 cursor: 'pointer',
                 outline: 'none'
               }}
@@ -795,15 +761,17 @@ export function LandingPage({ onStartJourney, onLoginClick, onOpenPolicy }) {
                   height: '52px',
                   boxSizing: 'border-box',
                   fontWeight: 700,
-                  border: '1.5px solid var(--border-mid)',
-                  background: 'transparent',
-                  color: 'var(--text-faint)',
+                  border: '1.5px solid rgba(255, 255, 255, 0.35)',
+                  background: 'rgba(255, 255, 255, 0.12)',
+                  backdropFilter: 'blur(16px)',
+                  WebkitBackdropFilter: 'blur(16px)',
+                  color: 'rgba(255, 255, 255, 0.8)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   gap: '8px',
                   cursor: 'not-allowed',
-                  opacity: 0.6,
+                  opacity: 0.8,
                   outline: 'none'
                 }}
                 className="btn-secondary"
@@ -819,12 +787,12 @@ export function LandingPage({ onStartJourney, onLoginClick, onOpenPolicy }) {
                   className="btn-secondary"
                   initial={{ opacity: 0, y: 12 }}
                   animate={!isLoading ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
-                  transition={{ duration: 0.5, ease: 'easeOut', delay: 1.3 }}
+                  transition={{ duration: 0.5, ease: 'easeOut', delay: 0.6 }}
                   whileHover={{
                     y: -2,
                     borderColor: T.goldMid,
-                    boxShadow: '0 6px 16px rgba(184, 144, 42, 0.1), 0 0 10px rgba(184, 144, 42, 0.08)',
-                    background: theme === 'dark' ? 'rgba(255, 255, 255, 0.06)' : 'rgba(28, 26, 22, 0.04)'
+                    boxShadow: '0 8px 24px rgba(0, 0, 0, 0.35)',
+                    background: 'rgba(255, 255, 255, 0.25)'
                   }}
                   whileTap={{ scale: 0.97 }}
                   style={{
@@ -834,18 +802,18 @@ export function LandingPage({ onStartJourney, onLoginClick, onOpenPolicy }) {
                     height: '52px',
                     boxSizing: 'border-box',
                     fontWeight: 700,
-                    border: `1.5px solid ${T.goldBorder}`,
-                    background: theme === 'dark' ? 'rgba(255, 255, 255, 0.03)' : 'rgba(28, 26, 22, 0.02)',
-                    color: 'var(--text)',
-                    backdropFilter: 'blur(12px)',
-                    WebkitBackdropFilter: 'blur(12px)',
+                    border: `1.5px solid rgba(201, 168, 76, 0.7)`,
+                    background: 'rgba(255, 255, 255, 0.16)',
+                    color: '#ffffff',
+                    backdropFilter: 'blur(16px)',
+                    WebkitBackdropFilter: 'blur(16px)',
                     transition: 'background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     gap: '8px',
                     cursor: 'pointer',
-                    boxShadow: 'var(--sh-xs)',
+                    boxShadow: '0 8px 24px rgba(0, 0, 0, 0.25)',
                     outline: 'none'
                   }}
                 >
@@ -861,20 +829,20 @@ export function LandingPage({ onStartJourney, onLoginClick, onOpenPolicy }) {
         <motion.div 
           animate={{ 
             y: [0, 6, 0],
-            opacity: [0.35, 0.8, 0.35]
+            opacity: [0.45, 0.9, 0.45]
           }}
           transition={{ duration: 3.5, repeat: Infinity, ease: 'easeInOut' }}
           style={{
-            marginTop: '48px',
+            position: 'relative',
             zIndex: 10,
             textAlign: 'center'
           }}
         >
-          <a href="#journey" style={{ color: 'var(--text-faint)', textDecoration: 'none' }}>
+          <a href="#journey" style={{ color: 'var(--text-muted)', textDecoration: 'none' }}>
             <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.15em', display: 'block', marginBottom: '8px', fontWeight: 700 }}>
               ↓ Explore More
             </span>
-            <div style={{ width: '1px', height: '32px', background: 'var(--border-str)', margin: '0 auto' }} />
+            <div style={{ width: '1px', height: '28px', background: 'var(--border-str)', margin: '0 auto' }} />
           </a>
         </motion.div>
       </motion.section>

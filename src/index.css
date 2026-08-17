@@ -3319,11 +3319,53 @@ input,select{font-family:var(--fb)}
     min-width: 38px;
     height: 38px;
     display: flex;
-    alignItems: center;
-    justifyContent: center;
+    align-items: center;
+    justify-content: center;
   }
   .lp-header-install-btn .install-btn-text {
     display: none !important;
+  }
+}
+
+/* ── HERO VIDEO FULLSCREEN & OVERLAY STYLING ── */
+.hero-video-wrapper {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #12110e;
+}
+
+.hero-video-wrapper video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.hero-video-overlay-ctas {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+@media (max-width: 768px) {
+  .hero-video-overlay-ctas {
+    gap: 10px !important;
+    padding: 0 12px !important;
+    margin-bottom: 16px !important;
+  }
+  .hero-video-overlay-ctas button,
+  .hero-video-overlay-ctas a {
+    height: 46px !important;
+    padding: 0 18px !important;
+    font-size: 0.84rem !important;
   }
 }
 
