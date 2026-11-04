@@ -1,89 +1,108 @@
 /**
- * usePartnerInvites.js — Fixed
- * Real-time Firestore listener for partner invitations.
- *
- * Fixes:
- *  - Checks auth.currentUser before attaching listeners
- *  - Handles permission errors gracefully (no raw Firebase messages)
- *  - Re-attaches listeners when auth changes
+ * usePartnerInvites.js — Migrated from Firestore to MongoDB + Socket.IO
+ * Real-time synchronization for received and sent partner invitations.
+ * Zero Firestore dependencies.
  */
 
-import { useState, useEffect } from 'react';
-import { auth, db } from '../utils/firebase';
-import { collection, query, where, onSnapshot, orderBy } from 'firebase/firestore';
+import { useState, useEffect, useCallback } from 'react';
+import { auth } from '../utils/firebase';
+import { getPartnerInvites } from '../services/partnerService';
+import { subscribeToEvent, connectSocket } from '../services/socketService';
 
-function toDate(ts) {
-  if (!ts) return null;
-  if (ts.toDate) return ts.toDate();
-  if (ts instanceof Date) return ts;
-  return new Date(ts);
+function toDate(val) {
+  if (!val) return null;
+  const d = new Date(val);
+  return isNaN(d.getTime()) ? null : d;
 }
 
-function mapInvite(d) {
-  const data = d.data();
+function formatInvite(inv) {
   return {
-    id: d.id, ...data,
-    createdAt:   toDate(data.createdAt),
-    expiresAt:   toDate(data.expiresAt),
-    acceptedAt:  toDate(data.acceptedAt),
-    rejectedAt:  toDate(data.rejectedAt),
-    cancelledAt: toDate(data.cancelledAt),
+    ...inv,
+    id: inv._id || inv.id,
+    createdAt: toDate(inv.createdAt),
+    expiresAt: toDate(inv.expiresAt),
+    acceptedAt: toDate(inv.acceptedAt),
+    rejectedAt: toDate(inv.rejectedAt),
+    cancelledAt: toDate(inv.cancelledAt),
   };
 }
 
-/**
- * @param {string|null|undefined} currentUid
- * @returns {{ sent: Array, received: Array, loading: boolean, error: string|null }}
- */
 export function usePartnerInvites(currentUid) {
-  const [sent,     setSent]     = useState([]);
+  const [sent, setSent] = useState([]);
   const [received, setReceived] = useState([]);
-  const [loading,  setLoading]  = useState(true);
-  const [error,    setError]    = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const fetchInvites = useCallback(async () => {
+    if (!auth?.currentUser) {
+      setLoading(false);
+      return;
+    }
+
+    try {
+      setError(null);
+      const data = await getPartnerInvites();
+      setSent((data.sent || []).map(formatInvite));
+      setReceived((data.received || []).map(formatInvite));
+    } catch (err) {
+      console.warn('[usePartnerInvites] Error fetching invites:', err.message);
+      if (err.message !== 'UNAUTHENTICATED') {
+        setError('Failed to load partner invitations.');
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    if (!currentUid || !db) { setLoading(false); return; }
-    // Don't attach listeners until Firebase Auth has a current user
-    if (!auth?.currentUser) { setLoading(false); return; }
+    if (!currentUid || !auth?.currentUser) {
+      setLoading(false);
+      return;
+    }
 
-    setLoading(true);
-    setError(null);
+    fetchInvites();
+    connectSocket();
 
-    let sentDone = false, receivedDone = false;
-    const checkDone = () => { if (sentDone && receivedDone) setLoading(false); };
-
-    // Sent invites
-    const qSent = query(
-      collection(db, 'partnerInvites'),
-      where('senderUid', '==', currentUid),
-      orderBy('createdAt', 'desc')
-    );
-    const unsubSent = onSnapshot(qSent,
-      (snap) => { setSent(snap.docs.map(mapInvite)); sentDone = true; checkDone(); },
-      (err)  => {
-        console.error('[usePartnerInvites] sent error:', err.code);
-        if (!err.code?.includes('permission')) setError('Failed to load sent invitations.');
-        sentDone = true; checkDone();
+    const unsubCreated = subscribeToEvent('partner:invite-created', (payload) => {
+      console.log('[usePartnerInvites] Real-time event: partner:invite-created', payload);
+      if (payload?.invite) {
+        const formatted = formatInvite(payload.invite);
+        setReceived((prev) => [formatted, ...prev.filter((i) => i.id !== formatted.id)]);
+      } else {
+        fetchInvites();
       }
-    );
+    });
 
-    // Received invites
-    const qReceived = query(
-      collection(db, 'partnerInvites'),
-      where('receiverUid', '==', currentUid),
-      orderBy('createdAt', 'desc')
-    );
-    const unsubReceived = onSnapshot(qReceived,
-      (snap) => { setReceived(snap.docs.map(mapInvite)); receivedDone = true; checkDone(); },
-      (err)  => {
-        console.error('[usePartnerInvites] received error:', err.code);
-        if (!err.code?.includes('permission')) setError('Failed to load received invitations.');
-        receivedDone = true; checkDone();
+    const unsubUpdated = subscribeToEvent('partner:invite-updated', (payload) => {
+      console.log('[usePartnerInvites] Real-time event: partner:invite-updated', payload);
+      if (payload?.invite) {
+        const formatted = formatInvite(payload.invite);
+        setSent((prev) =>
+          prev.map((i) => (i.id === formatted.id ? formatted : i))
+        );
+        setReceived((prev) =>
+          prev.map((i) => (i.id === formatted.id ? formatted : i))
+        );
+      } else {
+        fetchInvites();
       }
-    );
+    });
 
-    return () => { unsubSent(); unsubReceived(); };
-  }, [currentUid, auth?.currentUser?.uid]);
+    const unsubConnected = subscribeToEvent('partner:connected', () => {
+      fetchInvites();
+    });
 
-  return { sent, received, loading, error };
+    const unsubSocketReconnect = subscribeToEvent('socket:connected', () => {
+      fetchInvites();
+    });
+
+    return () => {
+      unsubCreated();
+      unsubUpdated();
+      unsubConnected();
+      unsubSocketReconnect();
+    };
+  }, [currentUid, fetchInvites]);
+
+  return { sent, received, loading, error, refreshInvites: fetchInvites };
 }

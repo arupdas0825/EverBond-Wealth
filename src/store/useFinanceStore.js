@@ -673,11 +673,10 @@ export const useFinanceStore = create(
         if (p1Salary !== undefined) update.p1Salary = p1Salary;
         if (p2Salary !== undefined) update.p2Salary = p2Salary;
         
-        // Check and personalize Personal ID based on user name
+        // Permanent EverBond ID — never regenerate if already assigned
         const existingId = everBondId || get().userId || get().everBondId;
         let finalId = existingId;
-        if (!existingId || existingId.length <= 9 || (partner1 && !existingId.includes(partner1.trim().toUpperCase().replace(/[^A-Z]/g, '').slice(0, 4)))) {
-          // If empty, old format, or doesn't match the new partner1 name, generate a new personalized one!
+        if (!existingId) {
           finalId = generatePersonalId(partner1);
         }
         update.userId = finalId;

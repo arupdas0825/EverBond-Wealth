@@ -1,95 +1,113 @@
 /**
- * usePartnerNotifications.js
- * Real-time Firestore listener for partner-related notifications.
- * Subscribes to notifications where recipientUid == currentUid.
+ * usePartnerNotifications.js — Migrated from Firestore to MongoDB + Socket.IO
+ * Real-time notifications listener for partner events.
+ * Zero Firestore dependencies.
  */
 
-import { useState, useEffect } from 'react';
-import { db } from '../utils/firebase';
-import { collection, query, where, onSnapshot, orderBy } from 'firebase/firestore';
-import { markNotificationRead, markAllNotificationsRead } from '../services/notificationService';
+import { useState, useEffect, useCallback } from 'react';
+import { auth } from '../utils/firebase';
+import {
+  getNotifications,
+  markNotificationRead,
+  markAllNotificationsRead,
+} from '../services/notificationService';
+import { subscribeToEvent, connectSocket } from '../services/socketService';
 
-/**
- * @typedef {Object} PartnerNotification
- * @property {string} id
- * @property {string} recipientUid
- * @property {string} type
- * @property {string} title
- * @property {string} body
- * @property {boolean} isRead
- * @property {string|null} relatedInviteId
- * @property {Date|null} createdAt
- */
+function toDate(val) {
+  if (!val) return null;
+  const d = new Date(val);
+  return isNaN(d.getTime()) ? null : d;
+}
 
-/**
- * Real-time notifications hook for the current user.
- * @param {string|null|undefined} currentUid
- * @returns {{ notifications: PartnerNotification[], unreadCount: number, markRead: (id: string) => Promise<void>, markAllRead: () => Promise<void>, loading: boolean, error: string|null }}
- */
 export function usePartnerNotifications(currentUid) {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    if (!currentUid || !db) {
+  const fetchNotifs = useCallback(async () => {
+    if (!auth?.currentUser) {
       setLoading(false);
       return;
     }
 
-    setLoading(true);
-    setError(null);
-
-    const q = query(
-      collection(db, 'notifications'),
-      where('recipientUid', '==', currentUid),
-      orderBy('createdAt', 'desc')
-    );
-
-    const unsub = onSnapshot(
-      q,
-      (snap) => {
-        const items = snap.docs.map(d => {
-          const data = d.data();
-          const ts = data.createdAt;
-          return {
-            id: d.id,
-            ...data,
-            createdAt: ts?.toDate ? ts.toDate() : (ts ? new Date(ts) : null),
-          };
-        });
-        setNotifications(items);
-        setLoading(false);
-      },
-      (err) => {
-        console.error('[usePartnerNotifications] listener error:', err);
+    try {
+      setError(null);
+      const items = await getNotifications();
+      setNotifications(
+        items.map((n) => ({
+          ...n,
+          id: n._id || n.id,
+          isRead: n.read ?? false,
+          createdAt: toDate(n.createdAt),
+        }))
+      );
+    } catch (err) {
+      console.warn('[usePartnerNotifications] Error fetching notifications:', err.message);
+      if (err.message !== 'UNAUTHENTICATED') {
         setError('Could not load notifications.');
-        setLoading(false);
       }
-    );
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-    return () => unsub();
-  }, [currentUid]);
+  useEffect(() => {
+    if (!currentUid || !auth?.currentUser) {
+      setLoading(false);
+      return;
+    }
 
-  const unreadCount = notifications.filter(n => !n.isRead).length;
+    fetchNotifs();
+    connectSocket();
+
+    const unsubNotif = subscribeToEvent('partner:notification', (notif) => {
+      console.log('[usePartnerNotifications] Real-time event: partner:notification', notif);
+      if (notif) {
+        const formatted = {
+          ...notif,
+          id: notif._id || notif.id,
+          isRead: notif.read ?? false,
+          createdAt: toDate(notif.createdAt) || new Date(),
+        };
+        setNotifications((prev) => [formatted, ...prev.filter((n) => n.id !== formatted.id)]);
+      } else {
+        fetchNotifs();
+      }
+    });
+
+    const unsubSocketReconnect = subscribeToEvent('socket:connected', () => {
+      fetchNotifs();
+    });
+
+    return () => {
+      unsubNotif();
+      unsubSocketReconnect();
+    };
+  }, [currentUid, fetchNotifs]);
+
+  const unreadCount = notifications.filter((n) => !n.isRead).length;
 
   const markRead = async (id) => {
     try {
       await markNotificationRead(id);
+      setNotifications((prev) =>
+        prev.map((n) => (n.id === id ? { ...n, isRead: true } : n))
+      );
     } catch (e) {
       console.error('[usePartnerNotifications] markRead error:', e);
     }
   };
 
   const markAllRead = async () => {
-    const unreadIds = notifications.filter(n => !n.isRead).map(n => n.id);
+    const unreadIds = notifications.filter((n) => !n.isRead).map((n) => n.id);
     if (unreadIds.length === 0) return;
     try {
-      await markAllNotificationsRead(unreadIds);
+      await markAllNotificationsRead();
+      setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
     } catch (e) {
       console.error('[usePartnerNotifications] markAllRead error:', e);
     }
   };
 
-  return { notifications, unreadCount, markRead, markAllRead, loading, error };
+  return { notifications, unreadCount, markRead, markAllRead, loading, error, refreshNotifs: fetchNotifs };
 }

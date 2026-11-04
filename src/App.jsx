@@ -18,8 +18,9 @@ import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { SplashScreen } from './components/common/SplashScreen';
 import './index.css';
 import { onAuthStateChanged } from 'firebase/auth';
-import { auth, db, createUserDocument, initError } from './utils/firebase';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { auth, initError } from './utils/firebase';
+import { apiPost } from './services/apiClient';
+import { connectSocket, disconnectSocket } from './services/socketService';
 import { FirebaseConfigGuard } from './components/common/FirebaseConfigGuard';
 import { OnboardingGuard } from './components/common/OnboardingGuard';
 
@@ -317,167 +318,125 @@ export default function App() {
     });
   }, []);
 
-  // Listen to Firebase Auth state changes and sync with global store
+  // Listen to Firebase Auth state changes and sync authoritatively with MongoDB
   useEffect(() => {
+    let isMounted = true;
+
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      console.log("AUTH USER:", firebaseUser);
+      console.log("AUTH USER:", firebaseUser ? firebaseUser.uid : null);
+      if (!isMounted) return;
+
       if (firebaseUser) {
+        const persistedState = useFinanceStore.getState();
+        let mongoUser = null;
+
         try {
-          const userDocSnap = await getDoc(doc(db, 'users', firebaseUser.uid));
-          if (userDocSnap.exists()) {
-            const data = userDocSnap.data();
-            console.log("USER DOC:", data);
-            console.log("ONBOARDING STATUS:", data.onboardingCompleted);
-            
-            // Map Firestore mode to store stage formats
-            const mappedStage = (data.mode === 'Family Dynasty' || data.familyWorkspaceId) ? 'Married' : (data.mode === 'committed' ? 'Committed' : (data.mode || 'Single'));
-            let p1Salary = 100000;
-            let p2Salary = 0;
-            let partnerName = '';
-            let partnerEBId = '';
-            let partnerLinked = false;
+          // Authoritative MongoDB Sync via verified Firebase token
+          const syncRes = await apiPost('/api/user/sync', {
+            fullName: firebaseUser.displayName || persistedState.user?.name || '',
+            photoURL: firebaseUser.photoURL || persistedState.profilePhoto || '',
+            ebId: persistedState.everBondId || '',
+          }, { timeoutMs: 8000 });
 
-            if (data.mode === 'committed' || data.mode === 'Committed') {
-              p1Salary = 100000;
-              p2Salary = 80000;
-              partnerName = 'Partner';
-            } else if (data.mode === 'Family Dynasty' || data.mode === 'Married' || data.familyWorkspaceId) {
-              p1Salary = 150000;
-              p2Salary = 120000;
-              partnerName = 'Spouse';
-            }
-
-            if (data.partnerId) {
-              partnerLinked = true;
-              try {
-                const partnerDocSnap = await getDoc(doc(db, 'users', data.partnerId));
-                if (partnerDocSnap.exists()) {
-                  const partnerData = partnerDocSnap.data();
-                  partnerName = partnerData.fullName || partnerName;
-                  partnerEBId = partnerData.ebId || '';
-                }
-              } catch (err) {
-                console.error("Error fetching partner document on startup:", err);
-              }
-            }
-
-            // Redesign profile mapping
-            const rawProvider = firebaseUser.providerData?.[0]?.providerId || data.authProvider || 'password';
-            const mappedProvider = rawProvider === 'google.com' ? 'Google' : (rawProvider === 'apple.com' ? 'Apple' : 'Email Password');
-            const mappedMode = data.relationshipMode || (mappedStage === 'Married' ? 'Family Dynasty' : (mappedStage === 'Committed' ? 'Partner' : 'Single'));
-            const verificationStatus = data.verificationStatus || (data.partnerId ? 'Verified' : 'Pending');
-            const nowIso = new Date().toISOString();
-
-            // Background non-blocking firestore update for lastLogin
-            updateDoc(doc(db, 'users', firebaseUser.uid), { lastLogin: nowIso }).catch(err => console.warn("Error updating lastLogin:", err));
-
-            useFinanceStore.setState({
-              isAuthenticated: true,
-              user: {
-                uid: firebaseUser.uid,
-                name: data.fullName || firebaseUser.displayName || 'User',
-                email: firebaseUser.email || '',
-                authProvider: data.authProvider || 'google.com'
-              },
-              userId: data.ebId,
-              everBondId: data.ebId,
-              partnerId: data.partnerId || '',
-              partnerEverBondId: partnerEBId,
-              partnerLinked,
-              partner1: data.fullName || firebaseUser.displayName || 'User',
-              userName: data.fullName || firebaseUser.displayName || 'User',
-              partner2: partnerName,
-              partnerName: partnerName,
-              region: data.country || 'India',
-              country: data.country || 'India',
-              currency: data.country === 'India' ? 'INR' : 'USD',
-              stage: mappedStage,
-              relationshipStage: mappedStage,
-              relationshipStatus: mappedStage,
-              onboardingComplete: data.onboardingCompleted || false,
-              started: data.onboardingCompleted || false,
-              p1Salary,
-              p2Salary,
-              connectionStatus: data.partnerId ? 'connected' : 'none',
-              familyWorkspaceId: data.familyWorkspaceId || '',
-              workspaceId: data.workspaceId || '',
-              // Synchronized profile fields
-              bio: data.bio || '',
-              profilePhoto: data.photoURL || data.profilePhoto || '',
-              language: data.language || 'English',
-              timezone: data.timezone || 'GMT+5:30',
-              provider: mappedProvider,
-              relationshipMode: mappedMode,
-              verificationStatus: verificationStatus,
-              lastLogin: data.lastLogin || nowIso
-            });
-
-            // Redirect if on onboarding or auth page
-            setPage(prev => {
-              if (data.onboardingCompleted) {
-                if (prev === 'landing' || prev === 'auth' || prev === 'onboarding' || (typeof prev === 'string' && prev.startsWith('onboarding/'))) {
-                  return 'dashboard';
-                }
-              } else {
-                return 'onboarding';
-              }
-              return prev;
-            });
-          } else {
-            console.log("USER DOC: null");
-            console.log("ONBOARDING STATUS: false");
-
-            const data = await createUserDocument(firebaseUser, firebaseUser.displayName || '', 'google.com');
-            useFinanceStore.setState({
-              isAuthenticated: true,
-              user: {
-                uid: firebaseUser.uid,
-                name: data.fullName,
-                email: firebaseUser.email || '',
-                authProvider: data.authProvider
-              },
-              userId: data.ebId,
-              everBondId: data.ebId,
-              onboardingComplete: false,
-              started: false
-            });
-            setPage('onboarding');
+          if (syncRes?.user) {
+            mongoUser = syncRes.user;
+            console.log("[MongoDB Identity] Permanent EverBond ID resolved:", mongoUser.ebId);
           }
-        } catch (err) {
-          console.error("Firestore sync error:", err);
-          console.log("USER DOC: null");
-          console.log("ONBOARDING STATUS: false");
-
-          // Fallback even if read fails (e.g. permission issues), to prevent redirect loop to landing
-          useFinanceStore.setState({
-            isAuthenticated: true,
-            user: {
-              uid: firebaseUser.uid,
-              name: firebaseUser.displayName || 'User',
-              email: firebaseUser.email || '',
-              authProvider: 'google.com'
-            },
-            onboardingComplete: false,
-            started: false
-          });
-          setPage('onboarding');
+        } catch (syncErr) {
+          console.warn("[MongoDB Identity] Sync error, using cached state:", syncErr.message);
         }
-      } else {
-        console.log("USER DOC: null");
-        console.log("ONBOARDING STATUS: false");
 
+        if (!isMounted) return;
+
+        // Connect real-time WebSocket for partner updates
+        connectSocket();
+
+        // Determine if onboarding is completed
+        // Authoritative: mongoUser.onboardingCompleted. Fallback: persistedState.onboardingComplete
+        const isCompleted = Boolean(mongoUser?.onboardingCompleted || persistedState.onboardingComplete);
+        if (persistedState.onboardingComplete && mongoUser && !mongoUser.onboardingCompleted) {
+          apiPost('/api/user/onboarding', {
+            fullName: persistedState.user?.name || persistedState.userName || '',
+            country: persistedState.country || 'India',
+            currency: persistedState.currency || 'INR',
+            mode: persistedState.relationshipMode || persistedState.stage || 'Single',
+            termsAccepted: true,
+            privacyAccepted: true,
+            dataConsent: true,
+          }).catch((err) => console.warn('[MongoDB Identity] Background onboarding sync failed:', err.message));
+        }
+
+        const authoritativeEbId = mongoUser?.ebId || persistedState.everBondId || '';
+        const partnerLinked = Boolean(mongoUser && mongoUser.partnerStatus === 'connected' && mongoUser.partnerUid);
+        const partnerName = (mongoUser && mongoUser.partnerName) || persistedState.partnerName || '';
+        const partnerEbId = (mongoUser && mongoUser.partnerEbId) || persistedState.partnerEverBondId || '';
+        const mappedStage = partnerLinked ? 'Committed' : (mongoUser?.mode || persistedState.stage || 'Single');
+
+        useFinanceStore.setState({
+          isAuthenticated: true,
+          user: {
+            uid: firebaseUser.uid,
+            name: mongoUser?.fullName || firebaseUser.displayName || persistedState.user?.name || 'User',
+            email: firebaseUser.email || '',
+            authProvider: firebaseUser.providerData?.[0]?.providerId || 'google.com',
+          },
+          userId: authoritativeEbId,
+          everBondId: authoritativeEbId,
+          partnerId: (mongoUser && mongoUser.partnerUid) || (partnerLinked ? persistedState.partnerId : '') || '',
+          partnerEverBondId: partnerEbId,
+          partnerLinked,
+          partner1: mongoUser?.fullName || firebaseUser.displayName || persistedState.userName || 'User',
+          userName: mongoUser?.fullName || firebaseUser.displayName || persistedState.userName || 'User',
+          partner2: partnerName,
+          partnerName: partnerName,
+          region: mongoUser?.country || persistedState.country || 'India',
+          country: mongoUser?.country || persistedState.country || 'India',
+          currency: mongoUser?.currency || persistedState.currency || 'INR',
+          stage: mappedStage,
+          relationshipStage: mappedStage,
+          relationshipStatus: mappedStage,
+          onboardingComplete: isCompleted,
+          started: isCompleted,
+          connectionStatus: partnerLinked ? 'connected' : 'none',
+          workspaceId: (mongoUser && mongoUser.workspaceId) || persistedState.workspaceId || '',
+          connectedAt: (mongoUser && mongoUser.connectedAt) ? new Date(mongoUser.connectedAt) : persistedState.connectedAt,
+        });
+
+        // Set route based on completion status
+        setPage(prev => {
+          if (isCompleted) {
+            if (prev === 'landing' || prev === 'auth' || prev === 'onboarding' || (typeof prev === 'string' && prev.startsWith('onboarding/'))) {
+              return 'dashboard';
+            }
+            return prev;
+          } else {
+            return 'onboarding';
+          }
+        });
+      } else {
         // User logged out
+        disconnectSocket();
+
         useFinanceStore.setState({
           isAuthenticated: false,
           user: null,
           onboardingComplete: false,
-          started: false
+          started: false,
         });
+
+        setPage('landing');
       }
-      setAuthLoading(false);
+
+      if (isMounted) {
+        setAuthLoading(false);
+        setShowSplash(false);
+      }
     });
 
-    return () => unsubscribe();
+    return () => {
+      isMounted = false;
+      unsubscribe();
+    };
   }, []);
 
   // Synchronize HTML data-theme attribute

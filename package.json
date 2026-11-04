@@ -4,24 +4,38 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "node scripts/dev-server.mjs",
+    "dev:frontend": "vite",
+    "server": "tsx server/index.ts",
+    "server:watch": "tsx watch server/index.ts",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"
   },
   "dependencies": {
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.7.0",
     "firebase": "^12.14.0",
+    "firebase-admin": "^14.4.0",
     "framer-motion": "^12.38.0",
     "jsqr": "^1.4.0",
     "lucide-react": "^1.14.0",
+    "mongoose": "^9.10.1",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
     "react-qr-code": "^2.0.21",
     "recharts": "^3.8.1",
+    "socket.io": "^4.8.3",
+    "socket.io-client": "^4.8.3",
     "zustand": "^5.0.12"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/node": "^26.5.1",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.1",
@@ -30,6 +44,8 @@
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.5.0",
     "jimp": "^1.6.1",
+    "tsx": "^4.23.13",
+    "typescript": "^7.0.2",
     "vite": "^8.0.10"
   }
 }

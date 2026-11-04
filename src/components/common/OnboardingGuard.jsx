@@ -59,10 +59,6 @@ export function OnboardingGuard({ children, page, setPage, onOpenPolicy, authLoa
         >
           <OnboardingSystem onComplete={() => setPage('dashboard')} onOpenPolicy={onOpenPolicy} />
         </motion.div>
-      ) : isOnboardingPage ? (
-        // 7. Prevent authenticated users with completed onboarding from ever seeing onboarding pages.
-        // Return null here to prevent flashing. The router will redirect them to dashboard.
-        null
       ) : (
         <motion.div
           key="app"

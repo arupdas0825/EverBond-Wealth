@@ -31,4 +31,8 @@ dist-ssr
 .env.*
 !.env.example
 
+# Scratch & Agent Artifacts
+brain/
+scratch/
+
 

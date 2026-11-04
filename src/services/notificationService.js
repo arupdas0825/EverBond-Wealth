@@ -1,93 +1,44 @@
 /**
- * notificationService.js
- * Handles all Firestore `notifications` collection operations.
- * Never trusts client-side data — always uses authenticated uid from params.
+ * notificationService.js — Migrated to MongoDB + Backend API
+ * All Firestore notifications collection operations have been removed.
  */
 
-import { db } from '../utils/firebase';
-import {
-  collection,
-  doc,
-  addDoc,
-  updateDoc,
-  writeBatch,
-  serverTimestamp,
-} from 'firebase/firestore';
+import { apiGet, apiPost } from './apiClient';
 
 /**
- * @typedef {'partner_invite_received'|'partner_invite_accepted'|'partner_invite_rejected'|'partner_invite_cancelled'|'partner_disconnected'} NotificationType
+ * Fetch notifications from backend
  */
-
-/**
- * Write a single notification document to Firestore.
- * @param {Object} batch - Firestore WriteBatch to attach to (or null for standalone write)
- * @param {string} recipientUid
- * @param {NotificationType} type
- * @param {string} title
- * @param {string} body
- * @param {string|null} relatedInviteId
- * @returns {import('firebase/firestore').DocumentReference}
- */
-export function buildNotificationData(recipientUid, type, title, body, relatedInviteId = null) {
-  return {
-    recipientUid,
-    type,
-    title,
-    body,
-    isRead: false,
-    relatedInviteId,
-    createdAt: serverTimestamp(),
-  };
+export async function getNotifications() {
+  const data = await apiGet('/api/partner/notifications');
+  return data.notifications || [];
 }
 
 /**
- * Add a notification document to a WriteBatch.
- * Call batch.commit() externally.
- * @param {import('firebase/firestore').WriteBatch} batch
- * @param {string} recipientUid
- * @param {NotificationType} type
- * @param {string} title
- * @param {string} body
- * @param {string|null} relatedInviteId
- */
-export function batchAddNotification(batch, recipientUid, type, title, body, relatedInviteId = null) {
-  const notifRef = doc(collection(db, 'notifications'));
-  batch.set(notifRef, buildNotificationData(recipientUid, type, title, body, relatedInviteId));
-}
-
-/**
- * Standalone write of a single notification (outside a batch).
- * @param {string} recipientUid
- * @param {NotificationType} type
- * @param {string} title
- * @param {string} body
- * @param {string|null} relatedInviteId
- * @returns {Promise<void>}
- */
-export async function createNotification(recipientUid, type, title, body, relatedInviteId = null) {
-  await addDoc(collection(db, 'notifications'), buildNotificationData(recipientUid, type, title, body, relatedInviteId));
-}
-
-/**
- * Mark a notification document as read.
+ * Mark a notification as read
  * @param {string} notificationId
- * @returns {Promise<void>}
  */
 export async function markNotificationRead(notificationId) {
-  const ref = doc(db, 'notifications', notificationId);
-  await updateDoc(ref, { isRead: true });
+  await apiPost(`/api/partner/notifications/${notificationId}/read`);
 }
 
 /**
- * Mark all provided notification IDs as read in a single batch.
- * @param {string[]} notificationIds
- * @returns {Promise<void>}
+ * Mark all notifications as read
  */
-export async function markAllNotificationsRead(notificationIds) {
-  if (!notificationIds || notificationIds.length === 0) return;
-  const batch = writeBatch(db);
-  notificationIds.forEach(id => {
-    batch.update(doc(db, 'notifications', id), { isRead: true });
-  });
-  await batch.commit();
+export async function markAllNotificationsRead() {
+  await apiPost('/api/partner/notifications/read-all');
+}
+
+/**
+ * Compatibility helpers (no-ops for Firestore batching)
+ */
+export function buildNotificationData(recipientUid, type, title, body, relatedInviteId = null) {
+  return { recipientUid, type, title, body, relatedInviteId, read: false, createdAt: new Date() };
+}
+
+export function batchAddNotification() {
+  // Managed atomically on backend during MongoDB partner operations
+}
+
+export async function createNotification() {
+  // Notifications are created server-side to guarantee integrity
 }

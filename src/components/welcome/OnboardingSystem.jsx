@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { auth, db } from '../../utils/firebase';
 import { doc, setDoc } from 'firebase/firestore';
-import { db, auth } from '../../utils/firebase';
+import { apiPost } from '../../services/apiClient';
 import { useFinanceStore } from '../../store/useFinanceStore';
 import { T } from '../../theme/tokens';
 import { Logo } from '../common/Logo';
@@ -112,6 +113,9 @@ export function OnboardingSystem({ onComplete, onOpenPolicy }) {
   };
 
   const handleFinishOnboarding = async () => {
+    // 6. Prevent duplicate submissions while in-flight
+    if (isLoading) return;
+
     if (!user?.uid) {
       toast.error("User session not found. Please log in again.");
       return;
@@ -125,21 +129,7 @@ export function OnboardingSystem({ onComplete, onOpenPolicy }) {
     toast.success('Calibrating your financial workspace...');
 
     try {
-      // 1. Update user document in Firestore
-      const userDocRef = doc(db, 'users', user.uid);
-      await setDoc(userDocRef, {
-        fullName: fullName.trim(),
-        age: parseInt(age),
-        country: country,
-        currency: currency,
-        mode: mode,
-        onboardingCompleted: true,
-        termsAccepted: true,
-        privacyAccepted: true,
-        updatedAt: new Date().toISOString()
-      }, { merge: true });
-
-      // 2. Map mode to store stage formats
+      // 1. Map mode to store stage formats
       const mappedStage = mode === 'Family Dynasty' ? 'Married' : mode;
       
       // Calculate starting salaries depending on mode
@@ -156,7 +146,7 @@ export function OnboardingSystem({ onComplete, onOpenPolicy }) {
         partnerName = 'Spouse';
       }
 
-      // Update local Zustand store
+      // 2. Calibrate local financial workspace and Zustand state IMMEDIATELY
       store.setProfile({
         partner1: fullName.trim(),
         partner2: partnerName,
@@ -171,14 +161,59 @@ export function OnboardingSystem({ onComplete, onOpenPolicy }) {
 
       useFinanceStore.setState({
         onboardingComplete: true,
-        started: true
+        started: true,
+        userName: fullName.trim(),
+        country: country,
+        currency: currency,
+        stage: mappedStage,
+        relationshipStage: mappedStage,
+        relationshipStatus: mappedStage,
       });
 
       toast.success("Workspace calibrated successfully!");
-      onComplete();
+
+      // 3. Immediately transition to Dashboard
+      if (typeof onComplete === 'function') {
+        onComplete();
+      }
+
+      // 4. Background non-blocking sync to MongoDB
+      apiPost('/api/user/onboarding', {
+        fullName: fullName.trim(),
+        age: parseInt(age) || 25,
+        country: country,
+        currency: currency,
+        mode: mode,
+        termsAccepted: true,
+        privacyAccepted: true,
+        dataConsent: true,
+      }, { timeoutMs: 8000 })
+        .then(() => console.log('[OnboardingSystem] Authoritative MongoDB onboarding sync complete'))
+        .catch(backendErr => console.warn('[OnboardingSystem] Background MongoDB sync offline (will re-sync upon reconnect):', backendErr.message));
+
+      // 5. Background non-blocking backup to Firestore
+      if (db && user?.uid) {
+        const userDocRef = doc(db, 'users', user.uid);
+        setDoc(userDocRef, {
+          fullName: fullName.trim(),
+          age: parseInt(age) || 25,
+          country: country,
+          currency: currency,
+          mode: mode,
+          onboardingCompleted: true,
+          termsAccepted: true,
+          privacyAccepted: true,
+          dataConsent: true,
+          updatedAt: new Date().toISOString()
+        }, { merge: true })
+          .then(() => console.log('[OnboardingSystem] Firestore backup write complete'))
+          .catch(fsErr => console.warn('[OnboardingSystem] Firestore backup write warning:', fsErr.message));
+      }
     } catch (err) {
       console.error("Onboarding submission failed:", err);
-      toast.error("Failed to complete onboarding. Please try again.");
+      // Fallback transition to dashboard even on unexpected error
+      useFinanceStore.setState({ onboardingComplete: true, started: true });
+      if (typeof onComplete === 'function') onComplete();
     } finally {
       setIsLoading(false);
     }
